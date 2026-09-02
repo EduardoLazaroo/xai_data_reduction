@@ -1,0 +1,417 @@
+ROTEIRO DE ESTUDO — DO ZERO ATÉ ESCREVER O ARTIGO
+Projeto: XAI aplicada à redução de dados em Machine Learning
+Para quem é este roteiro: alguém com ~3 anos de programação, conhece Python,
+Pandas, Numpy e já fez limpeza/tratamento de dados, mas tem só uma visão
+superficial de Machine Learning e nunca trabalhou com XAI.
+
+Como usar este arquivo: siga as etapas NA ORDEM. Cada etapa tem:
+  (1) o que estudar
+  (2) por que isso importa para o projeto
+  (3) onde isso aparece no código
+  (4) um "checkpoint" (pergunta que você deve conseguir responder antes de
+      avançar para a próxima etapa)
+
+------------------------------------------------------------
+ETAPA 0 — ENTENDER O OBJETIVO GERAL DO PROJETO (visão de 30 mil pés)
+------------------------------------------------------------
+O que estudar:
+- O que é o problema de "muitos atributos" (alta dimensionalidade) em dados.
+- A ideia central: treinar um modelo, "perguntar" pra ele quais variáveis
+  importam, e usar essa resposta para reduzir o dataset.
+
+Por que importa:
+- Esse é o fio condutor de TODO o projeto. Se você entender essa frase, você
+  entende o projeto inteiro:
+  "Vamos treinar um modelo com tudo, descobrir o que ele realmente usa pra
+  decidir, e treinar de novo só com o que importa, comparando os dois."
+
+Onde aparece:
+- modulo6_pipeline_final.py (é o resumo/orquestrador de tudo)
+
+Checkpoint:
+- Você consegue explicar o projeto em 2 frases para alguém leigo?
+
+------------------------------------------------------------
+ETAPA 1 — FUNDAMENTOS DE MACHINE LEARNING SUPERVISIONADO
+------------------------------------------------------------
+O que estudar:
+- O que é classificação (diferente de regressão).
+- Conceito de features (atributos/variáveis de entrada) e target (rótulo/saída).
+- Treino x teste (train_test_split) e por que nunca avaliamos no mesmo dado
+  que treinamos.
+- O que é sobreajuste (overfitting) e por que datasets com muitos atributos
+  facilitam isso.
+
+Recursos sugeridos:
+- Documentação do scikit-learn: "Getting Started"
+- Vídeos introdutórios sobre "classificação binária" e "train/test split"
+
+Por que importa:
+- Todo o projeto gira em torno de um classificador binário (saudável x
+  patologia). Sem entender esse básico, o resto não faz sentido.
+
+Onde aparece:
+- modulo1_baseline.py -> função gerar_dataset_sintetico_saude() e
+  treinar_e_avaliar_baseline()
+
+Checkpoint:
+- Você sabe explicar por que dividimos os dados em treino e teste?
+- Você sabe o que aconteceria se avaliássemos o modelo nos dados de treino?
+
+------------------------------------------------------------
+ETAPA 2 — O ALGORITMO USADO: RANDOM FOREST
+------------------------------------------------------------
+O que estudar:
+- O que é uma árvore de decisão (conceito simples, com exemplo de "se/então").
+- O que é um Random Forest: várias árvores treinadas com pedaços diferentes
+  dos dados, e a resposta final é uma "votação" entre elas.
+- Por que Random Forest é uma boa escolha para começar (robusto, fácil de
+  usar, tolera atributos irrelevantes razoavelmente bem).
+
+Por que importa:
+- Esse é o modelo usado em TODOS os módulos do projeto. Você não precisa
+  saber implementar um Random Forest do zero, só precisa entender a ideia
+  para poder explicar os resultados no artigo.
+
+Onde aparece:
+- RandomForestClassifier em todos os módulos (import do sklearn.ensemble)
+
+Checkpoint:
+- Você consegue explicar Random Forest para alguém sem usar jargão técnico?
+
+------------------------------------------------------------
+ETAPA 3 — MÉTRICAS DE AVALIAÇÃO DE MODELOS
+------------------------------------------------------------
+O que estudar:
+- Matriz de confusão (verdadeiro positivo, falso positivo, verdadeiro
+  negativo, falso negativo).
+- Acurácia: quando ela engana (datasets desbalanceados).
+- Precisão e Recall: o que cada um mede e quando cada um importa mais.
+- F1-score: por que ele equilibra precisão e recall.
+- ROC-AUC: intuição de "quão bem o modelo separa as duas classes",
+  sem precisar entender a fundo a matemática da curva.
+
+Por que importa:
+- O projeto inteiro é comparado usando essas métricas. Sem entender F1 e
+  ROC-AUC, você não consegue interpretar se o modelo "reduzido" foi bom
+  ou ruim.
+
+Onde aparece:
+- modulo1_baseline.py -> treinar_e_avaliar_baseline() e
+  gerar_graficos_baseline()
+
+Checkpoint:
+- Se o F1-score do modelo reduzido é 0.86 e o do baseline é 0.83, o que
+  isso significa na prática?
+
+------------------------------------------------------------
+ETAPA 4 — O PROBLEMA DA ALTA DIMENSIONALIDADE
+------------------------------------------------------------
+O que estudar:
+- O que são atributos informativos, redundantes e ruído (nomes que o
+  próprio projeto usa: biomarcador, exame_redundante, ruido_metabolico).
+- Por que ter muitos atributos nem sempre ajuda o modelo.
+- Custo computacional: tempo de treino e tempo de inferência crescem com
+  o número de atributos.
+
+Por que importa:
+- Esse é o "problema" que o projeto tenta resolver. O artigo precisa deixar
+  claro qual é o problema antes de apresentar a solução.
+
+Onde aparece:
+- modulo1_baseline.py -> gerar_dataset_sintetico_saude()
+
+Checkpoint:
+- Você consegue explicar por que um "exame_redundante" pode ser removido
+  sem prejudicar o modelo?
+
+------------------------------------------------------------
+ETAPA 5 — O QUE É XAI (EXPLAINABLE AI) E POR QUE ELA EXISTE
+------------------------------------------------------------
+O que estudar:
+- A diferença entre "o modelo acerta" e "eu entendo por que o modelo
+  acertou".
+- Explicação global (o que importa no geral) x explicação local (por que
+  ESSA previsão específica foi feita).
+- Por que isso importa em áreas sensíveis (saúde, finanças).
+
+Por que importa:
+- É o tema central do projeto. XAI aqui não é só para "explicar", é usada
+  como FERRAMENTA DE SELEÇÃO de atributos.
+
+Onde aparece:
+- Comentários de topo de modulo2_shap.py e modulo3_lime.py
+
+Checkpoint:
+- Você sabe dizer, em uma frase, a diferença entre explicação global e
+  explicação local?
+
+------------------------------------------------------------
+ETAPA 6 — SHAP (EXPLICAÇÃO GLOBAL)
+------------------------------------------------------------
+O que estudar:
+- Intuição de Shapley Values (teoria dos jogos): "quanto cada jogador
+  (atributo) contribuiu para o resultado final (previsão)?"
+- Não precisa entender a fórmula matemática completa, só a intuição:
+  cada atributo recebe um "crédito" pela previsão.
+- TreeExplainer: versão do SHAP otimizada para modelos baseados em árvore
+  (como Random Forest).
+- O que é "importância média |SHAP|" (mean absolute SHAP value).
+
+Recursos sugeridos:
+- Documentação oficial do pacote shap (seção de introdução/exemplos)
+
+Por que importa:
+- É o principal método usado no projeto para decidir quais atributos
+  "importam" e quais podem ser descartados.
+
+Onde aparece:
+- modulo2_shap.py -> calcular_explicacoes_shap()
+
+Checkpoint:
+- Você consegue explicar por que "biomarcador_1" aparece no topo do
+  ranking SHAP e "ruido_metabolico_5" aparece no final?
+
+------------------------------------------------------------
+ETAPA 7 — LIME (EXPLICAÇÃO LOCAL)
+------------------------------------------------------------
+O que estudar:
+- Intuição do LIME: pegar UMA instância, criar pequenas variações
+  (perturbações) ao redor dela, treinar um modelo simples e linear só
+  naquela vizinhança, e usar esse modelo simples para explicar a decisão.
+- Por que o LIME é útil para casos "difíceis" (limiar de decisão, ~50%
+  de probabilidade).
+
+Por que importa:
+- Mostra que explicabilidade não é só "olhar o modelo inteiro", também dá
+  pra entender casos específicos — importante para discutir no artigo.
+
+Onde aparece:
+- modulo3_lime.py -> criar_explicador_lime() e explicar_instancia_lime()
+
+Checkpoint:
+- Por que o projeto escolhe explicar justamente a instância mais próxima
+  de 50% de probabilidade, e não uma instância "óbvia"?
+
+------------------------------------------------------------
+ETAPA 8 — SELEÇÃO DE ATRIBUTOS: MÉTODO TRADICIONAL (RFE)
+------------------------------------------------------------
+O que estudar:
+- O que é seleção de atributos (feature selection) de forma geral.
+- RFE (Recursive Feature Elimination): treina o modelo, remove o atributo
+  menos importante, repete o processo até sobrar a quantidade desejada.
+- Por que o RFE é considerado um método "tradicional" (não usa
+  explicabilidade, usa importância interna do próprio modelo).
+
+Por que importa:
+- É o "adversário justo" usado para comparar com a seleção via SHAP.
+  Sem um baseline de comparação, não dá pra afirmar que XAI é melhor
+  ou pior.
+
+Onde aparece:
+- modulo4_ablation_comparison.py -> obter_ranking_rfe()
+
+Checkpoint:
+- Qual é a diferença conceitual entre "ranking por SHAP" e "ranking por RFE"?
+
+------------------------------------------------------------
+ETAPA 9 — ABLAÇÃO: TESTANDO A REDUÇÃO PROGRESSIVA
+------------------------------------------------------------
+O que estudar:
+- O que é um "estudo de ablação": remover partes de um sistema aos poucos
+  e observar o efeito no resultado.
+- Como interpretar um gráfico de "desempenho x número de atributos".
+- Por que reduzir de 40 para 10 atributos pode manter (ou até melhorar)
+  o F1-score.
+
+Por que importa:
+- É a etapa que gera a "evidência experimental" central do artigo: até
+  onde dá pra reduzir sem perder desempenho.
+
+Onde aparece:
+- modulo4_ablation_comparison.py -> executar_curva_ablacao() e
+  gerar_graficos_ablacao()
+
+Checkpoint:
+- Olhando o gráfico gerado (modulo4_ablation_curves.png), em que ponto a
+  curva do SHAP começa a cair de forma acentuada?
+
+------------------------------------------------------------
+ETAPA 10 — FILTROS ESTATÍSTICOS ANTES DO XAI (PRÉ-FILTRO HÍBRIDO)
+------------------------------------------------------------
+O que estudar:
+- VarianceThreshold: por que remover atributos de variância muito baixa
+  (eles quase não variam, então quase não ajudam a diferenciar classes).
+- Correlação entre atributos: por que dois atributos muito correlacionados
+  carregam informação redundante.
+- A ideia de fazer uma "limpeza rápida" antes de rodar algo mais caro
+  (como o SHAP).
+
+Por que importa:
+- Mostra que XAI não substitui completamente estatística básica; os dois
+  se complementam.
+
+Onde aparece:
+- modulo5_advanced_xai.py -> pré_filtro_hibrido()
+
+Checkpoint:
+- Por que faz sentido rodar esse filtro ANTES do SHAP, e não depois?
+
+------------------------------------------------------------
+ETAPA 11 — SHAP-SELECT: SELEÇÃO ESTATÍSTICA SOBRE OS VALORES SHAP
+------------------------------------------------------------
+O que estudar:
+- Regressão logística (conceito básico: prever uma classe usando uma
+  combinação linear de variáveis).
+- P-valor: intuição de "o quão eu confio que esse coeficiente não é fruto
+  do acaso" (quanto menor, mais confiança).
+- A lógica do shap-select: usar os valores SHAP como entrada de uma
+  regressão logística contra o rótulo real, e manter só os atributos com
+  coeficiente positivo E p-valor < 0.05.
+
+Por que importa:
+- É a etapa mais "avançada" do projeto: uma seleção com rigor estatístico,
+  não só ranking por importância.
+
+Onde aparece:
+- modulo5_advanced_xai.py -> executar_shap_select()
+
+Checkpoint:
+- Por que um atributo com coeficiente negativo é descartado, mesmo que o
+  |SHAP| dele seja alto?
+
+------------------------------------------------------------
+ETAPA 12 — OTIMIZAÇÃO DE HIPERPARÂMETROS (OPTUNA)
+------------------------------------------------------------
+O que estudar:
+- O que são hiperparâmetros (ex.: número de árvores, profundidade máxima)
+  versus parâmetros aprendidos pelo modelo.
+- Ideia geral de busca de hiperparâmetros (tentar várias combinações e
+  escolher a melhor via validação cruzada).
+- Validação cruzada (cross-validation): por que dividir os dados em
+  várias partes para avaliar de forma mais robusta.
+- Optuna: framework que automatiza essa busca de forma mais inteligente
+  que tentativa e erro manual.
+
+Por que importa:
+- Explica por que, depois de reduzir os atributos, o modelo é re-otimizado
+  antes da comparação final — é para dar a "melhor chance possível" ao
+  modelo reduzido.
+
+Onde aparece:
+- modulo6_pipeline_final.py -> otimizar_hiperparametros_optuna()
+
+Checkpoint:
+- Por que seria injusto comparar o baseline (sem otimização) com um
+  modelo reduzido não otimizado, quando o objetivo é avaliar melhor a
+  técnica de seleção?
+
+------------------------------------------------------------
+ETAPA 13 — LENDO O PIPELINE COMPLETO DE PONTA A PONTA
+------------------------------------------------------------
+O que estudar:
+- Ler modulo6_pipeline_final.py inteiro, de cima a baixo, uma vez só.
+- Anotar, em português simples, o que cada uma das 4 etapas do pipeline
+  faz (ETAPA 1/4, 2/4, 3/4, 4/4 no código).
+- Rodar o script e observar a saída no terminal.
+
+Por que importa:
+- Esse módulo é o "resumo executável" de tudo que você estudou até aqui.
+  Se você entender ele, você entende o projeto todo.
+
+Onde aparece:
+- modulo6_pipeline_final.py -> executar_pipeline_completo()
+
+Checkpoint:
+- Você consegue narrar, em voz alta, o que acontece do início ao fim do
+  pipeline, sem olhar o código?
+
+------------------------------------------------------------
+ETAPA 14 — INTERPRETANDO OS RESULTADOS NUMÉRICOS
+------------------------------------------------------------
+O que estudar:
+- Como ler a tabela final comparando baseline x modelo reduzido.
+- Como interpretar ganho/perda de F1-score, ROC-AUC, tempo de treino e
+  tempo de inferência.
+- Por que às vezes o tempo de treino do pipeline reduzido pode ser MAIOR
+  que o do baseline (custo de explicabilidade + otimização), mesmo com
+  menos atributos — isso é um ponto importante de discussão crítica.
+
+Por que importa:
+- É exatamente o material que vira a seção de "Resultados" e "Discussão"
+  do artigo.
+
+Onde aparece:
+- modulo6_pipeline_final.py -> gerar_dashboard_comparativo_final() e
+  teste_de_sanidade_final()
+- Imagem: assets/dashboard_final_comparativo.png
+
+Checkpoint:
+- Você consegue escrever, com suas palavras, 3 frases resumindo o que os
+  números do dashboard final mostram?
+
+------------------------------------------------------------
+ETAPA 15 — ESTRUTURA DE UM ARTIGO CIENTÍFICO/ACADÊMICO
+------------------------------------------------------------
+O que estudar:
+- Seções típicas de um artigo: Introdução, Problema de Pesquisa,
+  Objetivos, Hipóteses, Justificativa, Fundamentação Teórica,
+  Metodologia, Resultados, Discussão, Limitações, Conclusão.
+- Diferença entre "resultado" (o que os números mostram) e "discussão"
+  (o que esses números significam e por quê).
+- Como citar trabalhos relacionados (mesmo que de forma simples).
+
+Por que importa:
+- É o formato que vai organizar tudo que você aprendeu nas etapas
+  anteriores em um texto coerente.
+
+Onde aparece:
+- docs/artigo_xai_reduction.docx (modelo já estruturado nessas seções)
+- gerar_artigo_word.py (mostra a estrutura de seções em código)
+
+Checkpoint:
+- Você sabe, sem olhar, quais são as 14 seções do artigo e o que cada
+  uma deve conter?
+
+------------------------------------------------------------
+ETAPA 16 — ESCREVENDO O ARTIGO COM BASE NO PROJETO
+------------------------------------------------------------
+O que fazer:
+1. Reler docs/artigo_xai_reduction.docx como esqueleto.
+2. Para cada seção, reescrever com suas próprias palavras, usando o que
+   você aprendeu nas etapas 0 a 14.
+3. Trocar números "esperados" por números REAIS, rodando os módulos você
+   mesmo e copiando as saídas do terminal.
+4. Adicionar, na seção de limitações, os pontos que você mesmo observou
+   ao rodar o código (ex.: convergência do modelo Logit, tempo de
+   treino variável entre execuções).
+5. Revisar se as hipóteses (H1 e H2) foram de fato respondidas pelos
+   resultados observados.
+
+Checkpoint final:
+- Você consegue apresentar esse artigo para alguém e responder perguntas
+  básicas sobre SHAP, LIME, RFE, F1-score e ROC-AUC sem "decorar", só
+  explicando com suas palavras?
+
+------------------------------------------------------------
+RESUMO DA ORDEM (COLE ISSO NUM QUADRO BRANCO)
+------------------------------------------------------------
+0. Visão geral do projeto
+1. ML supervisionado (classificação, treino/teste, overfitting)
+2. Random Forest
+3. Métricas (matriz de confusão, F1, ROC-AUC)
+4. Problema da alta dimensionalidade
+5. O que é XAI (global x local)
+6. SHAP
+7. LIME
+8. RFE (seleção tradicional)
+9. Ablação progressiva
+10. Pré-filtro híbrido (variância e correlação)
+11. shap-select (regressão + p-valor)
+12. Optuna (otimização de hiperparâmetros)
+13. Leitura do pipeline completo (modulo6)
+14. Interpretação dos resultados numéricos
+15. Estrutura de artigo científico
+16. Escrita do artigo final
+
+FIM DO ROTEIRO.
