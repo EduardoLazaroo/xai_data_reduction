@@ -9,6 +9,7 @@ Explorar se técnicas como SHAP e LIME podem ser usadas para identificar atribut
 ## Estrutura do projeto
 
 - `pipeline_completo.py` — script único em Python consolidando todas as etapas do experimento (Baseline, SHAP, LIME, Ablação, Pré-filtro Híbrido, shap-select, Optuna e Dashboard Executivo)
+- `camadas_estudo/` — 17 apostilas aprofundadas em Markdown mapeando detalhadamente cada uma das etapas do `roteiro_de_estudo.txt` (de 00 a 16), com o "porquê", a "necessidade", exemplos conceituais, código e checkpoints
 - `aulas_colab/` — 6 apostilas/aulas em Markdown prontas para o Google Colab, com fundamentação teórica, analogias, dúvidas comuns e código 100% comentado linha a linha:
   - `Aula_01_Baseline_Dimensionalidade.md`
   - `Aula_02_SHAP_Teoria_dos_Jogos.md`
