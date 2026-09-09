@@ -11,6 +11,17 @@ Como usar este arquivo: siga as etapas NA ORDEM. Cada etapa tem:
   (4) um "checkpoint" (pergunta que você deve conseguir responder antes de
       avançar para a próxima etapa)
 
+NOTA DE ORGANIZAÇÃO DO PROJETO:
+- O código Python foi unificado em um único script executável fim-a-fim: `pipeline_completo.py`.
+- O material didático completo para o Google Colab está organizado aula por aula em `aulas_colab/`:
+  - Aula 01: Baseline e Alta Dimensionalidade
+  - Aula 02: SHAP e Teoria dos Jogos Cooperativos
+  - Aula 03: LIME e Auditoria no Limiar de Decisão
+  - Aula 04: Ablação Progressiva (SHAP vs. RFE)
+  - Aula 05: Pré-Filtro Híbrido e shap-select
+  - Aula 06: Pipeline Integrado, Optuna e Dashboard Executivo
+  (E o caderno unificado em `notebooks_colab/XAI_Data_Reduction_Masterclass_Colab.md`).
+
 ------------------------------------------------------------
 ETAPA 0 — ENTENDER O OBJETIVO GERAL DO PROJETO (visão de 30 mil pés)
 ------------------------------------------------------------
