@@ -1,381 +1,338 @@
-# Camada 01: Fundamentos de Aprendizado Supervisionado e a Dinâmica do Overfitting
+# Camada 01: Aprendizado Supervisionado e Overfitting
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 1  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`gerar_dataset_sintetico_saude` e `train_test_split`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes `gerar_dataset_sintetico_saude` e `train_test_split`
 
----
+> **Objetivo da aula:** entender como um modelo aprende com exemplos rotulados, por que separar treino e teste e indispensavel e como atributos demais, especialmente ruido, podem fazer o modelo decorar em vez de generalizar.
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender de forma definitiva e cristalina — como quem aprende com um bom professor — o que é o Aprendizado de Máquina Supervisionado, a diferença prática entre prever números contínuos e tomar decisões categóricas, o perigo invisível do Sobreajuste (*Overfitting*) e por que ter atributos demais em uma base de dados pode sabotar qualquer modelo de inteligência artificial.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 1.1: O Duelo de Paradigmas — Classificação vs. Regressão](#subcamada-11-o-duelo-de-paradigmas--classificação-vs-regressão)
-- [Subcamada 1.2: A Anatomia dos Dados — Features ($X$) e Target ($y$)](#subcamada-12-a-anatomia-dos-dados--features-x-e-target-y)
-- [Subcamada 1.3: A Separação Sagrada — Treino, Teste e o Fantasma do Data Leakage](#subcamada-13-a-separação-sagrada--treino-teste-e-o-fantasma-do-data-leakage)
-- [Subcamada 1.4: A Dinâmica do Overfitting & O Mal da Alta Dimensionalidade](#subcamada-14-a-dinâmica-do-overfitting--o-mal-da-alta-dimensionalidade)
-- [Subcamada 1.5: Laboratório Lúdico no Colab (Toy Example com Visualização Gráfica)](#subcamada-15-laboratório-lúdico-no-colab-toy-example-com-visualização-gráfica)
-- [Subcamada 1.6: O Momento Sério da Nossa Aplicação (Dataset Clínico Real & Análise de KPIs)](#subcamada-16-o-momento-sério-da-nossa-aplicação-dataset-clínico-real--análise-de-kpis)
-- [Subcamada 1.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-17-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 1.1: O conceito na vida real](#subcamada-11-o-conceito-na-vida-real)
+2. [Subcamada 1.2: Desenhando o conceito](#subcamada-12-desenhando-o-conceito)
+3. [Subcamada 1.3: Desmistificando a teoria](#subcamada-13-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 1.4: Laboratorio ludico no Colab](#subcamada-14-laboratorio-ludico-no-colab)
+5. [Subcamada 1.5: O momento serio da nossa aplicacao](#subcamada-15-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 1.6: Checkpoint de autonomia](#subcamada-16-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 1.1: O Duelo de Paradigmas — Classificação vs. Regressão
+## Subcamada 1.1: O Conceito na Vida Real
 
-Imagine que você está ensinando uma criança a entender o mundo. Se você mostrar a ela uma régua e perguntar: *"Qual é a altura exata desta planta?"*, a resposta será um número medido em centímetros: $18.4\text{ cm}$.  
-Agora, se você apontar para um cesto de frutas e perguntar: *"Esta fruta é uma Maçã ou uma Laranja?"*, a resposta não será um número contínuo, mas uma **escolha entre caixas pré-definidas**.
+### A historia do aluno que decorou o gabarito
 
-Em Machine Learning Supervisionado, todos os problemas do planeta se dividem fundamentalmente nessas duas grandes famílias.
+Imagine dois alunos se preparando para uma prova de fisica. O primeiro entende as leis por tras dos exercicios. O segundo decora que a questao 34 tem resposta `42` e que a questao 78 tem alternativa `C`.
 
-```
-                  ┌───────────────────────────────────────────────┐
-                  │       APRENDIZADO DE MÁQUINA SUPERVISIONADO    │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                  ┌───────────────────────┴───────────────────────┐
-                  ▼                                               ▼
-     ┌────────────────────────┐                      ┌────────────────────────┐
-     │       REGRESSÃO        │                      │     CLASSIFICAÇÃO      │
-     │      (Linha / Eixo)    │                      │   (Fronteira / Caixas) │
-     └────────────┬───────────┘                      └────────────┬───────────┘
-                  │                                               │
-        Pergunta: "QUANTO?"                             Pergunta: "QUAL CAIXA?"
-        Alvo: Número Contínuo                           Alvo: Categoria Discreta
-        Ex: Pressão Arterial (128.5 mmHg)               Ex: Doente (1) vs Saudável (0)
-```
+Se a prova repetir exatamente as mesmas questoes, os dois podem tirar nota alta. Mas, diante de uma questao nova, apenas o primeiro consegue raciocinar. O segundo aprendeu a lista, nao aprendeu a materia.
 
-### 1.1.1 Analogias do Cotidiano (Para Fixar de Primeira)
+O aprendizado supervisionado funciona como um professor que mostra exemplos completos:
 
-| Situação Real | Pergunta de Regressão ("Quanto?") | Pergunta de Classificação ("Qual Rótulo?") |
-| :--- | :--- | :--- |
-| **Clima e Tempo** | *"Qual será a temperatura exata amanhã ao meio-dia?"* (ex: $28.3^\circ\text{C}$) | *"Devo levar guarda-chuva ou não?"* (Sim / Não) |
-| **Mercado Imobiliário**| *"Por quanto este apartamento será vendido?"* (ex: $R\$\,435.000,00$) | *"Este imóvel é um Bom Negócio ou Mau Negócio?"* |
-| **Medicina Diagnóstica**| *"Quantos miligramas de glicose há por decilitro de sangue?"* (ex: $112\text{ mg/dL}$) | *"O paciente é Diabético ou Não-Diabético?"* (Classe 1 ou 0) |
-| **Transações Bancárias**| *"Qual é o valor financeiro da transferência?"* (ex: $R\$\,1.450,20$) | *"Esta transação é Fraude ou Legítima?"* |
+- **pistas:** exames, sensores e medidas;
+- **gabarito:** o diagnostico ja confirmado;
+- **tarefa:** descobrir uma regra que funcione tambem para um paciente novo.
 
-### 1.1.2 Onde Nosso Projeto se Encaixa?
-Nosso projeto lida estritamente com **Classificação Binária**.  
-Não estamos tentando prever a quantidade de dias que um paciente viverá (isso seria regressão de sobrevida). Nós queremos responder com precisão cirúrgica a uma pergunta de sim ou não:
+Neste projeto, o modelo recebe exames e aprende a responder: `0`, saudavel, ou `1`, patologia.
 
-$$\text{O paciente possui a patologia sob investigação? } \longrightarrow \begin{cases} y = 1 & (\text{SIM, Positivo}) \\ y = 0 & (\text{NÃO, Negativo / Saudável}) \end{cases}$$
+**A grande sacada:** acertar exemplos conhecidos nao e a meta final. A meta e acertar casos que ainda nao foram vistos.
+
+### Classificacao e regressao: duas perguntas diferentes
+
+| Tipo | Pergunta | Resposta | Exemplo medico |
+|---|---|---|---|
+| Regressao | Quanto? | numero continuo | glicose estimada: `112,4 mg/dL` |
+| Classificacao | Qual grupo? | categoria ou classe | saudavel `0` ou patologia `1` |
+
+O projeto usa **classificacao binaria**. Nao estamos prevendo uma quantidade; estamos escolhendo entre dois rotulos.
 
 ---
 
-## Subcamada 1.2: A Anatomia dos Dados — Features ($X$) e Target ($y$)
+## Subcamada 1.2: Desenhando o Conceito
 
-Pense em um modelo de Machine Learning como um **detetive novato** que precisa investigar um caso.
+### O modelo como detetive
 
+```text
+             PISTAS OBSERVADAS                         VEREDITO CONHECIDO
+        exames e biomarcadores X                         diagnostico y
+
+  Paciente A: [glicose, idade, IMC, ...]  ------------>  1 = patologia
+  Paciente B: [glicose, idade, IMC, ...]  ------------>  0 = saudavel
+  Paciente C: [glicose, idade, IMC, ...]  ------------>  1 = patologia
+
+                         durante o treinamento
+                                      |
+                                      v
+                         [ modelo aprende uma regra ]
+                                      |
+                                      v
+               novo paciente ---> [ regra ] ---> 0 ou 1
 ```
-       [ FICHA DE PISTAS DO DETETIVE ]                     [ O VEREDITO FINAL ]
-       Matriz de Atributos: X (Features)                    Vetor Alvo: y (Target)
-       
-       Paciente 1: [ Glicose: 140, Idade: 58, IMC: 31 ] ──► [ Patologia: 1 (Doente) ]
-       Paciente 2: [ Glicose:  85, Idade: 24, IMC: 21 ] ──► [ Patologia: 0 (Saudável) ]
-       Paciente 3: [ Glicose: 195, Idade: 67, IMC: 29 ] ──► [ Patologia: 1 (Doente) ]
+
+### A separacao sagrada
+
+```text
+                         2.000 pacientes
+                                |
+                +---------------+---------------+
+                |                               |
+                v                               v
+       TREINO: 80% ou 75%              TESTE: parte reservada
+       o modelo pode estudar           o modelo nunca estudou
+                |                               |
+                v                               v
+       ajusta arvores e regras         mede generalizacao
 ```
 
-1. **Features ($X$ — Letra Maiúscula):**  
-   São as pistas, evidências e medições. Chamamos de matriz porque possui **linhas** (cada paciente atendido) e **colunas** (cada exame clínico coletado).
-2. **Target ($y$ — Letra Minúscula):**  
-   É o veredito comprovado por um exame padrão-ouro (biópsia, laudo patológico). É um vetor unidimensional (uma única coluna) contendo a verdade dos fatos (*Ground Truth*).
+O teste e uma prova surpresa. Se o modelo consulta o teste enquanto aprende, a prova deixa de ser surpresa.
 
-O trabalho do modelo é encontrar uma regra matemática que ligue as pistas ($X$) ao veredito final ($y$).
+### O termometro do overfitting
+
+```text
+Desempenho
+100% | treino  _____________
+     |       /               \       modelo decorando
+     |      /                 \
+     |     / teste             \____ teste cai
+     +------------------------------------------------> complexidade
+                 suficiente              excessiva
+
+Treino alto + teste muito menor = sinal de sobreajuste
+```
+
+| Observacao | Interpretacao |
+|---|---|
+| treino baixo e teste baixo | modelo ainda nao aprendeu o padrao: subajuste |
+| treino alto e teste parecido | boa generalizacao |
+| treino quase perfeito e teste bem menor | overfitting |
+
+### Por que o ruido engana?
+
+```text
+10 sinais uteis + 20 colunas de ruido
+                  |
+                  v
+     algumas coincidencias aparecem no treino
+                  |
+                  v
+     a arvore confunde coincidencia com regra
+                  |
+                  v
+     no teste, a coincidencia desaparece
+```
+
+Quanto mais colunas sem relacao real, mais oportunidades existem para uma coincidencia parecer uma descoberta.
 
 ---
 
-## Subcamada 1.3: A Separação Sagrada — Treino, Teste e o Fantasma do Data Leakage
+## Subcamada 1.3: Desmistificando a Teoria e a Notacao Formal
 
-### 1.3.1 A Analogia do Aluno "Decorador de Gabarito"
+### Dados, modelo e previsao
 
-Imagine um professor de física que, antes do vestibular, entrega uma lista com **100 exercícios resolvidos** para seus alunos estudarem.
-- **Aluno A (Entendeu a Física):** Ele estuda os princípios fundamentais, a lei da gravidade e as fórmulas de movimento.
-- **Aluno B (Decorador):** Ele não entende nada de física, mas tem uma memória fotográfica invejável. Ele decora que *"no exercício 34, a resposta é 42 m/s"* e que *"no exercício 78, a resposta é a letra C"*.
+Depois de enxergar a historia, podemos nomear as pecas. Pense em uma planilha: cada linha e um paciente, cada coluna e uma pista.
 
-Se o professor aplicar uma prova contendo **exatamente as mesmas 100 questões da lista**:
-- O Aluno B tira nota 10 com louvor!
-- Mas o Aluno B aprendeu física? **Não.** No dia do vestibular, diante de uma questão inédita, ele tirará zero!
+- `X`: matriz de atributos, as pistas observadas;
+- `y`: vetor de alvos, o gabarito ou diagnostico;
+- `f`: regra aprendida pelo algoritmo;
+- `y_hat`: previsao produzida pela regra.
 
+A ideia pode ser escrita assim:
+
+$$
+\hat{y} = f(X)
+$$
+
+Traducao simbolo por simbolo:
+
+| Simbolo | Leitura simples |
+|---|---|
+| `X` | os exames entregues ao modelo |
+| `f` | a regra que o modelo aprendeu |
+| `y_hat` | a resposta que o modelo previu |
+
+No treinamento, o algoritmo procura uma regra que erre pouco nos exemplos conhecidos. O desafio e escolher uma regra que tambem funcione fora deles.
+
+### Acuracia e gap de generalizacao
+
+A acuracia responde: entre todas as previsoes, quantas estavam corretas?
+
+$$
+\operatorname{Acuracia} = \frac{\text{previsoes corretas}}{\text{total de casos}}
+$$
+
+O **gap de overfitting** compara o desempenho no treino com o desempenho no teste:
+
+$$
+\text{Gap} = \operatorname{Acuracia}_{treino} - \operatorname{Acuracia}_{teste}
+$$
+
+Gap grande nao e uma prova isolada de que o modelo e inutil, mas e um alerta para investigar complexidade, vazamento, tamanho da amostra e ruido.
+
+### A matriz de confusao
+
+Para diagnostico, nem todo erro tem o mesmo custo:
+
+| | Real saudavel (`0`) | Real patologia (`1`) |
+|---|---:|---:|
+| Previsto saudavel (`0`) | TN: acerto | FN: deixou passar uma patologia |
+| Previsto patologia (`1`) | FP: alarme falso | TP: acerto |
+
+O recall da classe patologica e:
+
+$$
+\operatorname{Recall} = \frac{TP}{TP + FN}
+$$
+
+Em um cenario clinico, acompanhar `FN` e recall e essencial, porque um caso doente classificado como saudavel pode atrasar o cuidado. Por isso, a acuracia nunca deve ser a unica regua.
+
+### Data leakage: quando a prova vaza
+
+O vazamento acontece quando uma informacao do teste influencia o aprendizado. Exemplos:
+
+- selecionar atributos usando todos os pacientes antes do split;
+- calcular media e desvio com treino e teste juntos;
+- ajustar limiares olhando a resposta dos pacientes reservados.
+
+A ordem correta e sempre:
+
+```text
+separar ---> aprender transformacoes no treino ---> aplicar no teste ---> avaliar
 ```
-                                  TODO O HOSPITAL (2.000 Pacientes)
-                                                  │
-                 ┌────────────────────────────────┴────────────────────────────────┐
-                 ▼ (75%)                                                           ▼ (25%)
-      DADOS DE TREINO (1.500 Casos)                                     DADOS DE TESTE (500 Casos)
-     (A "Lista de Exercícios")                                           (A "Prova Surpresa")
-                 │                                                                 │
-                 ▼                                                                 ▼
-      O algoritmo estuda aqui!                                          O algoritmo NUNCA viu!
-      Ajusta pesos, ramos e regras.                                     Mede a capacidade real de
-                                                                        salvar vidas no mundo real.
-```
-
-> [!CAUTION]
-> 🚨 **O Fantasma do Data Leakage (Vazamento de Dados):**  
-> Se você normalizar os dados, preencher valores nulos ou selecionar atributos olhando para o dataset inteiro antes de fazer a separação, os dados de teste "vazam" para dentro do treino. O modelo fingirá ter um desempenho espetacular, mas falhará catastroficamente assim que for instalado no computador do hospital!
 
 ---
 
-## Subcamada 1.4: A Dinâmica do Overfitting & O Mal da Alta Dimensionalidade
+## Subcamada 1.4: Laboratorio Ludico no Colab
 
-### 1.4.1 O que é Overfitting na Prática?
-O **Overfitting (Sobreajuste)** é a doença do Aluno Decorador no Machine Learning: o algoritmo decora até os menores ruídos e imperfeições da amostra de treino, perdendo completamente a capacidade de **generalizar**.
+### Toy example: uma fronteira simples contra uma fronteira decoradora
 
-```
-    PADRÃO REAL (GENERALIZÁVEL)                     OVERFITTING (MEMORIZAÇÃO DE RUÍDO)
-    
-       y │        *                                    y │        *
-         │      *   *  *                                 │      * / \ *
-         │    *       *                                  │    *--/   \--*   <- Fronteira "doida"
-         │  *                                            │  * /         \      tentando abraçar
-         └────────────── x                               └─/───────────── x    cada ponto isolado!
-       Curva suave e elegante.                         Curva cheia de dentes e recortes bizarros.
-       Acerta novos pacientes!                         Erra qualquer paciente inédito!
-```
-
----
-
-### 1.4.2 Por Que Datasets com Muitos Exames Aceleram o Overfitting?
-
-Esta é a pergunta de ouro do nosso projeto de pesquisa: **Por que ter 40 colunas em vez de 10 facilita tanto o sobreajuste?**
-
-#### Analogia 1: A Lei das Moedas e as Coincidências Espúrias
-Se você jogar uma moeda para o alto 10 vezes, a chance de caírem 10 "caras" seguidas é ínfima ($0.098\%$). Você diria que isso é quase impossível.  
-No entanto, imagine que você reúna **10.000 pessoas em um estádio de futebol** e mande todas jogarem moedas simultaneamente.  
-Por pura probabilidade estatística, **cerca de 10 pessoas vão tirar 10 "caras" seguidas!**
-
-Essas 10 pessoas têm poderes telecinéticos? Claro que não! Foi pura sorte estatística.  
-No nosso dataset médico:
-- Temos **20 colunas de ruído aleatório puro** (geradas como chiado estático de rádio).
-- O algoritmo de IA não sabe o que é medicina.
-- Se uma coluna de ruído qualquer tiver, por mero acaso, números ligeiramente maiores nos pacientes que estavam doentes no treino, a IA assumirá que aquele ruído é uma "descoberta científica revolucionária"!  
-- No teste cego, a coincidência não se repete, e o diagnóstico falha.
-
-#### Analogia 2: A Sala de Duas Paredes vs. O Labirinto de 40 Dimensões
-- Em **2 dimensões** (ex: Altura e Peso), 2.000 pacientes preenchem o plano de forma densa e agrupada. É fácil traçar uma linha divisória elegante.
-- Em **40 dimensões**, o espaço geométrico se expande de forma astronômica. 2.000 pacientes tornam-se grãos de poeira infinitesimais perdidos em um vazio colossal. O modelo cria "tendas" e "reentrâncias" em volta de cada paciente solitário, acreditando que descobriu uma regra universal.
-
----
-
-## Subcamada 1.5: Laboratório Lúdico no Colab (Toy Example com Visualização Gráfica)
-
-Antes de irmos para os dados sérios do hospital, vamos provar essa intuição com um experimento simples de apenas 120 pontos em 2D.  
-Você pode copiar e colar o bloco abaixo diretamente no [Google Colab](https://colab.research.google.com).
+O codigo usa 120 pontos em duas dimensoes. Uma arvore rasa aceita algum ruido para manter uma regra simples; uma arvore profunda cria regioes pequenas para memorizar a amostra.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: O MONSTRO DO OVERFITTING EM AÇÃO
-# Objetivo: Ver visualmente como um modelo sem freios cria uma fronteira "doida"
-# =============================================================================
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_moons
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 
-# 1. Criamos um dataset "brinquedo" 2D com formato de duas meias-luas e bastante ruído
-np.random.seed(42)
-X_toy, y_toy = make_moons(n_samples=120, noise=0.35, random_state=42)
-
-# 2. Treinamos dois modelos:
-#    Modelo A: Equilibrado (Profundidade controlada = 3 cortes simples)
-#    Modelo B: Com Overfitting Severo (Profundidade infinita = decora cada ponto)
-clf_suave = DecisionTreeClassifier(max_depth=3, random_state=42)
-clf_overfit = DecisionTreeClassifier(max_depth=15, min_samples_split=2, random_state=42)
-
-clf_suave.fit(X_toy, y_toy)
-clf_overfit.fit(X_toy, y_toy)
-
-# 3. Função para desenhar a fronteira de decisão de forma limpa
-def plotar_fronteira(clf, X, y, titulo, ax):
-    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
-    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 300), np.linspace(y_min, y_max, 300))
-    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-    
-    ax.contourf(xx, yy, Z, alpha=0.3, cmap="coolwarm")
-    ax.scatter(X[y == 0, 0], X[y == 0, 1], c="blue", edgecolors="k", label="Classe 0 (Saudável)")
-    ax.scatter(X[y == 1, 0], X[y == 1, 1], c="red", edgecolors="k", label="Classe 1 (Doente)")
-    ax.set_title(titulo, fontsize=12, fontweight="bold")
-    ax.legend(loc="upper right", framealpha=0.8)
-    ax.grid(True, linestyle="--", alpha=0.4)
-
-# 4. Exibição gráfica comparativa
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-plotar_fronteira(clf_suave, X_toy, y_toy, "Modelo Saudável (Generaliza Bem)\nFronteira Suave", axes[0])
-plotar_fronteira(clf_overfit, X_toy, y_toy, "Modelo com Overfitting (Decorou o Ruído)\nFronteira com 'Ilhas' Artificiais", axes[1])
-plt.tight_layout()
-plt.show()
-
-print(f"Acurácia Treino - Modelo Saudável : {clf_suave.score(X_toy, y_toy)*100:.1f}%")
-print(f"Acurácia Treino - Modelo Overfit  : {clf_overfit.score(X_toy, y_toy)*100:.1f}% (Falsamente perfeito!)")
+X, y = make_moons(n_samples=120, noise=0.30, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, stratify=y, random_state=42)
+modelos = {"Regra controlada": DecisionTreeClassifier(max_depth=3, random_state=42),
+           "Decorador": DecisionTreeClassifier(max_depth=None, random_state=42)}
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+for ax, (nome, modelo) in zip(axes, modelos.items()):
+    modelo.fit(X_train, y_train)
+    xx, yy = np.meshgrid(np.linspace(-1.5, 2.5, 250), np.linspace(-1, 1.5, 250))
+    z = modelo.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    ax.contourf(xx, yy, z, alpha=0.25, cmap="coolwarm")
+    ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap="coolwarm", edgecolor="k", label="treino")
+    ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap="coolwarm", marker="*", s=70, label="teste")
+    ax.set_title(f"{nome}\nTreino: {accuracy_score(y_train, modelo.predict(X_train)):.2f} | Teste: {accuracy_score(y_test, modelo.predict(X_test)):.2f}")
+    ax.legend()
+plt.tight_layout(); plt.show()
 ```
 
-### O Que Você Deve Observar no Gráfico Gerado:
-1. No gráfico da **esquerda**, o modelo aceita errar um ou outro ponto ruidoso isolado para manter uma fronteira lógica e contínua.
-2. No gráfico da **direita**, o modelo cria **"ilhas" e "tentáculos" azuis dentro do território vermelho** apenas para conseguir 100% de acerto na amostra de treino. Quando um paciente novo cair dentro desse tentáculo, o diagnóstico será um desastre!
+> **O que voce deve notar no grafico:** a arvore profunda tende a desenhar ilhas e recortes para capturar pontos individuais. Compare a acuracia de treino com a de teste: quando a primeira fica muito acima da segunda, a fronteira aprendeu detalhes da amostra em vez de uma regra geral.
+
+**Mini-experimento:** mude `max_depth=3` para `1`, `5` e `None`. Registre treino, teste e gap. Procure o ponto em que aumentar a complexidade deixa de melhorar o teste.
 
 ---
 
-## Subcamada 1.6: O Momento Sério da Nossa Aplicação (Dataset Clínico Real & Análise de KPIs)
+## Subcamada 1.5: O Momento Serio da Nossa Aplicacao
 
-Agora que você dominou o conceito na teoria, compreendeu a analogia das moedas e viu o gráfico do overfitting com seus próprios olhos, **acabou a brincadeira**.  
-Vamos para a trincheira real do nosso projeto de pesquisa: **o cenário clínico do hospital com 40 exames coletados por paciente**.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
 
-### 1.6.1 O Cenário Técnico da Aplicação Médica
-Nosso hospital atende 2.000 pacientes. Para cada um, o sistema colhe:
-- **10 Biomarcadores Vitais:** Indicadores biológicos reais que causam a doença (ex: Troponina, Glicemia, D-Dímero).
-- **10 Exames Redundantes:** Exames que repetem a mesma informação (ex: Hemoglobina Glicada medindo o mesmo fenômeno da Glicemia).
-- **20 Ruídos Metabólicos Puros:** Flutuações aleatórias sem nenhuma relação causal com o desfecho clínico.
-
-Vamos treinar o **Modelo Baseline (Random Forest)** e extrair a régua oficial de **KPIs do Projeto**.
+Usaremos a matriz oficial sintetica: 2.000 pacientes, 40 atributos, 10 informativos, 10 redundantes e 20 ruidos metabolicos. O Random Forest tera 100 arvores. O codigo separa treino e teste antes de medir os KPIs e deixa os valores serem calculados na sua propria maquina.
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Baseline Clínico com 40 Atributos & Extração dos KPIs Oficiais
-# =============================================================================
+import time
 import numpy as np
 import pandas as pd
-import time
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-    confusion_matrix,
-    roc_curve
-)
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import train_test_split
 
-print("=" * 70)
-print("INICIANDO PROTOCOLO EXPERIMENTAL: MODELO CLÍNICO BASELINE (40 ATRIBUTOS)")
-print("=" * 70)
-
-# 1. GERAÇÃO DO DATASET SINTÉTICO HOSPITALAR (Simulando 2.000 Pacientes)
-X_raw, y = make_classification(
-    n_samples=2000,
-    n_features=40,
-    n_informative=10,
-    n_redundant=10,
-    n_repeated=0,
-    n_classes=2,
-    weights=[0.6, 0.4],  # 60% Saudáveis (0) e 40% Doentes (1)
-    flip_y=0.03,          # 3% de ruído humano/laboratorial no diagnóstico
-    random_state=42
-)
-
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
-
-# 2. SEPARAÇÃO RIGOROSA: TREINO (75%) E TESTE (25%) COM ESTRATIFICAÇÃO
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
-    df_clinico, y, test_size=0.25, stratify=y, random_state=42
-)
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-# 3. TREINAMENTO DO BASELINE COM CRONOMETRIA DE ALTA PRECISÃO
-modelo_baseline = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=42)
-
-t0_treino = time.perf_counter()
-modelo_baseline.fit(X_train, y_train)
-tempo_treino_ms = (time.perf_counter() - t0_treino) * 1000
-
-# 4. INFERÊNCIA NO CONJUNTO DE TESTE COM MEDIÇÃO DE LATÊNCIA
-t0_inf = time.perf_counter()
-y_pred = modelo_baseline.predict(X_test)
-tempo_inf_ms = (time.perf_counter() - t0_inf) * 1000
-y_proba = modelo_baseline.predict_proba(X_test)[:, 1]
-
-# 5. CÁLCULO DOS KPIS DE DESEMPENHO E GENERALIZAÇÃO
-acc_treino = accuracy_score(y_train, modelo_baseline.predict(X_train))
-acc_teste = accuracy_score(y_test, y_pred)
-gap_overfitting = (acc_treino - acc_teste) * 100
-
-kpis = {
-    "Acurácia Treino": f"{acc_treino*100:.2f}%",
-    "Acurácia Teste": f"{acc_teste*100:.2f}%",
-    "Gap de Overfitting": f"{gap_overfitting:.2f}%",
-    "F1-Score": f"{f1_score(y_test, y_pred):.4f}",
-    "Precisão": f"{precision_score(y_test, y_pred):.4f}",
-    "Sensibilidade (Recall)": f"{recall_score(y_test, y_pred):.4f}",
-    "ROC-AUC": f"{roc_auc_score(y_test, y_proba):.4f}",
-    "Tempo de Treinamento": f"{tempo_treino_ms:.1f} ms",
-    "Latência de Inferência (500 pacientes)": f"{tempo_inf_ms:.1f} ms",
-    "Latência Média por Paciente": f"{(tempo_inf_ms / len(y_test))*1000:.1f} µs"
+modelo = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1)
+inicio = time.perf_counter(); modelo.fit(X_train, y_train)
+treino_ms = (time.perf_counter() - inicio) * 1000
+inicio = time.perf_counter(); pred = modelo.predict(X_test)
+proba = modelo.predict_proba(X_test)[:, 1]
+inferencia_ms = (time.perf_counter() - inicio) * 1000
+pred_treino = modelo.predict(X_train)
+acc_treino = accuracy_score(y_train, pred_treino)
+acc_teste = accuracy_score(y_test, pred)
+tn, fp, fn, tp = confusion_matrix(y_test, pred).ravel()
+resultado = {
+    "acuracia_treino": acc_treino, "acuracia_teste": acc_teste,
+    "gap_overfitting": acc_treino - acc_teste,
+    "f1": f1_score(y_test, pred), "precision": precision_score(y_test, pred),
+    "recall": recall_score(y_test, pred), "roc_auc": roc_auc_score(y_test, proba),
+    "tempo_treino_ms": treino_ms,
+    "latencia_us_paciente": inferencia_ms * 1000 / len(X_test),
+    "TN": tn, "FP": fp, "FN": fn, "TP": tp
 }
-
-print("\n📊 TABELA OFICIAL DE KPIS DO MODELO BASELINE:")
-print("-" * 60)
-for k, v in kpis.items():
-    print(f"  • {k.ljust(35)} : {v}")
-print("-" * 60)
-
-# 6. PLOTAGEM DOS GRÁFICOS CLÍNICOS: MATRIZ DE CONFUSÃO & CURVA ROC
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
-cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=axes[0], cbar=False,
-            xticklabels=["Saudável (0)", "Patologia (1)"],
-            yticklabels=["Saudável (0)", "Patologia (1)"])
-axes[0].set_title("Matriz de Confusão (Baseline - 40 Atributos)", fontsize=12, fontweight="bold")
-axes[0].set_xlabel("Diagnóstico Previsto pelo Modelo", fontweight="bold")
-axes[0].set_ylabel("Diagnóstico Real do Paciente", fontweight="bold")
-
-fpr, tpr, _ = roc_curve(y_test, y_proba)
-axes[1].plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC Curve (AUC = {roc_auc_score(y_test, y_proba):.3f})")
-axes[1].plot([0, 1], [0, 1], color="navy", lw=1.5, linestyle="--", label="Classificador Aleatório (Chute)")
-axes[1].set_title("Curva ROC Diagnóstica", fontsize=12, fontweight="bold")
-axes[1].set_xlabel("Taxa de Falsos Positivos (1 - Especificidade)", fontweight="bold")
-axes[1].set_ylabel("Taxa de Verdadeiros Positivos (Sensibilidade)", fontweight="bold")
-axes[1].legend(loc="lower right")
-axes[1].grid(True, linestyle="--", alpha=0.4)
-
-plt.tight_layout()
-plt.show()
+print(f"Dimensao: {X.shape[0]} pacientes x {X.shape[1]} atributos")
+for nome, valor in resultado.items():
+    print(f"KPI {nome}: {valor:.4f}" if isinstance(valor, float) else f"KPI {nome}: {valor}")
 ```
 
+### Tabela oficial de KPIs
+
+Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Interpretacao | O que investigar |
+|---|---|---|
+| Acuracia treino | desempenho nos casos estudados | o modelo conseguiu aprender? |
+| Acuracia teste | desempenho em casos reservados | ele generaliza? |
+| Gap de overfitting | treino menos teste | a diferenca e aceitavel? |
+| F1-score | equilibrio entre precision e recall | o desempenho da classe positiva e consistente? |
+| Precision | proporcao de alertas corretos | quantos alarmes sao falsos? |
+| Recall | proporcao de patologias encontradas | quantos casos foram perdidos? |
+| ROC-AUC | qualidade do ranking de risco | o modelo separa classes em varios limiares? |
+| Latencia por paciente | tempo medio de inferencia em us | cabe no fluxo operacional? |
+| Tempo de treino | duracao do ajuste em ms | o retreinamento e viavel? |
+| TN, FP, FN, TP | tipos de acerto e erro | qual erro tem maior custo clinico? |
+
+### Interpretacao clinica e de negocio
+
+- Treino muito alto e teste bem menor sugerem que as 20 colunas de ruido oferecem oportunidades de coincidencia para as arvores.
+- `FN` e o caso mais delicado desta aplicacao: o paciente tem patologia, mas recebe previsao `0`. A decisao de negocio deve considerar o custo desse erro, nao apenas a acuracia.
+- Reduzir exames pode economizar coleta, armazenamento e tempo de processamento, mas o valor financeiro precisa ser calculado com custos reais do servico de saude.
+- A Camada 01 estabelece o baseline. As proximas camadas devem provar, com a mesma separacao e as mesmas metricas, se SHAP, filtros e selecao conseguem reduzir atributos sem piorar a generalizacao.
+
 ---
 
-### 1.6.2 Interpretação Clínica e de Negócio dos Resultados do KPI
+## Subcamada 1.6: Checkpoint de Autonomia e Fixacao Ativa
 
-Vamos dissecar o que esses números significam na prática hospitalar:
+Explique sem consultar o texto e depois confira sua resposta:
 
-| Indicador (KPI) | Valor Obtido no Baseline | Significado no Mundo Real | Consequência no Hospital |
-| :--- | :--- | :--- | :--- |
-| **Acurácia no Treino** | **100.00%** | O modelo memorizou perfeitamente todos os 1.500 casos de treino. | Alerta vermelho! Ele se comportou exatamente como o "aluno decorador". |
-| **Acurácia no Teste** | **87.80%** | Em pacientes novos e inéditos, a acurácia cai para $87.8\%$. | Queda expressiva de desempenho. |
-| **Gap de Overfitting** | **12.20%** | A diferença entre treino e teste é de mais de 12 pontos percentuais! | **Comprova o sobreajuste.** As 20 colunas de ruído iludiram as árvores de decisão. |
-| **F1-Score** | **0.8373** | Média harmônica entre a precisão e o recall da classe doente. | Nossa régua mínima de qualidade. Não aceitaremos nenhum modelo futuro abaixo de $0.83$. |
-| **Erros na Matriz (FN)**| **44 Falsos Negativos** | 44 pacientes doentes receberam laudo de "saudável" e foram para casa sem tratamento! | O custo mais alto em medicina: risco de vida para o paciente. |
-| **Tempo de Treinamento**| **~600 ms** | Tempo necessário para construir 100 árvores dividindo 40 colunas. | Alto consumo de processamento; inviável para retreinamentos contínuos em grande escala. |
-| **Número de Exames** | **40 colunas** | O hospital precisa coletar 40 exames por paciente. | Custo financeiro absurdo para o SUS/plano de saúde e dias de espera para o paciente. |
+1. Por que uma acuracia de treino muito alta pode ser um alerta em vez de uma vitoria?
+2. Explique para uma pessoa leiga a diferenca entre regressao e classificacao.
+3. Como uma coluna de ruido pode parecer util no treino por pura coincidencia?
+4. O que e data leakage e por que o teste precisa permanecer escondido?
+5. Por que `FN` pode ser mais importante que acuracia em uma triagem de saude?
+6. Qual e a diferenca entre aprender um padrao e memorizar exemplos?
 
-> [!IMPORTANT]
-> 💡 **A Missão do Restante do Nosso Projeto:**  
-> O Baseline provou duas coisas:
-> 1. Ele consegue diagnosticar razoavelmente bem ($F_1 \approx 0.84$), mas está sofrendo de **12.2% de overfitting** devido às 20 colunas inúteis de ruído.
-> 2. O custo para manter 40 exames é desnecessário.
-> 
-> Nas próximas camadas, usaremos **XAI (SHAP e LIME)** para interrogar o modelo, descobrir os 10 biomarcadores vitais, jogar fora os 20 ruídos e provar que um modelo com apenas 8 a 10 atributos atinge o **mesmo F1-Score com zero ruído, menor latência e custo infinitamente menor**!
+### Mini-desafio pratico
 
----
+Altere o experimento serio para comparar tres cenarios, mantendo a mesma semente e o mesmo split:
 
-## Subcamada 1.7: Checkpoint de Autonomia & Fixação Ativa
+```text
+cenario              atributos       acuracia_treino  acuracia_teste  gap  F1  recall  FN
+40 atributos         40              ...               ...             ...  ... ...     ...
+10 informativos      10              ...               ...             ...  ... ...     ...
+40 sem ruido puro    20              ...               ...             ...  ... ...     ...
+```
 
-Não avance para a Camada 02 sem responder com total clareza mental às perguntas abaixo (use o método de Feynman: imagine que você está explicando para um amigo que nunca viu programação na vida):
-
-1. **Por que um modelo com 100% de acurácia no treinamento deve acender um sinal de perigo imediato em vez de ser motivo de comemoração?**
-2. **Qual é a diferença fundamental entre prever a pressão arterial de alguém (ex: 135 mmHg) e prever se a pessoa está hipertensa? Qual é regressão e qual é classificação?**
-3. **Explique a analogia das moedas no estádio de futebol: como ela prova matematicamente que colocar 20 colunas de ruído aleatório em um dataset cria 'falsas descobertas' no aprendizado de máquina?**
-4. **Desafio no Colab:** No código da Subcamada 1.6, mude o parâmetro `n_features=40` para `n_features=10` e remova os ruídos (deixe apenas os 10 biomarcadores úteis). O que aconteceu com o **Gap de Overfitting** entre Treino e Teste? Ele diminuiu?
+Para o cenario de 10 atributos, gere a base com `n_features=10`, `n_informative=10` e `n_redundant=0`. Para o cenario sem ruido puro, mantenha os 10 informativos e 10 redundantes. Depois escreva uma explicacao Feynman: **qual mudanca reduziu o gap sem aumentar o numero de falsos negativos?**
