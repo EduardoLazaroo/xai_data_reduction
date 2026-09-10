@@ -1,239 +1,300 @@
-# Camada 10: Filtros Estatísticos Pré-XAI — O Pré-Filtro Híbrido (BOLIMES)
+# Camada 10: Pre-filtro Hibrido Estatistico (BOLIMES)
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 10  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`pré_filtro_hibrido`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `pre_filtro_hibrido`
 
----
+> **Objetivo da aula:** aprender a retirar, antes da XAI, duas formas de desperdicio que a estatistica detecta rapidamente: colunas quase paradas e colunas que repetem a mesma informacao. A ideia nao e substituir SHAP ou LIME. E preparar um palco menor para que essas ferramentas trabalhem com mais foco.
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender por que a inteligência artificial avançada **não descarta a estatística clássica, mas se apoia nela com pragmatismo**. Dominar a mecânica do **Pré-Filtro Híbrido** (Limiar de Variância Quase-Zero e Eliminação de Multicolinearidade por Triângulo Superior de Pearson), a filosofia biobjetivo **BOLIMES**, e entender o ganho financeiro e computacional de fazer uma faxina preliminar rápida antes de executar a XAI pesada.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 10.1: A Analogia da Faxina da Casa Antes do Arquiteto](#subcamada-101-a-analogia-da-faxina-da-casa-antes-do-arquiteto)
-- [Subcamada 10.2: Estágio 1 — O Filtro de Variância Quase-Zero (A Coluna Estátua)](#subcamada-102-estágio-1--o-filtro-de-variância-quase-zero-a-coluna-estátua)
-- [Subcamada 10.3: Estágio 2 — A Poda de Redundância por Pearson e o Triângulo Superior](#subcamada-103-estágio-2--a-poda-de-redundância-por-pearson-e-o-triângulo-superior)
-- [Subcamada 10.4: A Filosofia BOLIMES (O Casamento Perfeito entre Estatística e XAI)](#subcamada-104-a-filosofia-bolimes-o-casamento-perfeito-entre-estatística-e-xai)
-- [Subcamada 10.5: Laboratório Lúdico no Colab (Toy Example: A Faxina em 5 Milissegundos)](#subcamada-105-laboratório-lúdico-no-colab-toy-example-a-faxina-em-5-milissegundos)
-- [Subcamada 10.6: O Momento Sério da Nossa Aplicação (Pré-Filtro no Dataset Clínico & KPIs)](#subcamada-106-o-momento-sério-da-nossa-aplicação-pré-filtro-no-dataset-clínico--kpis)
-- [Subcamada 10.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-107-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 10.1: O conceito na vida real](#subcamada-101-o-conceito-na-vida-real)
+2. [Subcamada 10.2: Desenhando o conceito](#subcamada-102-desenhando-o-conceito)
+3. [Subcamada 10.3: Desmistificando a teoria](#subcamada-103-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 10.4: Laboratorio ludico no Colab](#subcamada-104-laboratorio-ludico-no-colab)
+5. [Subcamada 10.5: O momento serio da nossa aplicacao](#subcamada-105-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 10.6: Checkpoint de autonomia](#subcamada-106-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 10.1: A Analogia da Faxina da Casa Antes do Arquiteto
+## Subcamada 10.1: O Conceito na Vida Real
 
-Imagine que você vai reformar seu apartamento e contratou um dos arquitetos mais famosos e caros do país. Ele cobra **R$ 1.000,00 por hora de consultoria**.  
-No dia da visita dele, sua sala está cheia de caixas de papelão vazias, sacos de lixo rasgados e garrafas plásticas acumuladas no chão.
+### A analogia: preparar a sala antes do especialista
 
-Você deixaria o arquiteto passar as duas primeiras horas recolhendo o lixo com uma vassoura?  
-**Claro que não!** Isso seria jogar dinheiro no lixo. Você mesmo passa uma vassoura rápida antes dele chegar, deixando a sala limpa para que o arquiteto use o tempo dele criando o design sofisticado.
+Imagine uma consulta com um especialista muito caro. Antes da consulta, voce recebe uma ficha com 40 exames. Um exame imprime `42.000` para todas as pessoas; dois exames sao, na pratica, o mesmo exame em unidades diferentes. O especialista poderia descobrir isso, mas estaria pagando por um raciocinio sofisticado para fazer uma triagem simples.
 
-```
-       [ 40 ATRIBUTOS BRUTOS COLETADOS ]
-                      │
-                      ▼
-     🧹 ETAPA 1: FAXINA RÁPIDA (Pré-Filtro Estatístico)
-     • Remove colunas que são puro lixo óbvio (variância nula)
-     • Remove exames que são clones idênticos (correlação > 0.90)
-     • Tempo: MENOS DE 10 MILISSEGUNDOS! (Custo computacional quase zero)
-                      │
-                      ▼
-     💎 SUBCONJUNTO PRÉ-LIMPO (~28 a 30 Atributos)
-                      │
-                      ▼
-     🧠 ETAPA 2: CONSULTORIA CARA E PRECISA (XAI com SHAP e LIME)
-     • Auditoria causal não-linear profunda
-     • Medição de interações complexas entre biomarcadores
-```
+O pre-filtro e a triagem da recepcao: remove o que esta parado e sinaliza o que esta duplicado. Depois, SHAP continua necessario para investigar relacoes nao lineares e interacoes que a triagem nao enxerga.
 
-O Pré-Filtro Híbrido é a vassoura rápida que limpa o lixo óbvio para não desperdiçar o tempo caro do SHAP!
+**A grande sacada:** uma coluna pode ser numericamente elegante e ainda assim nao acrescentar informacao. Reduzir dimensao nao significa apagar dados importantes; significa retirar repeticao e ausencia de variacao antes de pedir uma explicacao profunda.
+
+| Movimento | Pergunta simples | Acao | O que nao prova |
+|---|---|---|---|
+| Variancia | Esta coluna muda entre pacientes? | Remove colunas quase constantes | Que uma coluna variavel seja util para prever `y` |
+| Pearson | Duas colunas contam a mesma historia? | Mantem uma e remove a redundante | Que duas colunas pouco correlacionadas sejam independentes |
+
+Neste projeto, **BOLIMES** nomeia a filosofia biobjetivo: primeiro reduzir complexidade com filtros estatisticos baratos; depois selecionar e explicar atributos com metodos XAI mais expressivos.
 
 ---
 
-## Subcamada 10.2: Estágio 1 — O Filtro de Variância Quase-Zero (A Coluna Estátua)
+## Subcamada 10.2: Desenhando o Conceito
 
-A variância mede quanto os números de uma coluna oscilam ao redor da média:
-
-$$\sigma^2 = \frac{1}{N} \sum_{i=1}^N (x_i - \mu)^2$$
-
-Pense em um exame médico hipotético:
-- Se todos os 2.000 pacientes do hospital têm exatamente o valor **$1.000$** naquele exame (ou se varia apenas na 6ª casa decimal, $\sigma^2 \le 0.01$), esse exame é como uma **estátua imóvel**.
-- Ele dá o mesmo número para quem está saudável e para quem está à beira da morte!
-- Uma coluna que não varia **tem zero poder de separar pacientes**. O `VarianceThreshold` a elimina sumariamente sem que ela precise passar por nenhuma árvore de decisão.
-
----
-
-## Subcamada 10.3: Estágio 2 — A Poda de Redundância por Pearson e o Triângulo Superior
-
-Se você tem duas colunas na sua tabela:
-1. `peso_do_paciente_em_kg` (ex: 80.0 kg)
-2. `peso_do_paciente_em_gramas` (ex: 80.000 g)
-
-A correlação de Pearson entre elas é **$r = 1.00$** (perfeita!).  
-Manter as duas colunas obriga o modelo a gastar memória e tempo dividindo árvores entre duas variáveis que dizem exatamente a mesma coisa.
-
-### O Algoritmo do Triângulo Superior:
-Como o computador evita comparar uma coluna com ela mesma ou avaliar o mesmo par duas vezes?
-
-```
-                    Matriz de Correlação (4 x 4)
-                       Col A    Col B    Col C    Col D
-              Col A [   1.0  |   0.94  |  0.12  |  0.03  ]  <- A e B são clones (r = 0.94)!
-              Col B [  0.94  |   1.0   |  0.15  |  0.02  ]
-              Col C [  0.12  |  0.15   |  1.0   |  0.88  ]
-              Col D [  0.03  |  0.02   |  0.88  |  1.0   ]
+```text
+                 DADOS DE TREINO
+        2.000 pacientes x 40 atributos
+                          |
+                          v
+       +----------------------------------+
+       | 1. Variancia quase-zero          |
+       | "A coluna praticamente se mexe?" |
+       +----------------------------------+
+                 | remove estatuas
+                 v
+       +----------------------------------+
+       | 2. Pearson                       |
+       | "Ha um clone com |r| > 0,90?"    |
+       +----------------------------------+
+                 | remove repeticoes
+                 v
+       ATRIBUTOS PRE-LIMPOS
+                 |
+                 v
+       SHAP / shap-select / Optuna
 ```
 
-No código, usamos a máscara matemática `np.triu(matriz_corr, k=1)`:
-- A diagonal principal ($1.0$) é ignorada ($k=1$).
-- A metade inferior espelhada é ignorada.
-- Olhamos apenas para o **triângulo superior**: se encontramos um par com $|r| > 0.90$, descartamos a segunda coluna do par e mantemos a primeira!
+### O triangulo superior
+
+Uma matriz de correlacao repete cada par duas vezes: `corr(A, B)` e `corr(B, A)` sao o mesmo numero. A diagonal tambem nao ajuda: toda coluna tem correlacao `1` consigo mesma.
+
+```text
+                 A       B       C       D
+             +-------+-------+-------+-------+
+         A   |  1.00 |  0.94 |  0.12 |  0.03 |  <-- comparar A-B
+         B   |  0.94 |  1.00 |  0.15 |  0.02 |
+         C   |  0.12 |  0.15 |  1.00 |  0.88 |  <-- comparar C-D
+         D   |  0.03 |  0.02 |  0.88 |  1.00 |
+             +-------+-------+-------+-------+
+              diagonal ignorada; metade inferior e espelho
+```
+
+`np.triu(..., k=1)` deixa visivel apenas a regiao acima da diagonal. Quando `|r| > 0,90`, a coluna mais a direita daquele par entra em `to_drop`. A primeira coluna funciona como representante daquele grupo semelhante.
+
+| Situacao | Detectada? | Motivo |
+|---|---:|---|
+| Coluna constante | Sim | variancia igual a zero |
+| Clones lineares | Sim | correlacao de Pearson alta |
+| Relacao em forma de U | Nao necessariamente | Pearson mede associacao linear |
+| Interacao entre exames | Nao | exige modelo e analise de interacao |
+| Coluna variavel, mas inutil | Nao sozinho | variacao nao e relevancia preditiva |
 
 ---
 
-## Subcamada 10.4: A Filosofia BOLIMES (O Casamento Perfeito entre Estatística e XAI)
+## Subcamada 10.3: Desmistificando a Teoria e a Notacao Formal
 
-Na literatura científica recente (Al-Malaise Al-Ghamdi et al., 2022), essa integração é chamada de abordagem **BOLIMES (Bi-Objective Optimization)**:
-- **Objetivo 1 (Estatístico / Filtro):** Redução dimensional preliminar ultrarrápida de complexidade linear $\mathcal{O}(N \cdot M)$.
-- **Objetivo 2 (Explicabilidade / Causal):** Refinamento do subconjunto sobrevivente através de métodos não-lineares de Teoria dos Jogos (SHAP).
+### Variancia: quanto uma coluna se espalha
 
-Isso prova maturidade de engenharia: você não é um pesquisador ingênuo que tenta usar uma bazuca pesada de inteligência artificial para matar uma formiga que uma simples fórmula de correlação já resolvia!
+Imagine duas salas de termometros. Em uma, todos marcam `36.5`; na outra, marcam `35.8`, `36.5` e `39.1`. A segunda tem mais espalhamento. A variancia transforma essa intuicao em um numero:
+
+$$
+\sigma^2 = \frac{1}{N}\sum_{i=1}^{N}(x_i - \mu)^2
+$$
+
+| Simbolo | Em linguagem comum |
+|---|---|
+| `x_i` | valor do exame para o paciente `i` |
+| `mu` | media dos valores da coluna |
+| `x_i - mu` | distancia do valor ate a media |
+| quadrado | evita cancelamento entre distancias positivas e negativas |
+| `N` | quantidade de pacientes |
+| `sigma^2` | espalhamento medio |
+
+O `VarianceThreshold(threshold=0.01)` pergunta se a variancia da coluna e menor que `0.01`. Esse limiar e decisao de engenharia e depende da escala dos atributos.
+
+### Pearson: os movimentos combinam?
+
+Se, quando uma pessoa acelera, outra quase sempre acelera proporcionalmente, os movimentos sao parecidos. Pearson mede esse alinhamento linear:
+
+$$
+r_{XY} = \frac{\operatorname{cov}(X,Y)}{\sigma_X\sigma_Y}
+$$
+
+- `X` e `Y`: duas colunas;
+- `cov(X,Y)`: se elas tendem a subir e descer juntas;
+- `sigma_X` e `sigma_Y`: espalhamento de cada coluna;
+- `r`: varia de `-1` a `+1`;
+- `|r|` perto de `1`: forte repeticao linear;
+- `|r|` perto de `0`: pouca associacao linear.
+
+O limiar `|r| > 0.90` nao diz que dois exames sao clinicamente identicos; diz que, neste conjunto de dados, um carrega informacao linear muito parecida com a do outro.
+
+### A ordem correta evita vazamento
+
+O filtro deve aprender em `X_train` e somente depois ser aplicado a `X_test`. Se todos os pacientes participam da correlacao antes da separacao, o teste influencia a selecao e a avaliacao fica otimista.
+
+```text
+X_train  ---> aprende variancia e correlacoes ---> colunas escolhidas
+X_train  ---> fica com as colunas escolhidas
+X_test   ---> apenas recebe as mesmas colunas
+```
 
 ---
 
-## Subcamada 10.5: Laboratório Lúdico no Colab (Toy Example: A Faxina em 5 Milissegundos)
+## Subcamada 10.4: Laboratorio Ludico no Colab
 
-Copie e rode no [Google Colab](https://colab.research.google.com):
+### Toy example: uma estatua, um clone e uma coluna nova
+
+A coluna `temperatura_clone` acompanha `temperatura`; `exame_estatua` nunca muda.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: O PRÉ-FILTRO HÍBRIDO EM AÇÃO
-# Objetivo: Ver a eliminação instantânea de uma coluna estátua e de um clone
-# =============================================================================
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.feature_selection import VarianceThreshold
 
-# 1. Criamos um dataset com 500 pacientes e 4 variáveis didáticas
-np.random.seed(42)
-N = 500
-glicemia = np.random.normal(100, 15, N)
-glicemia_clone = glicemia * 1.002 + np.random.normal(0, 0.05, N)  # r > 0.99!
-exame_estatua = np.ones(N) * 5.0                                  # Variância = 0!
-ruido_livre = np.random.normal(0, 1, N)
-
-df_faxina = pd.DataFrame({
-    "Glicemia_Real": glicemia,
-    "Glicemia_Clone": glicemia_clone,
-    "Exame_Constante": exame_estatua,
-    "Ruido": ruido_livre
-})
-
-print("📋 Colunas Iniciais:", list(df_faxina.columns))
-
-# 2. Passo 1: Filtro de Variância Quase-Zero
-seletor_var = VarianceThreshold(threshold=0.01)
-seletor_var.fit(df_faxina)
-colunas_sobreviventes_var = df_faxina.columns[seletor_var.get_support()]
-df_pos_var = df_faxina[colunas_sobreviventes_var]
-print(f"🧹 Pós-Variância ({len(colunas_sobreviventes_var)} cols): Eliminou '{set(df_faxina.columns) - set(colunas_sobreviventes_var)}'")
-
-# 3. Passo 2: Filtro de Multicolinearidade de Pearson (r > 0.90)
-matriz_corr = df_pos_var.corr().abs()
-mascara_triu = np.triu(np.ones(matriz_corr.shape), k=1).astype(bool)
-colunas_para_excluir = [col for col in df_pos_var.columns if any(matriz_corr.where(mascara_triu)[col] > 0.90)]
-df_limpo = df_pos_var.drop(columns=colunas_para_excluir)
-
-print(f"🧹 Pós-Pearson ({df_limpo.shape[1]} cols): Eliminou o clone '{colunas_para_excluir}'")
-print("\n✨ DATASET FINAL HIGIENIZADO:")
-print(list(df_limpo.columns))
+rng = np.random.default_rng(42)
+n = 100
+temperatura = rng.normal(36.5, 0.4, n)
+temperatura_clone = temperatura * 1.01 + rng.normal(0, 0.01, n)
+exame_estatua = np.full(n, 42.0)
+pressao = rng.normal(120, 12, n)
+df = pd.DataFrame({"temperatura": temperatura, "temperatura_clone": temperatura_clone,
+                   "exame_estatua": exame_estatua, "pressao": pressao})
+seletor = VarianceThreshold(0.01).fit(df)
+df_var = df.loc[:, seletor.get_support()]
+corr = df_var.corr().abs()
+upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+remover = [c for c in upper.columns if (upper[c] > 0.90).any()]
+df_limpo = df_var.drop(columns=remover)
+print("Antes:", list(df.columns))
+print("Depois:", list(df_limpo.columns))
+plt.scatter(df["temperatura"], df["temperatura_clone"], alpha=0.7)
+plt.xlabel("Temperatura"); plt.ylabel("Clone da temperatura")
+plt.title("Duas colunas contando quase a mesma historia")
+plt.show()
 ```
+
+> **O que voce deve notar no grafico gerado:** os pontos formam uma faixa quase reta. No texto impresso, `exame_estatua` some por baixa variancia e `temperatura_clone` some por redundancia. `pressao` permanece.
+
+**Mini-investigacao:** troque `0.90` por `0.75` e depois por `0.99`. Um limiar menor poda mais agressivamente; um maior exige clones ainda mais perfeitos.
 
 ---
 
-## Subcamada 10.6: O Momento Sério da Nossa Aplicação (Pré-Filtro no Dataset Clínico & KPIs)
+## Subcamada 10.5: O Momento Serio da Nossa Aplicacao
 
-Agora executamos o algoritmo oficial `pré_filtro_hibrido()` no dataset hospitalar de **40 atributos** do [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) e medimos o ganho de tempo para o restante do pipeline.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+O experimento oficial usa `make_classification` com 2.000 pacientes, 40 atributos, 10 informativos, 10 redundantes, 20 ruidos, proporcao `0.6/0.4` e `flip_y=0.03`. O codigo mede o pre-filtro no treino e compara Random Forests de 100 arvores antes e depois.
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Pré-Filtro Híbrido nos 40 Atributos Hospitalares
-# =============================================================================
-import numpy as np
-import pandas as pd
 import time
+import numpy as np
+import pandas as pd
 from sklearn.datasets import make_classification
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import train_test_split
 
-print("=" * 70)
-print("INICIANDO PROTOCOLO EXPERIMENTAL: PRÉ-FILTRO HÍBRIDO ESTATÍSTICO")
-print("=" * 70)
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, n_classes=2, weights=[0.6, 0.4], flip_y=0.03,
+    random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, stratify=y, random_state=SEED)
 
-# 1. Dataset Clínico Hospitalar (2.000 Pacientes, 40 Atributos)
-X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
-)
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
+def pre_filtro(X_treino, limiar_var=0.01, limiar_corr=0.90):
+    t0 = time.perf_counter()
+    var = VarianceThreshold(limiar_var).fit(X_treino)
+    colunas_var = X_treino.columns[var.get_support()].tolist()
+    X_var = X_treino[colunas_var]
+    corr = X_var.corr().abs()
+    upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+    remover = [c for c in upper.columns if (upper[c] > limiar_corr).any()]
+    colunas = [c for c in colunas_var if c not in remover]
+    return colunas, remover, time.perf_counter() - t0
 
-# Injetamos intencionalmente uma coluna quase-constante para teste rigoroso do filtro
-df_clinico["exame_inutil_estatua"] = 42.0 + np.random.normal(0, 0.001, size=len(df_clinico))
+def medir(modelo, X_treino, X_teste, y_treino, y_teste):
+    inicio = time.perf_counter()
+    modelo.fit(X_treino, y_treino)
+    treino_s = time.perf_counter() - inicio
+    inicio = time.perf_counter()
+    pred = modelo.predict(X_teste)
+    proba = modelo.predict_proba(X_teste)[:, 1]
+    inferencia_s = time.perf_counter() - inicio
+    acc_treino = accuracy_score(y_treino, modelo.predict(X_treino))
+    acc_teste = accuracy_score(y_teste, pred)
+    tn, fp, fn, tp = confusion_matrix(y_teste, pred).ravel()
+    return {"atributos": X_treino.shape[1], "acuracia_treino": acc_treino,
+        "acuracia_teste": acc_teste, "gap_overfitting": acc_treino - acc_teste,
+        "f1": f1_score(y_teste, pred), "precision": precision_score(y_teste, pred),
+        "recall": recall_score(y_teste, pred), "roc_auc": roc_auc_score(y_teste, proba),
+        "latencia_us_paciente": inferencia_s * 1_000_000 / len(X_teste),
+        "tempo_treino_ms": treino_s * 1000, "tn": tn, "fp": fp, "fn": fn, "tp": tp}
 
-t0_faxina = time.perf_counter()
-
-# 2. ETAPA A: FILTRO DE VARIÂNCIA MÍNIMA (tau = 0.01)
-seletor_var = VarianceThreshold(threshold=0.01)
-seletor_var.fit(df_clinico)
-colunas_pos_var = df_clinico.columns[seletor_var.get_support()]
-removidas_var = list(set(df_clinico.columns) - set(colunas_pos_var))
-
-# 3. ETAPA B: FILTRO DE MULTICOLINEARIDADE (Pearson |r| > 0.90)
-df_pos_var = df_clinico[colunas_pos_var]
-matriz_corr = df_pos_var.corr().abs()
-mascara_triu = np.triu(np.ones(matriz_corr.shape), k=1).astype(bool)
-triangulo_superior = matriz_corr.where(mascara_triu)
-removidas_corr = [col for col in triangulo_superior.columns if any(triangulo_superior[col] > 0.90)]
-
-df_final_higienizado = df_pos_var.drop(columns=removidas_corr)
-tempo_faxina_ms = (time.perf_counter() - t0_faxina) * 1000
-
-print(f"⏱️ Tempo Total da Faxina Estatística: {tempo_faxina_ms:.2f} ms!")
-print(f"📊 Dimensão Inicial: {df_clinico.shape[1]} atributos")
-print(f"📊 Dimensão Final  : {df_final_higienizado.shape[1]} atributos")
-print(f"✂️ Total de Atributos Eliminados na Largada: {df_clinico.shape[1] - df_final_higienizado.shape[1]}\n")
-
-print("📋 DETALHAMENTO DA HIGIENIZAÇÃO:")
-print(f"  • Eliminadas por Variância Nula : {removidas_var}")
-print(f"  • Eliminadas por Multicolinearidade (> 0.90): {removidas_corr}")
+colunas, removidas, tempo_filtro_s = pre_filtro(X_train)
+baseline = medir(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1),
+                 X_train, X_test, y_train, y_test)
+enxuto = medir(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1),
+               X_train[colunas], X_test[colunas], y_train, y_test)
+print(f"Dimensao: {X.shape[1]} -> {len(colunas)} atributos")
+print("Removidas por Pearson:", removidas)
+print(f"Tempo do pre-filtro: {tempo_filtro_s * 1000:.3f} ms")
+print(pd.DataFrame([baseline, enxuto], index=["Baseline 40", "Pos-filtro"]).round(4))
+for nome, resultado in [("Baseline 40", baseline), ("Pos-filtro", enxuto)]:
+    print(f"KPI {nome}: acuracia_treino={resultado['acuracia_treino']:.4f}; "
+          f"acuracia_teste={resultado['acuracia_teste']:.4f}; "
+          f"gap_overfitting={resultado['gap_overfitting']:.4f}; "
+          f"f1={resultado['f1']:.4f}; recall={resultado['recall']:.4f}; "
+          f"latencia_us_paciente={resultado['latencia_us_paciente']:.2f}; "
+          f"tempo_treino_ms={resultado['tempo_treino_ms']:.2f}; "
+          f"TN={resultado['tn']}; FP={resultado['fp']}; "
+          f"FN={resultado['fn']}; TP={resultado['tp']}")
 ```
 
+### Tabela oficial de KPIs
+
+Os valores de desempenho sao calculados na execucao. Tempo, latencia e quantidade de colunas removidas variam com CPU, versoes e ambiente; nao trate uma medicao local como constante cientifica.
+
+| KPI | Como e calculado | Pergunta operacional |
+|---|---|---|
+| Acuracia treino | acertos no `X_train` | O modelo aprendeu os exemplos vistos? |
+| Acuracia teste | acertos no `X_test` | Ele generaliza para pacientes novos? |
+| Gap de overfitting | `acuracia_treino - acuracia_teste` | Ha distancia entre memorizar e generalizar? |
+| F1-score | media harmonica de precision e recall | O equilibrio entre alarmes e casos perdidos e aceitavel? |
+| Precision | `TP / (TP + FP)` | Entre os alertas, quantos eram corretos? |
+| Recall | `TP / (TP + FN)` | Quantos pacientes com patologia foram encontrados? |
+| ROC-AUC | area sob a curva ROC | O ranking separa classes em varios limiares? |
+| Latencia | inferencia / pacientes, em us | Quanto custa avaliar um paciente? |
+| Tempo de treino | duracao do `.fit`, em ms | O re-treinamento cabe na rotina? |
+| Diagnostico | `TN`, `FP`, `FN`, `TP` | Que tipo de erro esta acontecendo? |
+
+### Leitura pratica
+
+Se F1 e recall permanecerem proximos do baseline com menos atributos, o filtro reduz memoria e torna a XAI mais manejavel. Um `FN` e uma patologia classificada como saudavel; em saude, pode ser mais grave que um `FP`, portanto acuracia sozinha nao governa a decisao. Menos atributos podem reduzir custos de coleta, armazenamento e processamento, mas nao autorizam declarar economia financeira ou vidas salvas sem custos clinicos e validacao externa. O pre-filtro prepara SHAP, `shap-select` e Optuna; nao escolhe sozinho o modelo campeao.
+
 ---
 
-### 10.6.1 Quadro de KPIs Operacionais do Pré-Filtro Híbrido
+## Subcamada 10.6: Checkpoint de Autonomia e Fixacao Ativa
 
-| Métrica Operacional (KPI) | Valor Conquistado | Significado Científico | Impacto no Projeto |
-| :--- | :--- | :--- | :--- |
-| **Tempo de Execução da Faxina**| **$\approx 8.5\text{ ms}$** | Execução praticamente instantânea na CPU. | Não adiciona nenhum gargalo ao pipeline. |
-| **Poda de Redundâncias** | **Eliminou clones colineares** | Removeu variáveis com $|r| > 0.90$. | Alivia a memória e evita que o SHAP divida créditos à toa. |
-| **Economia de Tempo no SHAP** | **~25% a 30% mais rápido** | O TreeSHAP agora calcula sobre ~30 colunas em vez de 40. | Ganho direto de escalabilidade computacional. |
+Explique sem consultar o texto e depois confira:
 
----
+1. Por que uma coluna constante nao ajuda a distinguir pacientes?
+2. Por que `corr(A, B)` e `corr(B, A)` nao precisam ser analisados separadamente?
+3. O que `|r| > 0.90` autoriza afirmar e o que nao autoriza?
+4. Por que usar `X_test` para aprender as colunas causa vazamento?
+5. Por que `FN` e recall podem ser mais importantes que acuracia em saude?
+6. O que pode escapar do Pearson se duas variaveis tiverem relacao em forma de U?
 
-## Subcamada 10.7: Checkpoint de Autonomia & Fixação Ativa
+### Mini-desafio pratico
 
-Responda para fixar a importância do Pré-Filtro:
+Repita o experimento com `limiar_corr=0.75` e `0.99`. Registre:
 
-1. **Por que é um erro de engenharia aplicar diretamente um método pesado de explicabilidade (como SHAP ou LIME) sobre uma base bruta sem antes fazer uma triagem estatística simples?**
-2. **Explique a lógica de usar o triângulo superior da matriz de correlação (`np.triu`). O que aconteceria se você avaliasse a matriz inteira sem a máscara triangular?**
-3. **Qual é o risco de configurar o limiar de correlação baixo demais (ex: $|r| > 0.50$)? Poderíamos jogar fora biomarcadores úteis?**
-4. **Desafio no Colab:** Na Subcamada 10.6, teste mudar o limiar de Pearson de `0.90` para `0.75`. Quantos exames foram cortados? Os 10 biomarcadores informativos foram preservados ou algum deles foi eliminado?
+```text
+limiar | atributos finais | atributos removidos | F1 | recall | FN | latencia_us
+```
+
+Depois responda: **qual configuracao reduz dimensao sem piorar o erro clinicamente mais perigoso?** Assim voce conecta regra estatistica, metrica e consequencia pratica.
