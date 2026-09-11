@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** Analisar a taxonomia classica de selecao de atributos (filtros, embutidos e envoltorios/wrappers), dominando o mecanismo recursivo guloso do RFE (Recursive Feature Elimination), seu custo computacional quadratico em relacao ao numero de podas e sua funcao estrategica como linha de base classica e justa perante comites cientificos.
 
+## Campo Didatico: O Detetive Que Vai Eliminando Pistas
+
+Execute o RFE em ciclos: **treine com todas as colunas, leia a importancia, remova a menos importante, repita e compare o desempenho a cada tamanho**. Desenhe uma tabela com `k`, atributos restantes, F1 e tempo para tornar visivel o custo da estrategia.
+
+```text
+todas as pistas -> treinar -> remover uma pista -> treinar de novo -> ranking final
+       |                                                   |
+       v                                                   v
+   modelo caro                                      selecao gulosa
+```
+
+O que importa observar e o compromisso entre desempenho e custo, nao apenas o ranking final. O erro comum e usar o teste para escolher `k`; a escolha deve ocorrer em treino/validacao e o teste deve aparecer uma unica vez na comparacao final. A ponte para a Camada 09 e medir a curva completa de queda ao remover atributos.
+
 ---
 
 ## Mapa da aula

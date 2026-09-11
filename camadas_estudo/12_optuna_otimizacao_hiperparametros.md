@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** Compreender a formulacao teorica da otimizacao bayesiana via Tree-structured Parzen Estimator (TPE), diferenciando parametros aprendidos internamente de hiperparametros arquiteturais, estruturando rotinas de validacao cruzada estratificada em k-folds e demonstrando a necessidade metodologica de reajustar o modelo sobre o espaco dimensional reduzido antes da avaliacao de generalizacao final.
 
+## Campo Didatico: Uma Busca Com Memoria
+
+Compare uma busca cega com a Optuna: **defina o objetivo, escolha os hiperparametros, avalie por validacao cruzada, registre o resultado, deixe o estudo priorizar regioes promissoras e reavalie o campeao em teste intocado**.
+
+```text
+espaco de busca -> tentativa -> CV estratificada -> historico -> proxima tentativa melhor informada
+                                                                  |
+                                                                  v
+                                                        campeao -> teste final
+```
+
+Observe a diferenca entre parametros aprendidos pelo modelo e hiperparametros escolhidos pelo estudo. O erro comum e otimizar diretamente no teste ou comparar trials com splits diferentes. A ponte para a Camada 13 e encaixar essa busca no pipeline completo com rastreabilidade.
+
 ---
 
 ## Mapa da aula

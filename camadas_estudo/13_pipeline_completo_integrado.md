@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** Analisar a arquitetura de orquestracao de ponta a ponta em MLOps, examinando o encadeamento deterministico entre geracao controlada de dados, avaliacao de linha de base, explicabilidade analitica, reducao estatistica de dimensionalidade e calibracao bayesiana, assegurando reprodutibilidade cientifica integral e ausencia de vazamento de dados.
 
+## Campo Didatico: Ler o Pipeline Como Uma Historia Causal
+
+Nao execute o script como uma caixa-preta. Siga o rastro de cada artefato: **dados gerados, split, baseline, SHAP/LIME, filtros, shap-select, Optuna, campeao e dashboard**. Para cada etapa, anote entrada, transformacao, saida, custo e risco de vazamento.
+
+```text
+entrada -> baseline -> explicacao -> reducao -> otimizacao -> avaliacao final
+    |          |           |           |           |                |
+    v          v           v           v           v                v
+dados     ponto zero   por que?   menos cols  melhores params   evidencia
+```
+
+O que voce deve observar e a rastreabilidade: cada ganho precisa ser comparado ao mesmo ponto de partida. O erro comum e atribuir a uma unica tecnica o ganho produzido por varias etapas combinadas. A ponte para a Camada 14 e transformar os resultados rastreados em uma leitura executiva sem esconder incertezas.
+
 ---
 
 ## Mapa da aula

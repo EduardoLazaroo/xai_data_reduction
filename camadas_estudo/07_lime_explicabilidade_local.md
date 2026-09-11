@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** Compreender a formulacao teorica e a dinamica pratica do LIME (Local Interpretable Model-agnostic Explanations), analisando a geracao de perturbacoes estocasticas no espaco amostral, a ponderacao por kernel gaussiano de distancia e a motivacao clinica de auditar instancias proximas ao limiar de decisao de 50%.
 
+## Campo Didatico: Uma Lupa Para Um Paciente
+
+O LIME deve ser estudado como uma investigacao local: **escolha um paciente, crie vizinhos artificiais, pese os vizinhos pela distancia, ajuste um modelo simples e compare a explicacao com a previsao original**. Repita com outra semente para perceber a sensibilidade.
+
+```text
+paciente escolhido -> perturbacoes -> pesos de proximidade -> modelo simples local
+        |                                                   |
+        v                                                   v
+    previsao original ------------------------------> regras explicativas
+```
+
+Observe que uma boa explicacao local nao precisa representar toda a floresta. O erro comum e tratar uma explicacao instavel como verdade absoluta ou confundir proximidade matematica com semelhança clinica. A ponte para a Camada 08 e comparar essa leitura XAI com uma selecao tradicional de atributos.
+
 ---
 
 ## Mapa da aula

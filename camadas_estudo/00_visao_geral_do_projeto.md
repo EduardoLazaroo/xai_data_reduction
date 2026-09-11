@@ -11,6 +11,19 @@
 > Se você precisar resumir este projeto inteiro em uma única frase para qualquer pessoa do mundo, a frase é esta:  
 > *"Vamos treinar um modelo de Machine Learning com todas as variáveis disponíveis, 'perguntar' para a Inteligência Artificial Explicável (XAI) o que ela realmente usou para decidir, e treinar um modelo novo muito mais leve apenas com o que importa, provando que o desempenho não cai."*
 
+## Campo Didatico: Como Enxergar o Projeto Inteiro
+
+Leia esta camada como o mapa de uma expedicao, nao como uma lista de ferramentas. Em cada etapa, responda quatro perguntas: **qual problema estamos tentando resolver, qual evidencia o codigo produz, qual risco metodologico pode invalidar a evidencia e qual decisao vem depois?**
+
+```text
+pergunta clinica -> baseline -> explicacao -> reducao -> re-treino -> comparacao
+       |              |            |           |           |            |
+       v              v            v           v           v            v
+   o que medir?   como esta?   por que?    o que sai?  ficou igual?  vale usar?
+```
+
+O estudante deve caminhar sempre em tres movimentos: primeiro explicar a etapa para uma pessoa leiga, depois executar o pequeno experimento, e por fim confrontar o resultado com F1, recall, gap, latencia e custo. O erro mais comum e confundir um grafico bonito com uma conclusao clinica. O grafico e evidencia; a conclusao exige comparacao justa, teste reservado e limitacoes declaradas. A ponte para as proximas camadas e simples: o baseline mostra o ponto de partida, a XAI explica o comportamento e a reducao testa se conseguimos manter a qualidade com menos dados.
+
 ---
 
 ## 1. O que Estudar em Profundidade?

@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** Consolidar a articulacao entre fundamentacao teorica, modelagem computacional e redacao academica de alto impacto, estruturando a defesa formal das hipoteses H1 e H2, a documentacao metodologica de limitacoes tecnicas e a formulacao de respostas tecnicas padronizadas perante bancas examinadoras e comites de revisao por pares.
 
+## Campo Didatico: Defender Sem Exagerar
+
+Treine a defesa em quatro movimentos: **afirme a hipotese, mostre a evidencia, reconheca a limitacao e explique a proxima verificacao**. Uma resposta forte nao e a mais confiante; e a que distingue claramente dado observado, inferencia estatistica e implicacao pratica.
+
+```text
+hipotese -> KPI/figura -> interpretacao -> limitacao -> resposta verificavel
+```
+
+Observe se voce consegue explicar o resultado para uma banca tecnica e para um gestor sem trocar precisao por jargao. O erro comum e prometer causalidade, economia ou seguranca clinica a partir de um dataset sintetico. A ponte final e transformar o projeto em uma narrativa cientifica honesta, reproduzivel e auditavel.
+
 ---
 
 ## Mapa da aula

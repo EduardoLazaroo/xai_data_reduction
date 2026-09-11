@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** compreender por que a precisao isolada de uma caixa-preta e insuficiente em areas criticas, conhecer o caso historico em que uma IA aprendeu regras perigosas e diferenciar a explicabilidade global (o mapa da populacao com SHAP) da explicabilidade local (a auditoria individual com LIME).
 
+## Campo Didatico: Explicar Nao e Decorar um Grafico
+
+Use o roteiro **prever, perguntar, explicar, confrontar**. Primeiro registre a previsao do modelo; depois pergunte quais atributos parecem importantes; em seguida compare uma explicacao global com uma explicacao de um paciente; por fim confronte a explicacao com metricas e conhecimento do dominio.
+
+```text
+modelo caixa-preta -> previsao -> explicacao global/local -> pergunta de auditoria
+       |                |                  |                       |
+       v                v                  v                       v
+   como aprende?     qual classe?       quem importa?        faz sentido clinico?
+```
+
+O estudante deve separar importancia de atributo de causalidade. O erro comum e dizer “SHAP provou que a variavel causa a doenca”; explicabilidade descreve o comportamento do modelo. A ponte para a Camada 06 e a justificativa matematica do credito distribuido pelo SHAP.
+
 ## Mapa da aula
 
 1. [Subcamada 5.1: O conceito na vida real](#subcamada-51-o-conceito-na-vida-real)

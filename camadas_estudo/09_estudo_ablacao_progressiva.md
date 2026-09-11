@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** Compreender a formulacao metodologica de um estudo de ablacao (ablation study), analisando a resposta empirica de modelos de aprendizado sob remocao progressiva de atributos, a interpretacao das curvas de retencao de F1-score e a determinacao matematica do ponto de inflexao (knee point).
 
+## Campo Didatico: Remover Para Descobrir o Limite
+
+Uma ablacao e uma experiencia controlada, nao uma poda aleatoria. Comece com todas as colunas, remova grupos segundo um ranking fixado e registre, em cada passo, **quantas colunas restam, F1, gap, tempo e latencia**.
+
+```text
+40 -> 38 -> 36 -> ... -> 2 atributos
+ |     |       |          |
+ F1   F1      F1         F1
+\________ curva de custo e qualidade ________/
+```
+
+Procure o joelho: o ponto em que retirar mais atributos passa a custar qualidade desproporcional. O erro comum e declarar o menor conjunto como vencedor sem considerar incerteza e custo de repeticao. A ponte para a Camada 10 e usar filtros estatisticos baratos antes de gastar computacao em XAI.
+
 ---
 
 ## Mapa da aula

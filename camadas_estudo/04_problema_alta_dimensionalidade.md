@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** compreender a dinamica geometrica do mal da dimensionalidade, distinguir formalmente atributos informativos, redundantes e ruidos puros, e entender o Fenomeno de Hughes, onde adicionar variaveis alem de um ponto otimo comeca a prejudicar a generalizacao.
 
+## Campo Didatico: Enxergar Dimensoes Como Espaco
+
+Construa a intuicao em ordem: compare uma nuvem em 2D, adicione atributos informativos, adicione redundancias e por fim injete ruido. Em cada cenario registre o numero de colunas, a densidade dos dados, o F1 de teste e o gap. A pergunta-guia e: **qual atributo acrescenta sinal e qual apenas aumenta o espaco para coincidencias?**
+
+```text
+2D compreensivel -> sinais uteis -> clones -> ruido
+       |                |          |       |
+       v                v          v       v
+   fronteira       ganho real   repeticao  Hughes
+```
+
+Observe o ponto em que mais atributos deixam de melhorar o teste. O erro comum e defender “mais dados” sem distinguir mais pacientes de mais colunas. A ponte para a Camada 05 e natural: se o modelo sofre com excesso de dimensao, precisamos perguntar quais variaveis realmente influenciam suas decisoes.
+
 ## Mapa da aula
 
 1. [Subcamada 4.1: O conceito na vida real](#subcamada-41-o-conceito-na-vida-real)

@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** compreender por que a acuracia isolada pode mascarar erros graves em dados de saude, dominar a anatomia da matriz de confusao e entender como o equilibrio entre precision, recall, F1-score e ROC-AUC fundamenta a validacao clinica de modelos de aprendizado de maquina.
 
+## Campo Didatico: Uma Metrica e uma Pergunta
+
+Nao comece pela formula. Comece por um caso: um paciente doente que recebe resultado saudavel e um paciente saudavel que recebe um alarme. Depois execute a avaliacao em quatro passagens: **matriz de confusao, precision, recall, F1 e ROC-AUC**. Para cada numero, escreva a pergunta operacional que ele responde e o erro que ele pode esconder.
+
+```text
+previsoes -> TN/FP/FN/TP -> metricas complementares -> limiar de decisao -> escolha
+```
+
+Observe especialmente `FN`, porque ele representa a falha clinica mais sensivel nesta aplicacao. O erro comum e escolher o modelo pela maior acuracia sem olhar o desbalanceamento ou o custo dos erros. A ponte para a Camada 04 e metodologica: depois de saber medir, investigaremos como o excesso de atributos altera essas metricas.
+
 ## Mapa da aula
 
 1. [Subcamada 3.1: O conceito na vida real](#subcamada-31-o-conceito-na-vida-real)

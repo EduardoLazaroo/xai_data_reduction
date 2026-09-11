@@ -6,6 +6,18 @@
 
 > **Objetivo da aula:** entender como uma arvore de decisao faz perguntas aos dados, por que uma arvore isolada e instavel e como o comite de arvores do Random Forest, apoiado em bagging e selecao aleatoria de atributos, reduz a variancia e prepara o terreno para a explicabilidade com TreeSHAP.
 
+## Campo Didatico: Da Arvore ao Comite
+
+Siga o experimento em seis passos: **crie uma arvore, observe sua regra, crie varias amostras bootstrap, treine arvores diversas, agregue os votos e compare com o baseline**. A pergunta-guia e: uma floresta melhora porque cada arvore e perfeita ou porque seus erros deixam de coincidir?
+
+```text
+amostra sorteada -> arvore 1 --\
+amostra sorteada -> arvore 2 ----> votacao/medias -> previsao
+atributos sorteados -> arvore N -/
+```
+
+No grafico, procure diversidade entre arvores e estabilidade no resultado final. No codigo, altere `n_estimators` e `max_features`, mas mude uma coisa por vez. O erro mais comum e interpretar a probabilidade da floresta como certeza clinica; ela e uma agregacao estatistica e ainda precisa de calibracao e avaliacao. A ponte seguinte e a Camada 03: uma previsao da floresta so pode ser julgada com metricas que distinguem tipos de erro.
+
 ## Mapa da aula
 
 1. [Subcamada 2.1: O conceito na vida real](#subcamada-21-o-conceito-na-vida-real)

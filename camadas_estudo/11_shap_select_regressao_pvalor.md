@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** Compreender a formulacao econometrica do algoritmo shap-select, explorando a regressao multivariada do desfecho real sobre a matriz de explicabilidade aditiva, a interpretacao dos coeficientes direcionais (beta > 0) e a rejeicao da hipotese nula via p-valor (p < 0.05) para blindagem contra ruido estocastico.
 
+## Campo Didatico: Da Explicacao ao Teste de Evidencia
+
+A sequencia didatica e: **produzir SHAP, tratar cada coluna SHAP como evidencia, ajustar a regressao conjunta, ler beta e p-valor, filtrar e comparar o modelo enxuto com o baseline**. A pergunta-guia e: o atributo aparece porque ajuda de modo consistente ou porque uma amostra especifica o favoreceu?
+
+```text
+modelo -> matriz SHAP -> regressao conjunta -> beta/p-valor -> selecao -> reavaliacao
+```
+
+Observe que `beta > 0` fala da direcao no modelo estatistico e `p < 0.05` fala da evidencia contra a hipotese nula; nenhum dos dois sozinho prova causalidade clinica. O erro comum e interpretar significancia como tamanho de efeito. A ponte para a Camada 12 e otimizar hiperparametros depois que o espaco foi reduzido.
+
 ---
 
 ## Mapa da aula

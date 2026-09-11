@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando os quatro quadrantes do dashboard comparativo (reducao dimensional, tempo de treinamento, latencia de inferencia e retencao de F1-score) e formalizando o argumento de retorno de investimento entre o custo analitico de P&D e os ganhos operacionais permanentes em producao.
 
+## Campo Didatico: Um Dashboard e um Argumento
+
+Leia cada painel em duas camadas: primeiro descreva literalmente o que o grafico mostra; depois explique o que isso significa para a operacao. O roteiro e **dimensao, treino, latencia, qualidade, erro clinico e custo**. Nunca pule diretamente do grafico para a recomendacao.
+
+```text
+grafico -> numero -> comparacao baseline/campeao -> impacto operacional -> limite da conclusao
+```
+
+Observe se a reducao de atributos preserva F1 e recall, e se o ganho de tempo e maior que a variacao de medicao. O erro comum e usar escala visual para sugerir uma melhora que os numeros nao sustentam. A ponte para a Camada 15 e transformar essa leitura em metodologia e hipoteses publicaveis.
+
 ---
 
 ## Mapa da aula

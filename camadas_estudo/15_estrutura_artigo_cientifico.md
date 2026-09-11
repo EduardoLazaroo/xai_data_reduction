@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** Compreender a arquitetura de comunicacao cientifica baseada no formato canonico IMRaD (Introducao, Metodologia, Resultados e Discussao), estabelecendo a demarcacao metodologica estrita entre o relato objetivo de resultados e a interpretacao analitica da discussao, alem de formalizar o teste quantitativo das hipoteses de equivalencia diagnostica (H1) e eficiencia computacional (H2).
 
+## Campo Didatico: Separar Fato, Metodo e Interpretacao
+
+Use tres cores mentais ao escrever: **Metodologia diz o que foi feito; Resultados dizem o que foi observado; Discussao explica por que isso importa**. Antes de redigir, transforme cada KPI em uma frase objetiva e cada frase objetiva em uma interpretacao com limite declarado.
+
+```text
+pergunta -> metodo -> resultado observavel -> interpretacao -> limitacao -> proxima pergunta
+```
+
+Observe se outro pesquisador conseguiria repetir o estudo apenas lendo a metodologia. O erro comum e colocar conclusao causal na secao de resultados ou esconder um KPI desfavoravel. A ponte para a Camada 16 e defender as hipoteses oralmente e por escrito sob questionamento.
+
 ---
 
 ## Mapa da aula

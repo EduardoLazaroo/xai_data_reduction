@@ -6,6 +6,22 @@
 
 > **Objetivo da aula:** entender como um modelo aprende com exemplos rotulados, por que separar treino e teste e indispensavel e como atributos demais, especialmente ruido, podem fazer o modelo decorar em vez de generalizar.
 
+## Campo Didatico: Roteiro Executavel da Aula
+
+Estude esta aula como uma sequencia de oito celulas mentais: **(1) criar dados, (2) separar treino e teste, (3) construir dois modelos, (4) treinar apenas com treino, (5) medir treino e teste, (6) desenhar as fronteiras, (7) calcular o gap e a matriz de confusao, (8) explicar a diferenca em linguagem comum**. Antes de rodar qualquer codigo, escreva o que espera observar.
+
+```text
+dados rotulados -> split protegido -> modelo simples/complexo
+       |                 |                    |
+       v                 v                    v
+   qual e o sinal?   o teste ficou oculto?  decorou ou aprendeu?
+                              |
+                              v
+                   treino vs teste -> generalizacao
+```
+
+Ao executar, observe tres evidencias: a fronteira do modelo, a distancia entre acuracia de treino e teste e os erros clinicos `FN/FP`. Um erro comum e chamar qualquer modelo com treino alto de excelente; o criterio correto e perguntar se o desempenho se sustenta em dados nunca vistos. A ponte para a Camada 02 e o baseline: depois de entender o problema, veremos por que uma floresta de arvores costuma ser mais estavel que uma arvore isolada.
+
 ## Mapa da aula
 
 1. [Subcamada 1.1: O conceito na vida real](#subcamada-11-o-conceito-na-vida-real)

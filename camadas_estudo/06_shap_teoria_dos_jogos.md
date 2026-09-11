@@ -6,6 +6,19 @@
 
 > **Objetivo da aula:** dominar o metodo SHAP (SHapley Additive exPlanations), entender como a Teoria dos Jogos Cooperativos de Lloyd Shapley garante a divisao justa de credito entre atributos, conhecer os quatro axiomas de equidade e interpretar o ranking |SHAP| e o grafico Beeswarm.
 
+## Campo Didatico: Pensar em Coalizoes
+
+Antes da notacao, imagine uma equipe: o resultado pertence ao grupo, mas queremos repartir o credito de cada participante. O roteiro pratico e **treinar, escolher uma observacao, calcular valores SHAP, ordenar impactos, ler direcao e comparar com o comportamento real do modelo**.
+
+```text
+conjunto de atributos -> coalizoes -> credito marginal -> soma dos creditos
+        |                                  |
+        v                                  v
+    previsao total                    explicacao aditiva
+```
+
+No beeswarm, observe simultaneamente importancia, direcao e dispersao; no caso local, pergunte por que aquele paciente recebeu aquela previsao. O erro comum e olhar apenas para o ranking medio e ignorar o sinal do impacto. A ponte para a Camada 07 e a diferenca entre explicar a populacao inteira e auditar uma vizinhanca individual.
+
 ## Mapa da aula
 
 1. [Subcamada 6.1: O conceito na vida real](#subcamada-61-o-conceito-na-vida-real)

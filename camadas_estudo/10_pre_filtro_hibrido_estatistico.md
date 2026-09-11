@@ -6,6 +6,16 @@
 
 > **Objetivo da aula:** aprender a retirar, antes da XAI, duas formas de desperdicio que a estatistica detecta rapidamente: colunas quase paradas e colunas que repetem a mesma informacao. A ideia nao e substituir SHAP ou LIME. E preparar um palco menor para que essas ferramentas trabalhem com mais foco.
 
+## Campo Didatico: A Faxina em Duas Perguntas
+
+Execute o pre-filtro como uma triagem visual: **a coluna varia, ha um clone, quais colunas sobreviveram e o modelo manteve seus KPIs?** Primeiro rode o toy example; depois repita no `X_train` oficial, sem tocar no teste.
+
+```text
+variancia baixa? -> remover estatua -> correlacao alta? -> remover clone -> validar
+```
+
+Observe a lista de colunas antes/depois e a matriz de correlacao. O erro comum e supor que baixa correlacao significa relevancia ou usar todos os dados para aprender o filtro. A ponte para a Camada 11 e aplicar um criterio estatistico direcional e inferencial sobre as explicacoes que restaram.
+
 ## Mapa da aula
 
 1. [Subcamada 10.1: O conceito na vida real](#subcamada-101-o-conceito-na-vida-real)
