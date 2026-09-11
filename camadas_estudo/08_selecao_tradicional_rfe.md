@@ -21,6 +21,48 @@ O que importa observar e o compromisso entre desempenho e custo, nao apenas o ra
 
 ---
 
+### Roteiro de dominio
+
+Trace uma rodada completa do RFE: ajuste, ranking, remocao e novo ajuste. Em seguida compare o custo dessa repeticao com um filtro de uma unica passada. O ponto didatico nao e demonizar o RFE; e entender quando uma selecao guiada pelo modelo vale o custo computacional.
+
+### Duvidas que esta aula responde
+
+- **O atributo removido e definitivamente inutil?** Nao. Ele foi menos importante dentro daquele modelo e conjunto de atributos.
+- **A ordem do ranking e causal?** Nao. E uma ordem operacional produzida pelo estimador.
+- **Por que atributos correlacionados complicam o ranking?** O modelo pode dividir ou alternar importancia entre substitutos.
+- **RFE e filtro estatistico?** Nao. E um wrapper: treina repetidamente um modelo para decidir a poda.
+
+### Regra de explicacao Feynman
+
+Explique RFE como uma equipe eliminando candidatos em rodadas: o menos votado sai, a equipe e refeita e a proxima eliminacao depende do novo contexto.
+
+### Uma eliminacao em camera lenta
+
+Imagine dez candidatos para uma equipe. O RFE treina o modelo com todos, observa a importancia, elimina o menos importante e repete. Se a ordem inicial for `[A, B, C, D]` e `D` tiver a menor importancia, a proxima rodada usa `[A, B, C]`; a importancia e recalculada, porque a ausencia de `D` pode mudar a funcao dos demais.
+
+```text
+[A B C D] -> remove D -> [A B C] -> remove B -> [A C]
+       |                    |                    |
+    ranking 1            ranking 2             ranking 3
+```
+
+Essa recomputacao e a forca e o custo do wrapper. O RFE nao pergunta apenas se uma coluna parece boa isoladamente; pergunta como o modelo se comporta quando aquela coluna deixa de existir.
+
+### Como ler o experimento
+
+Registre o F1 de teste ou validacao a cada `k` atributos e o tempo acumulado. Uma curva que permanece estavel de 40 ate 10 sugere compressao possivel; uma queda brusca ao passar de 10 para 8 indica que o modelo perdeu sinal. O ranking RFE sozinho nao diz qual conjunto e melhor: o desempenho do subconjunto e a evidencia.
+
+### Duvidas frequentes
+
+- **RFE e um filtro univariado?** Nao. Ele usa o modelo para avaliar atributos em conjunto.
+- **O atributo eliminado e sempre inutil?** Nao; ele foi menos necessario naquele modelo, amostra e rodada.
+- **Por que o custo cresce?** Porque muitos modelos sao treinados em sequencia.
+- **Posso escolher o menor `k` pelo teste?** Nao. Use validacao para decidir e reserve o teste para a comparacao final.
+
+### Ponte para a ablacao
+
+RFE oferece uma ordem gulosa de eliminacao. A Camada 09 amplia a pergunta e desenha a curva completa de desempenho conforme o numero de atributos diminui, procurando um ponto de equilibrio.
+
 ## Mapa da aula
 
 1. [Subcamada 08.1: O conceito na vida real](#subcamada-081-o-conceito-na-vida-real)

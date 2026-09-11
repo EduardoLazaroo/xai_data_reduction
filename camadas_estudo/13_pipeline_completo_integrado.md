@@ -21,6 +21,60 @@ O que voce deve observar e a rastreabilidade: cada ganho precisa ser comparado a
 
 ---
 
+### Roteiro de dominio
+
+Para cada etapa, preencha uma ficha: **entrada, saida, metodo, semente, tempo, metricas e risco**. Se uma saida nao puder ser reproduzida ou ligada a uma entrada, o pipeline tem uma lacuna de auditoria. O estudante deve conseguir narrar o caminho completo sem esconder etapas intermediarias.
+
+### Duvidas que esta aula responde
+
+- **Pipeline e apenas encadear funcoes?** Nao. E preservar contratos, ordem, rastreabilidade e isolamento entre treino e teste.
+- **Reprodutibilidade significa resultados identicos em qualquer computador?** Nao necessariamente; significa documentar sementes, versoes e variacoes esperadas.
+- **Um ganho no final pertence a qual etapa?** So pode ser atribuido com ablacoes ou comparacoes controladas.
+- **Por que salvar artefatos?** Para auditar, comparar, depurar e transformar experimento em evidencia.
+
+### Regra de explicacao Feynman
+
+Explique o pipeline como uma linha de montagem: cada posto recebe uma peca, faz uma operacao e entrega um produto identificavel. Se dois postos trocam pecas sem registro, ninguem sabe de onde veio o defeito ou o ganho.
+
+### Cada etapa precisa deixar uma evidencia
+
+Um pipeline confiavel funciona como uma linha de montagem com etiqueta em cada caixa:
+
+```text
+dados -> split -> baseline -> SHAP/LIME -> filtros -> shap-select -> Optuna -> final
+    |       |          |            |             |          |            |       |
+    v       v          v            v             v          v            v       v
+seed   particoes   KPIs       explicacoes   colunas    beta/p       params  KPIs finais
+```
+
+Se a etapa final melhora, a pergunta correta e “qual transformacao produziu a mudanca?”. Sem artefatos intermediarios, uma melhora pode ser confundida com sorte, vazamento ou alteracao de split.
+
+### Como executar sem perder a causalidade
+
+Fixe `random_state`, salve nomes de colunas, registre tempos e mantenha o teste isolado. Compare baseline e campeao com a mesma metrica, mesma classe positiva e mesma particao. O pipeline deve falhar de forma visivel quando uma dependencia falta ou quando uma selecao produz zero colunas, em vez de inventar um resultado.
+
+### Um rastreamento com numeros
+
+Uma execucao pode produzir esta cadeia:
+
+```text
+40 atributos -> baseline F1 0,837 -> pre-filtro 28 -> shap-select 10
+            -> Optuna: 100 trials -> campeao F1 0,861 -> latencia menor
+```
+
+Essa linha nao autoriza atribuir o ganho inteiro ao Optuna. Para investigar, compare versoes: baseline, baseline mais pre-filtro, pre-filtro mais `shap-select` e pipeline completo. Se o F1 mudar de `0,837` para `0,850` antes do Optuna e para `0,861` depois dele, cada etapa tem uma contribuicao observada, mas ainda sujeita a variacao de split.
+
+### Duvidas frequentes
+
+- **Executar tudo em ordem garante ausencia de vazamento?** Nao; cada transformacao ainda precisa ser ajustada somente no treino.
+- **Um dashboard torna o experimento cientifico?** Nao; ele comunica resultados que precisam ter protocolo e rastreabilidade.
+- **Se o campeao tem F1 maior, ele sempre e melhor?** Nao; recall, latencia, estabilidade e custo tambem importam.
+- **Por que salvar a semente?** Para reproduzir a mesma geracao, split e comparacao, embora tempo de CPU possa variar.
+
+### Ponte para resultados
+
+Com os artefatos preservados, a Camada 14 pode transformar numeros em dashboard sem esconder o caminho que os produziu.
+
 ## Mapa da aula
 
 1. [Subcamada 13.1: O conceito na vida real](#subcamada-131-o-conceito-na-vida-real)

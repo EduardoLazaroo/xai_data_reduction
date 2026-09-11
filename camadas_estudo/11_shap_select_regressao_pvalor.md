@@ -18,6 +18,61 @@ Observe que `beta > 0` fala da direcao no modelo estatistico e `p < 0.05` fala d
 
 ---
 
+### Roteiro de dominio
+
+Leia cada atributo em uma ficha com quatro campos: valor SHAP, `beta`, erro-padrao e `p`. Depois separe tres perguntas: **o efeito aponta para a classe positiva?**, **ha evidencia estatistica?**, **o efeito e grande o bastante para importar?** O shap-select responde principalmente as duas primeiras.
+
+### Duvidas que esta aula responde
+
+- **`p < 0.05` prova que a variavel e importante?** Indica evidencia sob o modelo e as hipoteses adotadas; nao mede tamanho nem causalidade.
+- **Beta positivo significa impacto grande?** Nao. Sinal e direcao; magnitude depende da escala e do contexto.
+- **Por que regressao sobre SHAP?** Para testar conjuntamente a consistencia dos impactos produzidos pelo modelo.
+- **P-valor corrige todos os problemas de multiplos testes?** Nao automaticamente; a estrategia precisa discutir selecao, dependencia e validacao.
+
+### Regra de explicacao Feynman
+
+Explique como um juiz que pergunta duas coisas: a testemunha aponta na direcao correta e ha evidencias suficientes para confiar nela? Mesmo aprovada, a testemunha nao vira prova causal sozinha.
+
+### Um julgamento com duas portas
+
+Imagine tres evidencias com os seguintes resultados:
+
+```text
+atributo       beta       p-valor       decisao
+biomarcador_A  +0.80      0.001         aprovado
+variavel_B     -0.60      0.010         rejeitado: direcao reversa
+ruido_C        +0.05      0.420         rejeitado: evidencia fraca
+```
+
+O `shap-select` nao aprova um atributo apenas porque seu valor SHAP medio e grande. Ele exige duas portas: contribuicao no sentido esperado (`beta > 0`) e evidencia estatistica suficiente (`p < 0.05`). Essas portas respondem perguntas diferentes: “para que lado o efeito aponta?” e “ha evidencia para nao trata-lo como acaso?”.
+
+### Como ler a tabela do laboratorio
+
+Comece pelo sinal de `beta`, depois pelo p-valor e so entao observe a lista aprovada. Um p-valor pequeno nao significa que o efeito e grande ou clinicamente importante; significa que o efeito observado e dificil de explicar sob a hipotese nula, dado o modelo e os dados. Em atributos correlacionados, os coeficientes podem mudar quando entram juntos, portanto o julgamento deve ser comparado com o ranking SHAP e com o desempenho fora da amostra.
+
+### Um julgamento passo a passo
+
+Considere tres colunas de explicacao SHAP:
+
+| Atributo | `beta` | `p` | Leitura |
+|---|---:|---:|---|
+| `phi_glicemia` | `+0,80` | `0,001` | passa nas duas portas |
+| `phi_idade` | `-0,60` | `0,010` | evidencia forte, mas direcao rejeitada |
+| `phi_ruido` | `+0,05` | `0,420` | direcao positiva, mas evidencia insuficiente |
+
+O conjunto final contem apenas `phi_glicemia`. O atributo com beta negativo nao e salvo pelo p-valor pequeno, e o ruido nao e salvo pelo sinal positivo. O filtro duplo evita confundir “estatisticamente detectavel” com “alinhado ao objetivo e suficientemente sustentado”.
+
+### Duvidas frequentes
+
+- **`p < 0.05` prova que o biomarcador causa a patologia?** Nao. Testa uma hipotese estatistica dentro do protocolo.
+- **`beta > 0` significa que o exame sempre aumenta o risco?** Nao. E uma direcao agregada na regressao das explicacoes.
+- **Por que regressar `y` sobre SHAP e nao diretamente sobre os exames?** Para usar a contribuicao que a floresta atribuiu, preservando a ponte entre modelo nao linear e selecao inferencial.
+- **O que se faz quando nenhum atributo passa?** Rever escala, colinearidade, potencia amostral e especificacao; nao relaxar o limiar automaticamente.
+
+### Ponte para a otimizacao
+
+Depois que o conjunto foi filtrado por evidencia, ainda resta escolher a melhor configuracao do modelo. A Camada 12 usa Optuna para buscar hiperparametros sem transformar o teste em gabarito.
+
 ## Mapa da aula
 
 1. [Subcamada 11.1: O conceito na vida real](#subcamada-111-o-conceito-na-vida-real)

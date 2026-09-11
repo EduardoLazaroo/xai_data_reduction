@@ -16,6 +16,48 @@ previsoes -> TN/FP/FN/TP -> metricas complementares -> limiar de decisao -> esco
 
 Observe especialmente `FN`, porque ele representa a falha clinica mais sensivel nesta aplicacao. O erro comum e escolher o modelo pela maior acuracia sem olhar o desbalanceamento ou o custo dos erros. A ponte para a Camada 04 e metodologica: depois de saber medir, investigaremos como o excesso de atributos altera essas metricas.
 
+### Roteiro de dominio
+
+Comece pela matriz de confusao e so depois calcule metricas. Para cada formula, complete a frase: “o denominador representa...”. Em seguida altere o limiar de decisao e observe o cabo de guerra entre precision e recall. Por fim, compare os modelos com a mesma particao e o mesmo criterio.
+
+### Duvidas que esta aula responde
+
+- **Acuracia alta prova um bom diagnostico?** Nao se a classe majoritaria dominar ou se `FN` for caro.
+- **F1 substitui tudo?** Nao. Ele resume precision e recall, mas nao mostra custo, calibracao ou distribuicao dos erros.
+- **ROC-AUC alto garante bom limiar clinico?** Nao. AUC avalia ordenacao em varios limiares; a operacao precisa escolher um corte justificado.
+
+### Regra de explicacao Feynman
+
+Use o alarme de incendio: `FP` e alarme sem fogo, `FN` e fogo sem alarme, `TP` e fogo detectado e `TN` e silencio correto. Depois explique por que um hospital pode preferir mais alarmes falsos a perder um incendio.
+
+### Um caso numerico antes das formulas
+
+Considere 100 pacientes: 80 saudaveis e 20 com patologia. Um modelo previu corretamente 76 saudaveis (`TN`), encontrou 15 doentes (`TP`), alarmou 4 saudaveis (`FP`) e deixou passar 5 doentes (`FN`).
+
+```text
+                REAL
+            saudavel       patologia
+previsto saudavel     76              5
+previsto patologia     4             15
+```
+
+A acuracia e `(76 + 15) / 100 = 91%`. A precision e `15 / (15 + 4) = 78,9%`: entre os alertas, essa e a parcela correta. O recall e `15 / (15 + 5) = 75%`: um quarto das patologias escapou. O mesmo modelo pode parecer excelente pela acuracia e insuficiente pela lente clinica.
+
+### Como ler o laboratorio
+
+Altere o limiar de classificacao somente depois de compreender o padrao: reduzir o limiar chama mais pacientes para investigacao, aumentando recall e possivelmente `FP`; elevar o limiar exige mais evidencia, aumentando precision e possivelmente `FN`. A ROC mostra essa troca em muitos limiares; F1 resume uma troca especifica, nao substitui a escolha clinica.
+
+### Duvidas frequentes
+
+- **Acuracia alta prova que o modelo e bom?** Nao quando as classes sao desbalanceadas ou os erros tem custos diferentes.
+- **Recall alto e suficiente?** Nao; um modelo que alerta todos tem recall alto, mas pode produzir uma quantidade impraticavel de falsos positivos.
+- **ROC-AUC e uma probabilidade de acerto?** Nao. E uma medida de capacidade de ordenacao entre positivos e negativos em varios limiares.
+- **F1 deve sempre ser maximizado?** Nao necessariamente; em triagem, recall pode receber prioridade explicita.
+
+### Decisao responsavel
+
+O resultado deve ser escrito como uma tabela de erros e consequencias, nao como um unico numero vencedor. Antes de comparar modelos, fixe a classe positiva, o limiar, a particao e a metrica principal. A Camada 04 usa esse rigor para observar como o excesso de atributos altera a generalizacao.
+
 ## Mapa da aula
 
 1. [Subcamada 3.1: O conceito na vida real](#subcamada-31-o-conceito-na-vida-real)

@@ -19,6 +19,49 @@ conjunto de atributos -> coalizoes -> credito marginal -> soma dos creditos
 
 No beeswarm, observe simultaneamente importancia, direcao e dispersao; no caso local, pergunte por que aquele paciente recebeu aquela previsao. O erro comum e olhar apenas para o ranking medio e ignorar o sinal do impacto. A ponte para a Camada 07 e a diferenca entre explicar a populacao inteira e auditar uma vizinhanca individual.
 
+### Roteiro de dominio
+
+Monte uma coalizao com poucos atributos e compare a previsao sem eles com a previsao depois de inclui-los. Repita em ordens diferentes. A intuicao central e que o credito marginal depende do contexto, por isso o SHAP considera varias coalizoes em vez de premiar simplesmente a primeira variavel usada pela arvore.
+
+### Duvidas que esta aula responde
+
+- **SHAP positivo sempre significa risco clinico?** Significa empurrar a previsao do modelo para a classe positiva, dentro da referencia adotada.
+- **SHAP e igual a coeficiente?** Nao. O valor depende da instancia, da referencia e do modelo.
+- **A soma dos valores SHAP recupera o que?** A previsao do modelo, respeitando a forma e a saida explicada.
+- **Atributos correlacionados dividem credito perfeitamente?** Nao necessariamente; correlacao torna a interpretacao mais delicada.
+
+### Regra de explicacao Feynman
+
+Explique SHAP como dividir o premio de um time: pergunte quanto o resultado muda quando cada jogador entra em coalizoes diferentes. O premio e credito da previsao, nao certificado de causalidade.
+
+### Um jogo numerico de tres participantes
+
+Suponha um resultado cooperativo de 10 pontos produzido por tres atributos: glicemia, idade e pressao. Para saber quanto a glicemia contribui, nao basta olhar para uma unica ordem de entrada. Ela pode entrar sozinha, depois da idade ou depois de idade e pressao. O valor de Shapley calcula a contribuicao marginal em todas as ordens possiveis e tira uma media ponderada.
+
+```text
+ordem 1: glicemia entra primeiro       ganho = 4
+ordem 2: idade -> glicemia              ganho = 3
+ordem 3: pressao -> idade -> glicemia   ganho = 2
+valor SHAP da glicemia = media dos ganhos marginais
+```
+
+O ponto nao e decorar a lista de permutacoes; e perceber por que a ordem de entrada muda o credito quando os atributos cooperam. A propriedade aditiva exige que os creditos somem ao deslocamento entre a previsao media e a previsao daquela observacao.
+
+### Como ler um beeswarm
+
+Cada ponto representa uma observacao. A distancia horizontal mostra impacto: para a direita, empurra a classe positiva; para a esquerda, reduz a previsao. A cor representa o valor do atributo. Uma faixa larga indica variacao de impacto; uma faixa estreita indica efeito mais consistente. Sempre leia nome, sinal, magnitude e dispersao juntos.
+
+### Duvidas frequentes
+
+- **SHAP mede causalidade?** Nao; mede atribuicao dentro da funcao do modelo.
+- **Valor SHAP positivo significa que o paciente esta doente?** Significa que o atributo empurrou a previsao na direcao da classe positiva naquele caso.
+- **O ranking global explica todos os pacientes?** Nao. Ele resume impactos medios absolutos e pode esconder subgrupos.
+- **A soma precisa bater com a previsao?** Dentro da definicao e do explainer usados, a decomposicao deve respeitar a propriedade aditiva, considerando o valor base.
+
+### Ponte experimental
+
+O toy example torna visivel o credito; o momento serio aplica TreeSHAP ao Random Forest oficial. A etapa seguinte usa essas explicacoes para uma auditoria individual com LIME, sem confundir explicacao global com justificativa de um unico paciente.
+
 ## Mapa da aula
 
 1. [Subcamada 6.1: O conceito na vida real](#subcamada-61-o-conceito-na-vida-real)
@@ -134,7 +177,9 @@ Calcular a formula classica exigiria avaliar $2^{40} \approx 1,1$ trilhao de coa
 O codigo treina uma floresta em 3 atributos (2 informativos e 1 ruido) e calcula os valores SHAP exatos.
 
 ```python
-!pip install shap -q
+import sys
+import subprocess
+subprocess.check_call([sys.executable, "-m", "pip", "install", "shap", "-q"])
 import numpy as np
 import pandas as pd
 import shap

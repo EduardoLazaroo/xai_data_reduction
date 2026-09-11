@@ -22,6 +22,23 @@ dados rotulados -> split protegido -> modelo simples/complexo
 
 Ao executar, observe tres evidencias: a fronteira do modelo, a distancia entre acuracia de treino e teste e os erros clinicos `FN/FP`. Um erro comum e chamar qualquer modelo com treino alto de excelente; o criterio correto e perguntar se o desempenho se sustenta em dados nunca vistos. A ponte para a Camada 02 e o baseline: depois de entender o problema, veremos por que uma floresta de arvores costuma ser mais estavel que uma arvore isolada.
 
+### Roteiro de dominio
+
+Ao terminar, voce deve conseguir explicar sem codigo: **(a)** o que e uma amostra, atributo, alvo e previsao; **(b)** por que treino e teste precisam ser separados; **(c)** como reconhecer subajuste, boa generalizacao e sobreajuste; **(d)** por que `FN` e `FP` nao sao apenas numeros; e **(e)** por que mais colunas podem criar coincidencias falsas.
+
+Antes de rodar, faca tres previsoes: qual modelo tera maior acuracia de treino, qual tera maior gap e que tipo de ponto aparecera nas ilhas da fronteira. Depois compare previsao e resultado. Se forem diferentes, isso nao e fracasso: e justamente a evidencia que o experimento foi desenhado para revelar.
+
+### Duvidas que esta aula responde
+
+- **Treino e teste podem ter pacientes diferentes?** Devem ter, quando o objetivo e estimar comportamento em pacientes novos.
+- **Treino perfeito sempre e ruim?** Nao. Ele vira alerta quando o teste cai, quando a amostra e pequena ou quando houve vazamento.
+- **Ruido e o mesmo que erro de medicao?** Nao necessariamente: aqui ruido e uma variavel sem sinal preditivo; erro de medicao pode contaminar uma variavel que era util.
+- **Um split resolve tudo?** Nao. Ele e uma primeira protecao; validacao cruzada, repeticao de sementes e validacao externa aumentam a confianca.
+
+### Regra de explicacao Feynman
+
+Explique assim: “Treino e a lista de exercicios; teste e a prova surpresa. Overfitting e decorar a lista. Generalizacao e conseguir resolver uma questao nova”. Se voce nao consegue explicar o `gap` usando essa historia, volte ao grafico antes de avancar.
+
 ## Mapa da aula
 
 1. [Subcamada 1.1: O conceito na vida real](#subcamada-11-o-conceito-na-vida-real)

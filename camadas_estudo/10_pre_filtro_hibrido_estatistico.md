@@ -16,6 +16,48 @@ variancia baixa? -> remover estatua -> correlacao alta? -> remover clone -> vali
 
 Observe a lista de colunas antes/depois e a matriz de correlacao. O erro comum e supor que baixa correlacao significa relevancia ou usar todos os dados para aprender o filtro. A ponte para a Camada 11 e aplicar um criterio estatistico direcional e inferencial sobre as explicacoes que restaram.
 
+### Roteiro de dominio
+
+Antes do filtro, conte colunas e verifique escalas. Depois de cada etapa, registre quantas sobreviveram e quais foram removidas. Finalmente, treine o mesmo modelo no conjunto original e no conjunto pre-filtrado. O ganho so e valido se a selecao foi aprendida no treino e se a metrica do teste nao foi usada para decidir a poda.
+
+### Duvidas que esta aula responde
+
+- **Variancia baixa significa irrelevancia clinica?** Significa pouca variacao observada; a conclusao clinica exige contexto e escala de medida.
+- **Correlacao alta significa duplicidade perfeita?** Nao. Indica redundancia linear forte na amostra.
+- **Por que preservar a primeira coluna do par?** E uma regra deterministica de representante, nao prova de superioridade clinica.
+- **O pre-filtro substitui SHAP?** Nao. Ele remove desperdicio obvio; SHAP investiga comportamento e interacoes mais complexas.
+
+### Regra de explicacao Feynman
+
+Explique como arrumar uma mesa antes de chamar o especialista: retire copos vazios e duplicatas, mas nao jogue fora documentos apenas porque ainda nao leu o conteudo.
+
+### Um exemplo numerico de cada filtro
+
+Considere duas colunas de 100 pacientes:
+
+```text
+exame_A = [5.0, 5.0, 5.0, ...]          variancia = 0
+exame_B = [80.1, 79.8, 80.4, ...]        variancia > 0.01
+exame_C = exame_B * 1000                 |r(B, C)| aproximadamente 1
+```
+
+O primeiro filtro elimina `exame_A` porque ele nao separa pacientes naquela amostra. O segundo mantem apenas um representante de `B` e `C`, porque duas escalas carregam quase o mesmo movimento. Nenhuma dessas regras descobre qual coluna causa a patologia; elas apenas retiram desperdicio evidente.
+
+### Como auditar a decisao
+
+Depois de cada etapa, imprima: colunas iniciais, colunas removidas, colunas finais, variancias e pares com `|r|` acima do limiar. Se uma coluna clinicamente importante foi removida, investigue escala, janela temporal, unidade de medida e a regra de representante antes de aceitar o resultado.
+
+### Duvidas frequentes
+
+- **Variancia zero significa que o exame nunca tem valor clinico?** Nao; significa que ele nao variou na base usada para treinar o filtro.
+- **Pearson detecta toda redundancia?** Nao. Ele detecta associacao linear, nao relacoes em U ou interacoes.
+- **Por que ajustar no treino?** Para impedir que o teste participe da escolha e produza avaliacao otimista.
+- **O pre-filtro substitui SHAP?** Nao. Ele remove casos simples; SHAP investiga contribuicoes e interacoes.
+
+### Ponte para shap-select
+
+O pre-filtro responde “o que e parado ou repetido?”. A Camada 11 faz uma pergunta mais exigente: entre as colunas sobreviventes, quais contribuicoes explicativas apresentam direcao e evidencia estatistica?
+
 ## Mapa da aula
 
 1. [Subcamada 10.1: O conceito na vida real](#subcamada-101-o-conceito-na-vida-real)

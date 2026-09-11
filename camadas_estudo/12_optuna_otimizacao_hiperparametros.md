@@ -21,6 +21,51 @@ Observe a diferenca entre parametros aprendidos pelo modelo e hiperparametros es
 
 ---
 
+### Roteiro de dominio
+
+Defina antes da busca: metrica, particao, limites, numero de trials e criterio de parada. Durante o estudo, leia a historia dos trials; ao final, treine novamente o campeao e avalie uma unica vez no teste. Assim voce distingue “o melhor trial encontrado” de “um modelo que generaliza”.
+
+### Duvidas que esta aula responde
+
+- **Optuna aprende os parametros internos da floresta?** Nao; escolhe hiperparametros que controlam o treinamento.
+- **Mais trials garantem o melhor modelo possivel?** Nao. Melhoram a exploracao do espaco definido, mas podem sobreajustar a validacao.
+- **Por que validacao cruzada?** Para reduzir dependencia de uma unica divisao de treino.
+- **O teste pode escolher o melhor trial?** Nao. Se escolher, deixa de ser uma avaliacao final independente.
+
+### Regra de explicacao Feynman
+
+Explique Optuna como um viajante que registra quais caminhos levaram a bons lugares e escolhe a proxima rota com base nesse mapa. Ele nao conhece o destino final se voce usar a prova para guiar a viagem.
+
+### Um cozinheiro que aprende com as tentativas
+
+Imagine ajustar uma receita com tres controles: temperatura, tempo e quantidade de sal. Uma busca cega testa combinacoes sem aprender com o passado. A Optuna registra quais combinacoes deram bom resultado e concentra novas tentativas em regioes promissoras, sem deixar de explorar alternativas.
+
+```text
+trial 1 -> resultado ruim -> evita regiao parecida
+trial 2 -> resultado bom  -> explora vizinhanca
+trial 3 -> resultado bom  -> refina combinacao
+             |
+             v
+         melhor hiperparametro
+```
+
+O objetivo precisa ser definido antes: por exemplo, maximizar F1 medio na validacao cruzada. Cada trial deve usar os mesmos folds estratificados. O teste final nao participa da busca; ele avalia a receita escolhida depois que a cozinha foi fechada.
+
+### Como interpretar um estudo
+
+Leia `best_value` junto de `best_params`, numero de trials e variabilidade entre folds. Um trial vencedor por margem minima pode nao ser uma descoberta robusta. Compare tambem custo: uma configuracao com F1 praticamente igual e treino muito mais rapido pode ser preferivel.
+
+### Duvidas frequentes
+
+- **Optuna aprende os pesos da floresta?** Nao; escolhe hiperparametros, enquanto o modelo aprende pesos e regras no `.fit`.
+- **Mais trials garantem o modelo verdadeiro?** Nao. Melhoram a busca dentro do espaco definido, mas podem explorar ruido da validacao.
+- **Por que usar cross-validation?** Para reduzir dependencia de um unico split durante a escolha.
+- **Por que reajustar o campeao?** O estudo escolhe a configuracao; o modelo final precisa ser treinado com todos os dados de treino permitidos.
+
+### Ponte para o pipeline
+
+Optimizacao isolada nao e o objetivo. A Camada 13 mostra a ordem completa e quais artefatos devem ser registrados para tornar o experimento reproduzivel.
+
 ## Mapa da aula
 
 1. [Subcamada 12.1: O conceito na vida real](#subcamada-121-o-conceito-na-vida-real)

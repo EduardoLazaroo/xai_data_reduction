@@ -18,6 +18,60 @@ Observe se outro pesquisador conseguiria repetir o estudo apenas lendo a metodol
 
 ---
 
+### Roteiro de dominio
+
+Para cada afirmacao, marque sua origem: **dado medido, metodo, inferencia ou recomendacao**. Uma frase de Resultados deve permitir que o leitor confira a tabela; uma frase de Discussao deve conectar o resultado a uma hipotese, referencia ou limitacao. Se a frase nao couber em nenhuma categoria, ela precisa ser reescrita.
+
+### Duvidas que esta aula responde
+
+- **Resultados podem interpretar?** Podem descrever padroes observados, mas a explicacao e implicacao pertencem principalmente a Discussao.
+- **Hipotese confirmada significa verdade universal?** Nao. Significa que a evidencia apoiou um criterio dentro do protocolo.
+- **Por que declarar limitacoes?** Para delimitar onde o resultado pode e nao pode ser generalizado.
+- **O que HARKing prejudica?** Faz parecer que uma previsao foi feita antes do resultado quando nasceu depois dele.
+
+### Regra de explicacao Feynman
+
+Explique o artigo como um laudo: primeiro diga o que foi examinado, depois mostre as medidas, e so entao interprete o que elas sugerem. Misturar medida e opiniao dificulta a auditoria.
+
+### Um paragrafo que nao mistura camadas
+
+Compare estas duas frases:
+
+```text
+RESULTADO: O baseline obteve F1 = 0,8373 e o modelo enxuto F1 = 0,8610.
+DISCUSSÃO: A proximidade ou melhora sugere que a reducao preservou o sinal nesta amostra.
+```
+
+A primeira pode ser conferida diretamente na tabela. A segunda interpreta e precisa declarar limite: dataset sintetico, split especifico e ausencia de validacao externa. Separar as frases protege o leitor contra conclusoes escondidas dentro de numeros.
+
+### Como construir cada secao
+
+Introducao apresenta lacuna e pergunta. Metodologia permite repetir. Resultados mostram tabelas e figuras sem adjetivos. Discussao conecta numeros a teoria, compara trabalhos e reconhece limites. Conclusao responde a pergunta sem prometer mais do que o desenho permite.
+
+### O mesmo resultado em quatro linguagens
+
+Um unico achado pode aparecer assim:
+
+```text
+METODOLOGIA: treinamos Random Forests com 40 e 10 atributos no mesmo split estratificado.
+RESULTADOS: o baseline teve F1 = 0,8373; o modelo enxuto teve F1 = 0,8610.
+DISCUSSÃO: a reducao nao degradou o F1 nesta amostra e pode ter removido ruido.
+CONCLUSÃO: o resultado apoia H1 no protocolo, mas nao substitui validacao externa.
+```
+
+As frases nao sao repeticao. Cada uma responde a uma pergunta diferente: como foi medido, o que apareceu, o que pode significar e qual alcance a evidencia permite.
+
+### Duvidas frequentes
+
+- **Resultado e discussao podem aparecer no mesmo paragrafo?** Podem ser próximos, mas a funcao logica deve permanecer clara.
+- **Hipotese confirmada significa verdade universal?** Nao; significa que a evidencia sustentou o criterio predefinido naquele protocolo.
+- **Por que declarar limitacoes?** Porque delimita o alcance da inferencia e aumenta a credibilidade.
+- **Toda melhoria de F1 e clinicamente relevante?** Nao; relevancia depende de margem, erro, contexto e custo.
+
+### Ponte para a defesa
+
+Um artigo bem separado facilita responder perguntas: o que foi feito, que numero apareceu, como foi interpretado e o que ainda nao se sabe. A Camada 16 transforma essa cadeia em respostas de banca.
+
 ## Mapa da aula
 
 1. [Subcamada 15.1: O conceito na vida real](#subcamada-151-o-conceito-na-vida-real)

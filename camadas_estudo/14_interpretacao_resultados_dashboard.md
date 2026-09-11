@@ -18,6 +18,49 @@ Observe se a reducao de atributos preserva F1 e recall, e se o ganho de tempo e 
 
 ---
 
+### Roteiro de dominio
+
+Leia o dashboard em ordem: **o que mudou, quanto mudou, com que variabilidade, a que custo e com qual risco clinico**. Para cada painel escreva uma frase factual e uma frase interpretativa separadas. Depois procure contradicoes: menos atributos pode vir acompanhado de mais `FN`, e menor tempo nao compensa uma queda clinica inaceitavel.
+
+### Duvidas que esta aula responde
+
+- **Um dashboard substitui a analise estatistica?** Nao. Ele organiza evidencias; nao cria significancia.
+- **Uma porcentagem de economia e universal?** Nao. Depende de hardware, volume, custos e frequencia de uso.
+- **Por que mostrar baseline e campeao juntos?** Para dar escala e evitar interpretar um numero isolado.
+- **O que fazer quando os indicadores discordam?** Declarar o trade-off e voltar a metrica prioritaria do dominio.
+
+### Regra de explicacao Feynman
+
+Explique o dashboard como o painel de um carro: ele mostra velocidade, combustivel e alertas simultaneamente. Uma unica luz verde nao autoriza dizer que a viagem inteira esta segura.
+
+### Ler o dashboard em quatro perguntas
+
+Cada painel responde a uma pergunta diferente:
+
+```text
+reducao dimensional  -> quantos atributos deixaram de ser usados?
+tempo de treino       -> quanto custa reconstruir o modelo?
+latencia              -> quanto custa avaliar um paciente?
+F1/recall             -> a qualidade diagnostica foi preservada?
+```
+
+Um resultado so e operacionalmente bom quando as respostas formam um conjunto coerente. Reduzir de 40 para 10 atributos e perder recall pode ser inaceitavel, mesmo que o treino fique rapido. Manter F1 e reduzir latencia pode ser valioso, mas a conclusao depende do volume de pacientes e do custo real dos exames.
+
+### Como separar observacao de interpretacao
+
+Observacao: “o campeao usou 10 atributos e teve F1 de 0,86”. Interpretacao: “isso sugere que parte das colunas nao era necessaria para a tarefa nesta amostra”. Conclusao forte demais: “os outros 30 exames sao clinicamente inuteis”. O dashboard deve ajudar a enxergar essa diferenca.
+
+### Duvidas frequentes
+
+- **Uma barra maior significa importancia causal?** Nao; significa o valor da metrica representada.
+- **Tempo menor em uma rodada prova economia permanente?** Nao; repita em varias execucoes e considere o custo total.
+- **F1 igual significa risco clinico igual?** Nao necessariamente; a composicao entre precision, recall, FP e FN pode mudar.
+- **Como evitar uma escala enganosa?** Exiba unidades, baseline, numero de casos e intervalo ou variacao quando disponivel.
+
+### Ponte para a comunicacao cientifica
+
+O painel resume a evidencia; a Camada 15 ensina como relatar essa evidencia em IMRaD, separando resultado observado de discussao.
+
 ## Mapa da aula
 
 1. [Subcamada 14.1: O conceito na vida real](#subcamada-141-o-conceito-na-vida-real)

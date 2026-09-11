@@ -21,6 +21,63 @@ Procure o joelho: o ponto em que retirar mais atributos passa a custar qualidade
 
 ---
 
+### Roteiro de dominio
+
+Uma ablacao exige protocolo fixo: mesma particao, mesma metrica, mesma familia de modelo e ordem de remocao registrada. Marque o ponto de inflexao, mas tambem examine a variacao entre repeticoes. Um joelho visual e uma hipotese de trabalho, nao uma lei natural.
+
+### Duvidas que esta aula responde
+
+- **A curva mede causalidade?** Nao. Mede o efeito operacional de retirar atributos dentro do protocolo.
+- **Por que nao escolher sempre o menor conjunto?** Porque simplicidade extrema pode degradar recall, aumentar `FN` ou tornar o modelo instavel.
+- **O que e um knee point?** Um compromisso em que pequenos ganhos adicionais de reducao passam a custar muito desempenho.
+- **Como evitar conclusao dependente da semente?** Repita o estudo e reporte media, dispersao e intervalo.
+
+### Regra de explicacao Feynman
+
+Explique a ablacao como retirar pecas de uma bicicleta: primeiro saem acessorios sem efeito, depois chega um ponto em que remover mais uma peca afeta o movimento. Esse ponto e o joelho da curva.
+
+### O experimento de tirar pecas
+
+Uma ablacao pergunta o que acontece quando uma parte do sistema e retirada. No caso dos atributos, fixe um ranking e treine conjuntos de tamanho `40, 38, 36, ..., 2`. A comparacao so e justa se modelo, split, semente e metricas permanecerem constantes.
+
+```text
+atributos: 40 ---- 30 ---- 20 ---- 10 ---- 2
+F1 teste:  0.84   0.85    0.85    0.84   0.71
+tempo:     alto   medio   menor   baixo  minimo
+                 ^
+             regiao de equilibrio
+```
+
+O ponto de inflexao nao e automaticamente o menor conjunto. E a regiao em que remover mais atributos passa a destruir qualidade mais rapidamente que o custo economizado.
+
+### Como ler duas curvas ao mesmo tempo
+
+Leia a curva de F1 junto da curva de tempo. Um conjunto com F1 igual ao baseline e treino 40% mais rapido pode ser preferivel a um conjunto que ganha `0,002` de F1, mas dobra o custo. Depois examine recall e `FN`: em saude, uma pequena alteracao de F1 pode esconder uma mudanca relevante no erro clinico.
+
+### Um ponto de equilibrio calculado
+
+Imagine a seguinte curva:
+
+| Atributos | F1 teste | Tempo de treino |
+|---:|---:|---:|
+| 40 | 0,837 | 600 ms |
+| 20 | 0,836 | 350 ms |
+| 10 | 0,834 | 190 ms |
+| 4 | 0,760 | 120 ms |
+
+De 40 para 10, removemos 75% das colunas e perdemos apenas `0,003` de F1. De 10 para 4, economizamos mais `70 ms`, mas perdemos `0,074` de F1. Se a margem tolerada for `0,05`, o conjunto de 10 passa na regra e o de 4 nao. O joelho nao foi escolhido pela menor dimensao; foi encontrado comparando qualidade e custo.
+
+### Duvidas frequentes
+
+- **Ablacao prova que os atributos removidos eram ruido?** Prova apenas o efeito da remocao naquele protocolo.
+- **O ranking SHAP e a unica ordem possivel?** Nao; comparar SHAP e RFE e justamente uma forma de avaliar a dependencia do metodo.
+- **O joelho e uma constante matematica universal?** Nao. Ele depende de objetivo, tolerancia e custo.
+- **Treino mais rapido basta?** Nao. O ganho precisa preservar generalizacao e erros aceitaveis.
+
+### Ponte para a engenharia
+
+Depois de observar o custo da poda progressiva, a Camada 10 introduz uma faxina estatistica barata para remover estatuas e clones antes de gastar computacao com XAI.
+
 ## Mapa da aula
 
 1. [Subcamada 09.1: O conceito na vida real](#subcamada-091-o-conceito-na-vida-real)

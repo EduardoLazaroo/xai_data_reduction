@@ -19,6 +19,55 @@ modelo caixa-preta -> previsao -> explicacao global/local -> pergunta de auditor
 
 O estudante deve separar importancia de atributo de causalidade. O erro comum e dizer “SHAP provou que a variavel causa a doenca”; explicabilidade descreve o comportamento do modelo. A ponte para a Camada 06 e a justificativa matematica do credito distribuido pelo SHAP.
 
+### Roteiro de dominio
+
+Para cada explicacao, registre quatro itens: **previsao, referencia, atributos influentes e direcao do impacto**. Depois pergunte se a explicacao e global ou local, se ela e fiel ao modelo e se e plausivel no dominio. Essa ficha impede que “importante” vire automaticamente “causal”.
+
+### Duvidas que esta aula responde
+
+- **Explicar significa abrir o codigo interno?** Nao. Uma explicacao pode aproximar ou decompor o comportamento observado.
+- **Global e local competem?** Nao. O global mostra padroes da populacao; o local investiga um caso.
+- **Uma explicacao correta torna o modelo correto?** Nao. Um modelo pode ser fielmente explicado e ainda estar errado.
+
+### Regra de explicacao Feynman
+
+Diga que explicar e colocar legenda em uma decisao: a legenda ajuda a auditar, mas nao transforma uma decisao errada em correta nem prova que uma pista causou o evento.
+
+### Um mesmo modelo, duas perguntas diferentes
+
+Imagine uma floresta que classifica um paciente como patologia. A explicacao **global** pergunta: “em toda a populacao, quais atributos aparecem com maior impacto medio?”. A explicacao **local** pergunta: “neste paciente, por que a previsao atravessou o limiar?”. As duas respostas podem divergir sem que exista contradicao: importancia media e justificativa individual sao objetos diferentes.
+
+```text
+1000 pacientes -> explicacao global -> padroes recorrentes da populacao
+1 paciente     -> explicacao local  -> razoes desta decisao especifica
+```
+
+### O laboratorio como auditoria, nao como decoracao
+
+Primeiro registre a previsao e a classe real. Depois leia o ranking global; em seguida selecione uma instancia e examine a explicacao local. Procure concordancias e divergencias. Se uma variavel de ruido aparece no topo, isso e uma pergunta para investigar: pode ser coincidencia, vazamento, correlacao ou artefato do modelo.
+
+### Um caso global e um caso local
+
+Suponha que, em 1.000 pacientes, a media de `|SHAP|` seja `glicemia = 0,42`, `idade = 0,25` e `ruido = 0,04`. Globalmente, glicemia lidera. Agora observe um paciente especifico: `idade` contribuiu `+0,31`, glicemia `-0,08` e ruido `+0,02`. Nao ha contradicao. O ranking global resume a populacao; o laudo local explica uma decisao.
+
+```text
+populacao inteira: glicemia > idade > ruido
+paciente 047:      idade empurra risco; glicemia reduz risco; ruido quase neutro
+```
+
+O exemplo mostra por que uma variavel importante na media pode nao ser a razao principal de cada previsao. Sempre identifique o escopo antes de interpretar o grafico.
+
+### Duvidas frequentes
+
+- **Explicabilidade revela causalidade?** Nao. Ela descreve o comportamento aprendido pelo modelo.
+- **Global e local devem dar o mesmo ranking?** Nao. Uma variavel pode ser importante para poucos pacientes e pouco importante na media.
+- **Uma explicacao bonita valida o modelo?** Nao. Validacao preditiva e explicacao sao evidencias complementares.
+- **SHAP e LIME respondem a mesma pergunta?** Ambos explicam, mas usam mecanismos e propriedades diferentes; a estabilidade deve ser examinada.
+
+### Critério de qualidade
+
+Uma explicacao forte precisa ser fiel ao modelo, compreensivel para a audiencia e plausivel para o dominio. A Camada 06 formaliza essa ideia de atribuicao de credito com SHAP; a Camada 07 mostra uma aproximacao local agnostica ao modelo com LIME.
+
 ## Mapa da aula
 
 1. [Subcamada 5.1: O conceito na vida real](#subcamada-51-o-conceito-na-vida-real)

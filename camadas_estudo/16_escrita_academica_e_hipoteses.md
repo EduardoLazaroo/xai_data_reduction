@@ -18,6 +18,49 @@ Observe se voce consegue explicar o resultado para uma banca tecnica e para um g
 
 ---
 
+### Roteiro de dominio
+
+Treine cada resposta com a estrutura **afirmacao, evidencia, limite, proximo teste**. Para H1, mostre preservacao de desempenho e reducao de atributos; para H2, mostre treino e latencia sob o mesmo protocolo. Se um criterio falhar, nao esconda: explique qual hipotese nao foi apoiada e o que sera ajustado.
+
+### Duvidas que esta aula responde
+
+- **Como responder “isso funciona na vida real”?** Diga o que o experimento suporta e o que exige validacao externa.
+- **Como defender um resultado negativo?** Mostre o protocolo, a metrica, a incerteza e a decisao que o resultado impede.
+- **Economia computacional prova economia hospitalar?** Nao. Ela e um indicador tecnico que precisa ser traduzido com custos reais.
+- **Uma boa narrativa pode compensar um experimento fraco?** Nao. Escrita melhora a comunicacao, nao substitui evidencia.
+
+### Regra de explicacao Feynman
+
+Explique sua defesa como uma ponte com placas de peso: cada afirmacao precisa de uma evidencia capaz de suporta-la. Quando o peso excede a evidencia, a ponte quebra em uma pergunta simples da banca.
+
+### A estrutura de uma resposta tecnicamente honesta
+
+Uma defesa forte pode seguir quatro frases:
+
+```text
+1. Hipotese: o que esperavamos?
+2. Evidencia: qual KPI, tabela ou grafico sustenta a resposta?
+3. Limite: em que situacao essa evidencia pode nao se repetir?
+4. Proximo teste: qual experimento reduz essa incerteza?
+```
+
+Exemplo: “Esperavamos reduzir atributos sem perder F1. No split avaliado, o F1 foi preservado e a latencia caiu. Como os dados sao sinteticos, isso nao prova desempenho clinico externo. O proximo passo e validar em coortes independentes e medir falsos negativos por subgrupo.”
+
+### Como evitar promessas indevidas
+
+Troque “prova que” por “sustenta, neste protocolo, a hipotese de”. Troque “variavel causa” por “o modelo atribuiu contribuicao”. Troque “economiza vidas” por “pode reduzir custo operacional, sujeito a validacao clinica”. Precisao de linguagem e parte do rigor tecnico, nao uma fraqueza retorica.
+
+### Duvidas frequentes
+
+- **Reconhecer uma limitacao enfraquece a defesa?** Nao; mostra que o alcance do resultado foi compreendido.
+- **Uma hipotese precisa ser confirmada?** Nao. Um resultado negativo tambem informa e pode refutar uma expectativa.
+- **Como responder quando nao sabe?** Separe o que os dados mostram do que ainda precisa ser medido.
+- **Por que explicar para publicos diferentes?** Uma banca avalia rigor; um gestor precisa entender decisao, custo e risco.
+
+### Fechamento do percurso
+
+O especialista nao e quem memoriza nomes de algoritmos. E quem consegue ligar pergunta, dados, metodo, evidencia, limite e decisao sem saltos escondidos. Essa e a competencia que as 16 camadas constroem em conjunto.
+
 ## Mapa da aula
 
 1. [Subcamada 16.1: O conceito na vida real](#subcamada-161-o-conceito-na-vida-real)

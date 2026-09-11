@@ -18,6 +18,56 @@ atributos sorteados -> arvore N -/
 
 No grafico, procure diversidade entre arvores e estabilidade no resultado final. No codigo, altere `n_estimators` e `max_features`, mas mude uma coisa por vez. O erro mais comum e interpretar a probabilidade da floresta como certeza clinica; ela e uma agregacao estatistica e ainda precisa de calibracao e avaliacao. A ponte seguinte e a Camada 03: uma previsao da floresta so pode ser julgada com metricas que distinguem tipos de erro.
 
+### Roteiro de dominio
+
+Reconstrua a floresta no papel: uma arvore faz cortes, bootstrap muda os pacientes de cada arvore, `max_features` muda as colunas candidatas e a votacao combina as saidas. Depois responda: **por que diversidade ajuda, por que arvores profundas variam e por que 100 arvores nao significam 100 certezas?**
+
+### Duvidas que esta aula responde
+
+- **Bagging e a mesma coisa que treinar 100 vezes a mesma arvore?** Nao. As amostras e os atributos candidatos variam.
+- **Mais arvores sempre melhoram?** Normalmente estabilizam ate um ponto; aumentam custo e nao corrigem dados ruins ou vazamento.
+- **Importancia Gini e explicacao causal?** Nao. E uma medida de uso nos cortes; TreeSHAP sera estudado para atribuir impacto nas previsoes.
+
+### Regra de explicacao Feynman
+
+Diga que uma arvore e uma opiniao e a floresta e um conselho com membros que viram amostras diferentes. O conselho fica mais confiavel quando os membros sao bons e nao cometem exatamente o mesmo erro.
+
+### Uma previsao acompanhada de perto
+
+Suponha que quatro arvores avaliem o mesmo paciente e votem `[1, 1, 0, 1]`. A floresta produz `1` por maioria, mas essa resposta nao significa que quatro medicos concordaram sobre uma verdade clinica. Significa que, sob quatro amostras e subconjuntos de atributos diferentes, tres regras chegaram a classe positiva. Se as probabilidades forem `0.62`, `0.71`, `0.48` e `0.83`, a media e `0.66`; o limiar de decisao transforma essa media em classe.
+
+```text
+bootstrap A -> arvore 1 -> 1 (0.62) --\
+bootstrap B -> arvore 2 -> 1 (0.71) ----> media = 0.66 -> classe 1
+bootstrap C -> arvore 3 -> 0 (0.48) ----/
+bootstrap D -> arvore 4 -> 1 (0.83) --/
+```
+
+### O que o laboratorio precisa ensinar
+
+Ao comparar arvore e floresta, leia quatro coisas: acuracia de treino, acuracia de teste, gap e desenho da fronteira. Uma arvore pode atingir treino perfeito e criar bolsões minúsculos; a floresta pode continuar complexa, mas reduzir a instabilidade porque seus erros nao sao identicos. Alterar `n_estimators` mostra estabilidade; alterar `max_depth` mostra controle de complexidade. Nao confunda mais arvores com arvores mais profundas: sao controles diferentes.
+
+### Um exemplo numerico de votacao
+
+Para um paciente novo, quatro arvores podem produzir as probabilidades `0,62`, `0,71`, `0,48` e `0,83` para patologia. A floresta calcula:
+
+$$
+\frac{0,62 + 0,71 + 0,48 + 0,83}{4} = 0,66
+$$
+
+Com limiar de `0,50`, a classe final e `1`. Se o limiar subir para `0,70`, a mesma media sera classificada como `0`. A floresta agrega evidencias; o limiar transforma a media em decisao. Em um hospital, mudar o limiar altera `FP` e `FN`, portanto nao e um detalhe cosmetico.
+
+### Duvidas frequentes
+
+- **Por que a floresta nao e apenas uma arvore grande?** Porque cada arvore recebe variacoes de dados e atributos e suas previsoes sao agregadas.
+- **O voto majoritario explica a decisao?** Explica o mecanismo de agregacao, nao quais atributos causaram o voto; essa e a funcao da XAI.
+- **Mais arvores sempre melhoram?** Depois de certo ponto, o ganho tende a estabilizar enquanto custo e latencia continuam aumentando.
+- **Bootstrap usa o teste?** Nao. O sorteio ocorre dentro do treino; o teste permanece cego.
+
+### Leitura da ponte para a proxima aula
+
+A floresta entrega uma previsao e uma probabilidade agregada. A Camada 03 ensina por que essa previsao precisa ser examinada por `TP`, `TN`, `FP`, `FN`, F1, recall e ROC-AUC, e nao apenas por uma porcentagem de acertos.
+
 ## Mapa da aula
 
 1. [Subcamada 2.1: O conceito na vida real](#subcamada-21-o-conceito-na-vida-real)

@@ -21,6 +21,64 @@ Observe que uma boa explicacao local nao precisa representar toda a floresta. O 
 
 ---
 
+### Roteiro de dominio
+
+Repita a explicacao com sementes e tamanhos de vizinhanca diferentes. Compare quais atributos permanecem, a fidelidade local e a previsao original. Se a historia muda muito, a conclusao correta e “a explicacao e instavel sob esta configuracao”, nao escolher a versao mais conveniente.
+
+### Duvidas que esta aula responde
+
+- **LIME explica o modelo inteiro?** Nao. Ele aproxima o comportamento perto de uma instancia.
+- **Mais perturbacoes sempre melhoram?** Ajudam a reduzir variacao, mas podem incluir pontos irreais ou tornar a vizinhanca pouco local.
+- **Sigma grande e melhor?** Nao. Ele aumenta o raio e pode misturar regioes com comportamentos diferentes.
+- **Perturbacao aleatoria representa pacientes reais?** Somente se respeitar escalas, limites e relacoes plausiveis.
+
+### Regra de explicacao Feynman
+
+Explique LIME como usar uma lupa: ela mostra detalhes de um ponto, mas nao permite afirmar como a cidade inteira funciona. Mover a lupa ou mudar o foco pode alterar o que aparece.
+
+### Um paciente e uma vizinhanca
+
+Considere um paciente com probabilidade `0,503` de patologia. Ele esta praticamente no limiar: uma pequena mudanca em glicemia, idade ou troponina pode alterar a classe. O LIME cria copias perturbadas, consulta a floresta e observa quais mudancas acompanham a probabilidade.
+
+```text
+paciente alvo x:       [glicemia 140, idade 62, troponina 0.8] -> 0.503
+clone 1:               [glicemia 145, idade 62, troponina 0.8] -> 0.611
+clone 2:               [glicemia 140, idade 62, troponina 0.5] -> 0.472
+clone 3:               [glicemia 138, idade 61, troponina 0.8] -> 0.491
+                                  |
+                                  v
+                       ajuste local -> sinais que empurram a decisao
+```
+
+Uma perturbacao distante recebe peso menor que uma perturbacao proxima. A explicacao responde “o que influenciou esta decisao nesta vizinhanca”, nao “qual e a lei universal do modelo”.
+
+### Como interpretar a estabilidade
+
+Rode a mesma instancia com varias sementes. Se glicemia aparece sempre com sinal positivo e ruido oscila perto de zero, a leitura e mais confiavel. Se os atributos trocam completamente de posicao, a explicacao e sensivel ao desenho da vizinhanca e deve ser apresentada com cautela. Compare tambem a fidelidade do explicador: uma reta que nao reproduz bem a floresta local nao e um bom laudo.
+
+### Um calculo simples de proximidade
+
+Considere o paciente alvo `x = [0, 0]` e dois clones: `z1 = [0, 0,1]` e `z2 = [1, 1]`. Supondo `sigma = 0,5`, os pesos do kernel sao:
+
+$$
+\pi_x(z_1)=e^{-0,1^2/0,5^2}\approx0,961,
+\qquad
+\pi_x(z_2)=e^{-2/0,5^2}\approx0,0003
+$$
+
+Mesmo que ambos recebam previsoes da floresta, `z1` influencia muito mais a reta local porque esta proximo do paciente. O LIME nao trata todos os exemplos sinteticos como igualmente importantes; ele aproxima o comportamento no bairro do caso auditado.
+
+### Duvidas frequentes
+
+- **Por que nao explicar a floresta inteira com uma reta?** Porque a fronteira global pode ter degraus e interacoes que uma reta nao representa.
+- **Vizinho sintetico e um paciente real?** Nao. E uma sonda matematica e pode produzir combinacoes clinicamente impossiveis se o gerador nao tiver restricoes.
+- **Coeficiente positivo prova risco causal?** Nao; indica associacao local com a saida do modelo.
+- **Por que usar um paciente no limiar?** Porque a decisao e mais vulneravel a pequenas mudancas e merece auditoria detalhada.
+
+### Ponte para a decisao
+
+Depois do laudo, a equipe deve perguntar se os atributos destacados fazem sentido clinico e se a previsao original e confiavel. A Camada 08 contrasta essa auditoria local com uma selecao global e recursiva: RFE.
+
 ## Mapa da aula
 
 1. [Subcamada 07.1: O conceito na vida real](#subcamada-071-o-conceito-na-vida-real)

@@ -6,18 +6,73 @@
 
 > **Objetivo da aula:** compreender a dinamica geometrica do mal da dimensionalidade, distinguir formalmente atributos informativos, redundantes e ruidos puros, e entender o Fenomeno de Hughes, onde adicionar variaveis alem de um ponto otimo comeca a prejudicar a generalizacao.
 
-## Campo Didatico: Enxergar Dimensoes Como Espaco
+## Campo Didatico: Por Que Mais Colunas Podem Piorar o Modelo
 
-Construa a intuicao em ordem: compare uma nuvem em 2D, adicione atributos informativos, adicione redundancias e por fim injete ruido. Em cada cenario registre o numero de colunas, a densidade dos dados, o F1 de teste e o gap. A pergunta-guia e: **qual atributo acrescenta sinal e qual apenas aumenta o espaco para coincidencias?**
+### Comece com uma situacao que qualquer pessoa consegue enxergar
+
+Imagine uma sala com 10 alunos e 2 perguntas na prova. E relativamente facil perceber quais respostas caminham juntas. Agora mantenha os mesmos 10 alunos e crie 40 perguntas, sendo que apenas 10 realmente medem o conteudo da prova; outras repetem perguntas antigas e 20 sao sorteios sem relacao com a materia.
+
+O professor nao ganhou 30 novas pistas confiaveis. Ganhou 30 oportunidades para encontrar coincidencias. Um aluno que decorou a prova consegue parecer brilhante ao explorar essas coincidencias, mas fracassa diante de uma questao nova. O mesmo acontece com um modelo de Machine Learning: o problema nao e apenas ter muitas colunas; e ter poucas observacoes para ocupar um espaco cada vez maior.
+
+### Quatro colunas podem parecer iguais, mas nao sao
+
+| Coluna | Exemplo | Relacao com o diagnostico | O que acontece |
+|---|---|---|---|
+| Sinal informativo | troponina | acompanha um mecanismo clinico relevante | ajuda a separar as classes |
+| Sinal redundante | glicemia em duas unidades | repete uma informacao ja presente | aumenta custo sem acrescentar muito |
+| Ruido puro | numero aleatorio do prontuario | nao tem relacao estavel com a classe | permite coincidencias no treino |
+| Vazamento | resultado do diagnostico final | revela direta ou indiretamente o alvo | produz desempenho artificialmente alto |
+
+A diferenca entre **mais pacientes** e **mais colunas** e essencial. Mais pacientes oferecem mais evidencia sobre o mesmo problema. Mais colunas podem oferecer mais evidencia, mas tambem podem aumentar o espaco vazio, o custo de coleta e a chance de uma relacao acidental parecer verdadeira.
+
+### A mecanica em uma imagem
 
 ```text
-2D compreensivel -> sinais uteis -> clones -> ruido
-       |                |          |       |
-       v                v          v       v
-   fronteira       ganho real   repeticao  Hughes
+                    MESMOS 2.000 PACIENTES
+                            |
+      +--------------------------+--------------------------+
+      |                                                     |
+      v                                                     v
+  10 atributos uteis                              10 uteis + 30 extras
+  fronteira baseada em sinal                      fronteira com muito espaco vazio
+      |                                                     |
+      v                                                     v
+  regra tende a repetir                           algumas coincidencias parecem regra
+  em pacientes novos                               treino alto, teste pode cair
 ```
 
-Observe o ponto em que mais atributos deixam de melhorar o teste. O erro comum e defender “mais dados” sem distinguir mais pacientes de mais colunas. A ponte para a Camada 05 e natural: se o modelo sofre com excesso de dimensao, precisamos perguntar quais variaveis realmente influenciam suas decisoes.
+O **Fenomeno de Hughes** descreve justamente essa curva: adicionar atributos pode melhorar o desempenho no inicio, atingir um ponto otimo e depois piorar a generalizacao quando o ruido e a esparsidade passam a dominar.
+
+### Antes do laboratorio: quatro previsoes
+
+1. Com poucos atributos informativos, o treino e o teste devem ficar relativamente proximos.
+2. Ao adicionar ruido, a acuracia de treino pode continuar alta, porque a floresta encontra cortes para separar a amostra conhecida.
+3. A acuracia de teste tende a cair quando as coincidencias nao se repetem em pacientes novos.
+4. A diferenca treino menos teste, o `gap`, deve crescer.
+
+Essas previsoes sao o contrato do experimento. O grafico nao serve para decorar o nome Hughes; serve para verificar se a curva observada sustenta ou contradiz a explicacao.
+
+### Duvidas que precisam ficar resolvidas antes do codigo
+
+- **Redundancia e ruido sao iguais?** Nao. Redundancia contem sinal repetido; ruido nao contem sinal confiavel.
+- **Mais pacientes eliminam o problema?** Podem reduzir coincidencias, mas nao tornam uma coluna sem sinal util nem eliminam seu custo.
+- **Hughes sempre aparece no mesmo numero de colunas?** Nao. O ponto depende da quantidade de amostras, do ruido, do modelo e da metrica.
+- **Uma coluna importante pode ter correlacao baixa com outra?** Sim. Baixa correlacao nao significa irrelevancia; uma variavel pode trazer informacao nova ou uma relacao nao linear.
+- **Alta acuracia de treino prova que a coluna e clinica?** Nao. So o desempenho em dados reservados e uma investigacao de dominio podem sustentar essa suspeita.
+
+### O que deve aparecer na saida
+
+Ao executar o toy example, a tabela mental e esta:
+
+```text
+ruido adicionado | treino       | teste        | gap
+0                | alto         | alto         | pequeno
+10               | alto         | pode cair    | maior
+60               | muito alto   | menor        | grande
+100              | muito alto   | instavel     | muito grande
+```
+
+Os valores exatos dependem da semente e da implementacao. O padrao importante e a separacao entre memorizar a amostra e generalizar para dados novos. Se uma execucao nao mostrar queda, isso nao autoriza afirmar que ruido e bom: pode indicar que a amostra e grande, a arvore esta regularizada ou o efeito ainda nao atingiu o ponto de saturacao. A ponte para a Camada 05 e inevitavel: depois de observar que nem toda coluna merece permanecer, precisamos explicar quais atributos o modelo realmente usou.
 
 ## Mapa da aula
 
@@ -89,15 +144,23 @@ Desempenho no Teste
 
 ## Subcamada 4.3: Desmistificando a Teoria e a Notacao Formal
 
-### O volume do hipercubo unitario
+### O volume do hipercubo e a quantidade de celulas
 
-Considere um espaco de $d$ atributos, onde cada atributo foi normalizado entre `0` e `1`. O volume total do espaco cresce exponencialmente com a dimensao:
+Considere um espaco de $d$ atributos, onde cada atributo foi normalizado entre `0` e `1`. O volume do hipercubo unitario continua sendo `1`, independentemente de `d`:
 
 $$
-V = 1^d = 1
+V_{continuo} = 1^d = 1
 $$
 
-Contudo, a distancia media entre dois pontos vizinhos aleatorios cresce com a raiz da dimensao:
+O que cresce exponencialmente e a quantidade de pequenas celulas necessarias para dividir esse espaco. Se cada atributo for dividido em `m` intervalos, serao necessarias:
+
+$$
+N_{celulas} = m^d
+$$
+
+Com `m = 10`, temos `10^2 = 100` regioes em 2D, `10^3 = 1.000` em 3D e `10^{40}` em 40D. Com apenas 2.000 pacientes, a maioria dessas regioes nao tera observacao. Essa e a intuicao correta de esparsidade: o espaco pode ter volume unitario, mas ficar praticamente vazio quando o dividimos em regioes de resolucao util.
+
+Contudo, a distancia euclidiana entre pontos tambem acumula diferencas em mais coordenadas:
 
 $$
 \operatorname{dist}(x, x') = \sqrt{\sum_{j=1}^{d} (x_j - x'_j)^2}
@@ -110,9 +173,9 @@ Traducao simbolo por simbolo:
 | `d` | quantidade de atributos (dimensao do dataset: no projeto, `d = 40`) |
 | `x_j` | valor do exame `j` para um paciente |
 | `x'_j` | valor do mesmo exame para outro paciente |
-| `dist` | no espaco de alta dimensao, todos os pacientes ficam distantes entre si |
+| `dist` | medida de separacao entre dois pacientes no espaco de atributos |
 
-Em alta dimensao, os pontos tornam-se isolados e equidistantes. Os algoritmos precisam interpolar em regioes vazias onde nao ha observacoes suficientes.
+Em alta dimensao, os pontos tendem a ficar mais isolados e as distancias podem se tornar menos discriminativas. Nao e correto afirmar que todos ficam exatamente equidistantes; a afirmacao segura e que o algoritmo encontra menos vizinhos realmente proximos e precisa tomar decisoes em regioes com pouca evidencia.
 
 ### A ordem correta evita vazamento
 
@@ -140,6 +203,7 @@ X_puro, y = make_classification(n_samples=1000, n_features=10, n_informative=10,
 quantidades_ruido = [0, 10, 30, 60, 100]
 acc_tr_lista = []
 acc_te_lista = []
+gap_lista = []
 
 for n_r in quantidades_ruido:
     if n_r == 0:
@@ -147,10 +211,15 @@ for n_r in quantidades_ruido:
     else:
         ruidos = np.random.normal(0, 1, size=(1000, n_r))
         X = np.hstack([X_puro, ruidos])
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.30, random_state=42)
+    X_tr, X_te, y_tr, y_te = train_test_split(
+        X, y, test_size=0.30, stratify=y, random_state=42
+    )
     rf = RandomForestClassifier(n_estimators=50, max_depth=8, random_state=42).fit(X_tr, y_tr)
-    acc_tr_lista.append(accuracy_score(y_tr, rf.predict(X_tr)))
-    acc_te_lista.append(accuracy_score(y_te, rf.predict(X_te)))
+    acc_treino = accuracy_score(y_tr, rf.predict(X_tr))
+    acc_teste = accuracy_score(y_te, rf.predict(X_te))
+    acc_tr_lista.append(acc_treino)
+    acc_te_lista.append(acc_teste)
+    gap_lista.append(acc_treino - acc_teste)
 
 plt.figure(figsize=(9, 4))
 plt.plot(quantidades_ruido, acc_tr_lista, marker="o", label="Treino (memoriza)")
@@ -159,9 +228,13 @@ plt.title("Comprovacao Experimental do Fenomeno de Hughes")
 plt.xlabel("Colunas de ruido adicionadas"); plt.ylabel("Acuracia")
 plt.grid(True, linestyle="--", alpha=0.5); plt.legend()
 plt.tight_layout(); plt.show()
+
+print("\nResumo experimental:")
+for ruido, treino, teste, gap in zip(quantidades_ruido, acc_tr_lista, acc_te_lista, gap_lista):
+    print(f"Ruido={ruido:3d} | treino={treino:.3f} | teste={teste:.3f} | gap={gap:.3f}")
 ```
 
-> **O que voce deve notar no grafico gerado:** enquanto o treino permanece elevado (o modelo continua achando regras para tudo), o teste decai conforme o volume de ruido aumenta, ilustrando o Fenomeno de Hughes.
+> **O que voce deve notar no grafico gerado:** compare as duas linhas, mas tambem leia o resumo impresso. O sinal de sobreajuste e o treino permanecer alto enquanto o teste cai e o `gap = treino - teste` aumenta. A queda pode nao ser monotonicamente perfeita em uma unica amostra; procure a tendencia e repita com outras sementes se quiser uma conclusao mais estavel.
 
 **Mini-investigacao:** aumente `n_samples` de `1000` para `3000`. O efeito do ruido diminui? Mais amostras ajudam a diluir as coincidencias estocasticas.
 
