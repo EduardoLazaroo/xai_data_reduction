@@ -73,6 +73,33 @@ O conjunto final contem apenas `phi_glicemia`. O atributo com beta negativo nao 
 
 Depois que o conjunto foi filtrado por evidencia, ainda resta escolher a melhor configuracao do modelo. A Camada 12 usa Optuna para buscar hiperparametros sem transformar o teste em gabarito.
 
+## Cultura, Historia e Referencias
+
+Esta camada junta duas culturas que nem sempre conversam: a explicabilidade de modelos e a inferencia estatistica. Fisher popularizou o uso do p-valor como medida de evidencia contra uma hipotese nula, mas o debate historico mostra que p-valor nao e probabilidade de uma hipotese ser verdadeira. A [documentacao do Logit no statsmodels](https://www.statsmodels.org/stable/generated/statsmodels.discrete.discrete_model.Logit.html) e a [de OLS](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html) ajudam a ligar formula, ajuste e saida computacional.
+
+O artefato [modulo5_shap_select_analysis.png](../assets/modulo5_shap_select_analysis.png) deve ser lido com duas perguntas: o efeito aponta na direcao esperada? A evidencia e suficiente sob o protocolo? Nao use um corte de `0,05` como ritual; declare hipotese, modelo, multiplicidade e tamanho de efeito.
+
+**Pergunta cultural:** por que a comunidade estatistica critica o uso mecanico de p-valores? Porque um numero pequeno pode virar uma falsa certeza quando muitas hipoteses, amostras oportunistas ou escolhas pos-hoc ficam escondidas.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [Analise shap-select](../assets/modulo5_shap_select_analysis.png), lendo beta, p-valor e aprovacao.
+- **Referencia:** [Logit no statsmodels](https://www.statsmodels.org/stable/generated/statsmodels.discrete.discrete_model.Logit.html) e [OLS](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html).
+- **Audio de abertura:** narrar o tribunal: volume da testemunha nao substitui evidencia.
+- **Imagem mental:** duas portas: direcao correta e evidencia estatistica.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Evidencia estatistica lida` quando o aluno nao confundir p-valor com tamanho ou causalidade.
+- **Debate:** “Um resultado com `p<0,05` deve entrar automaticamente no modelo?”
+- **Papel rotativo:** juiz, testemunha, estatistico e especialista do dominio.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** classificar uma tabela de beta/p-valor em aprovado, invertido ou inconclusivo.
+- **Produto da aula:** parecer de selecao com direcao, evidencia, efeito pratico e limitacao.
+- **Conexao profissional:** comparar selecao por `|SHAP|` com selecao por inferencia.
+
 ## Mapa da aula
 
 1. [Subcamada 11.1: O conceito na vida real](#subcamada-111-o-conceito-na-vida-real)

@@ -79,6 +79,33 @@ Mesmo que ambos recebam previsoes da floresta, `z1` influencia muito mais a reta
 
 Depois do laudo, a equipe deve perguntar se os atributos destacados fazem sentido clinico e se a previsao original e confiavel. A Camada 08 contrasta essa auditoria local com uma selecao global e recursiva: RFE.
 
+## Cultura, Historia e Referencias
+
+O LIME foi apresentado por Ribeiro, Singh e Guestrin no artigo [Why Should I Trust You?](https://doi.org/10.1145/2939672.2939778), uma pergunta culturalmente poderosa: confiar em uma previsao nao e o mesmo que aceitar uma caixa-preta sem questionamento. O trabalho tornou popular a ideia de uma explicacao local simples para um modelo complexo, mas tambem abriu debates sobre instabilidade e fidelidade.
+
+Veja o artefato [modulo3_lime_local.png](../assets/modulo3_lime_local.png) e pergunte: se eu mudar a semente, a vizinhanca ou o kernel, o laudo continua parecido? Essa pergunta faz parte da cultura profissional de explicabilidade. O [repositorio oficial do LIME](https://github.com/marcotcr/lime) permite conhecer a ferramenta original.
+
+**Pergunta cultural:** uma explicacao que muda a cada execucao e uma explicacao ou apenas uma narrativa plausivel? A resposta exige medir estabilidade, nao escolher o grafico mais convincente.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [Laudo LIME](../assets/modulo3_lime_local.png), destacando paciente proximo de `P=0,50`.
+- **Referencia:** [Repositorio oficial do LIME](https://github.com/marcotcr/lime) e artigo [Why Should I Trust You?](https://doi.org/10.1145/2939672.2939778).
+- **Audio de abertura:** narrar a palpacao medica como metafora de perturbacao local.
+- **Imagem mental:** mapa global complexo e reta desenhada apenas no quarteirao do paciente.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Auditoria local realizada` quando o aluno comparar previsao original, vizinhanca e fidelidade.
+- **Debate:** “Se a explicacao muda com a semente, o que exatamente podemos afirmar?”
+- **Papel rotativo:** paciente, modelo caixa-preta, explicador e auditor de estabilidade.
+
+## 💡 Engajamento e Conhecimento
+
+- **Laboratorio social:** cada grupo usa um `sigma` diferente e compara coeficientes locais.
+- **Produto da aula:** laudo com impacto, proximidade, estabilidade e possivel combinacao clinicamente impossivel.
+- **Conexao profissional:** criar uma regra de quando uma explicacao instavel deve ser recusada.
+
 ## Mapa da aula
 
 1. [Subcamada 07.1: O conceito na vida real](#subcamada-071-o-conceito-na-vida-real)

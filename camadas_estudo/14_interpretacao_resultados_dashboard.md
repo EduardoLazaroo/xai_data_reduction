@@ -61,6 +61,33 @@ Observacao: “o campeao usou 10 atributos e teve F1 de 0,86”. Interpretacao: 
 
 O painel resume a evidencia; a Camada 15 ensina como relatar essa evidencia em IMRaD, separando resultado observado de discussao.
 
+## Cultura, Historia e Referencias
+
+Dashboard executivo tem uma historia propria: a visualizacao estatistica busca reduzir carga cognitiva sem reduzir a verdade. Edward Tufte popularizou principios de clareza, comparacao e economia visual em [The Visual Display of Quantitative Information](https://www.edwardtufte.com/book/the-visual-display-of-quantitative-information/). O [dashboard_final_comparativo.png](../assets/dashboard_final_comparativo.png) deve ser usado para perguntar se a forma da imagem ajuda a conferir os numeros.
+
+Uma boa visualizacao nao “vende” o modelo; ela torna diferencas visiveis e contestaveis. Sempre acompanhe cada painel de unidade, baseline, denominador e contexto. Evite cortar eixos para fabricar dramaticidade ou usar cor sem legenda.
+
+**Pergunta cultural:** quem e o leitor do dashboard? Um pesquisador quer incerteza e protocolo; um gestor quer decisao e custo; uma equipe clinica quer risco por tipo de erro. A mesma figura precisa declarar para quem foi desenhada.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [Dashboard final comparativo](../assets/dashboard_final_comparativo.png), com dimensao, treino, latencia e F1.
+- **Referencia visual:** principios de [The Visual Display of Quantitative Information](https://www.edwardtufte.com/book/the-visual-display-of-quantitative-information/).
+- **Audio de abertura:** descrever um painel para pesquisador, gestor e equipe clinica, mostrando que cada publico pergunta algo diferente.
+- **Imagem mental:** quatro paineis formando uma decisao, nao quatro graficos isolados.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Resultado comunicado` quando observacao, interpretacao e recomendacao estiverem separadas.
+- **Debate:** “Qual painel mudaria sua decisao de implantacao e por que?”
+- **Papel rotativo:** designer, estatistico, gestor e profissional de saude.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** cada grupo faz uma leitura de 60 segundos do dashboard sem adjetivos.
+- **Produto da aula:** legenda executiva com baseline, unidade, denominador, ganho e limite.
+- **Conexao profissional:** transformar numeros em decisao sem esconder FN, custo ou variacao.
+
 ## Mapa da aula
 
 1. [Subcamada 14.1: O conceito na vida real](#subcamada-141-o-conceito-na-vida-real)

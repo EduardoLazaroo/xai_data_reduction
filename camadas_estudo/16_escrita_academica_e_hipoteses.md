@@ -61,6 +61,33 @@ Troque “prova que” por “sustenta, neste protocolo, a hipotese de”. Troqu
 
 O especialista nao e quem memoriza nomes de algoritmos. E quem consegue ligar pergunta, dados, metodo, evidencia, limite e decisao sem saltos escondidos. Essa e a competencia que as 16 camadas constroem em conjunto.
 
+## Cultura, Historia e Referencias
+
+A escrita cientifica tambem tem memoria de erros. O termo HARKing, “Hypothesizing After the Results are Known”, foi discutido por Kerr no artigo [HARKing: Hypothesizing After the Results are Known](https://doi.org/10.1207/S15327965PLI1103_04). A ideia e simples: transformar uma descoberta pos-hoc em hipotese pre-registrada distorce a historia da evidencia. Recursos como o [OSF Registries](https://osf.io/registries/) ajudam a registrar perguntas e criterios antes da analise.
+
+Leia ainda os principios [FAIR para dados cientificos](https://www.go-fair.org/fair-principles/) e veja a pasta `assets/` como uma pequena colecao de artefatos que precisa de nomes, origem, versao e contexto. Uma defesa madura nao esconde incerteza: mostra o que foi medido, o que foi inferido e o que ainda precisa ser testado.
+
+**Pergunta cultural:** qual e a diferenca entre contar uma boa historia e fabricar uma boa historia? A primeira organiza evidencias sem ultrapassa-las; a segunda altera o passado para fazer o resultado parecer inevitavel.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** tabelas, figuras e documento do artigo em `docs/` e `assets/`.
+- **Referencia:** [OSF Registries](https://osf.io/registries/) e [Principios FAIR](https://www.go-fair.org/fair-principles/).
+- **Audio de abertura:** simular uma banca com uma pergunta simples: “o que exatamente seus dados provam?”.
+- **Imagem mental:** ponte com placas de peso: cada afirmacao precisa suportar a evidencia.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Defesa preparada` quando a resposta apresentar hipotese, evidencia, limite e proximo teste.
+- **Debate:** “Reconhecer uma limitacao enfraquece ou fortalece uma tese?”
+- **Papel rotativo:** banca, pesquisador, gestor e leitor critico.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** realizar uma mini-banca de 5 minutos por grupo, com direito a replica baseada em KPI.
+- **Produto da aula:** ficha de defesa com H1, H2, evidencia, ressalva e experimento futuro.
+- **Conexao profissional:** trocar “prova que” por uma afirmacao proporcional ao desenho experimental.
+
 ## Mapa da aula
 
 1. [Subcamada 16.1: O conceito na vida real](#subcamada-161-o-conceito-na-vida-real)

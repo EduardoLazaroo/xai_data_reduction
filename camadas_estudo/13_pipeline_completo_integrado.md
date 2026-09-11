@@ -75,6 +75,33 @@ Essa linha nao autoriza atribuir o ganho inteiro ao Optuna. Para investigar, com
 
 Com os artefatos preservados, a Camada 14 pode transformar numeros em dashboard sem esconder o caminho que os produziu.
 
+## Cultura, Historia e Referencias
+
+Pipeline nao e apenas “rodar tudo”. A cultura de engenharia de dados aprendeu, depois de muitos experimentos irreproduziveis, que um resultado precisa carregar sua origem: versao, semente, dados, codigo, parametros e artefatos. O modelo de referencia [CRISP-DM](https://www.ibm.com/docs/en/spss-modeler/saas?topic=projects-crisp-dm) e a pratica atual de [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/) ajudam a compreender essa mentalidade de ciclo e rastreabilidade.
+
+O pipeline deste projeto deve ser lido como uma cadeia de custodia. Cada grafico em `assets/` e uma testemunha de uma etapa; cada KPI precisa ser remontavel a um split e a uma configuracao. O [pipeline_completo.py](../pipeline_completo.py) e, portanto, tanto codigo quanto documento metodologico.
+
+**Pergunta cultural:** por que equipes maduras registram ate tentativas que falharam? Porque reproducibilidade nao e guardar apenas o vencedor; e permitir entender como o vencedor foi encontrado.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [Dashboard final](../assets/dashboard_final_comparativo.png) e os cinco graficos intermediarios em `assets/`.
+- **Referencia:** [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/) e modelo [CRISP-DM](https://www.ibm.com/docs/en/spss-modeler/saas?topic=projects-crisp-dm).
+- **Audio de abertura:** narrar a linha de montagem: nenhuma caixa pode perder sua etiqueta.
+- **Imagem mental:** cada etapa recebe entrada, produz saida e deixa um recibo.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Pipeline rastreavel` quando cada KPI puder ser ligado a codigo, split, seed e artefato.
+- **Debate:** “Se o resultado melhorou, qual etapa merece o credito?”
+- **Papel rotativo:** dono dos dados, MLOps, cientista, auditor e relator.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** desenhar o fluxo completo e marcar onde o vazamento poderia ocorrer.
+- **Produto da aula:** ficha de custodia de dados com entrada, transformacao, saida, custo e risco.
+- **Conexao profissional:** explicar por que o pipeline e documento metodologico, nao apenas script.
+
 ## Mapa da aula
 
 1. [Subcamada 13.1: O conceito na vida real](#subcamada-131-o-conceito-na-vida-real)

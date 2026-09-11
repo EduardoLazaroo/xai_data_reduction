@@ -58,6 +58,33 @@ Depois de cada etapa, imprima: colunas iniciais, colunas removidas, colunas fina
 
 O pre-filtro responde “o que e parado ou repetido?”. A Camada 11 faz uma pergunta mais exigente: entre as colunas sobreviventes, quais contribuicoes explicativas apresentam direcao e evidencia estatistica?
 
+## Cultura, Historia e Referencias
+
+Pearson ajudou a consolidar a linguagem moderna da correlacao e da estatistica aplicada, mas a cultura estatistica madura tambem ensina seus limites: correlacao linear nao e causalidade, nem detecta toda relacao relevante. Consulte a historia do [coeficiente de correlacao de Pearson](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) e a documentacao de [VarianceThreshold](https://scikit-learn.org/stable/modules/feature_selection.html#variance-threshold) para relacionar a ideia classica a implementacao moderna.
+
+O pre-filtro e uma tradicao de engenharia pragmatica: usar uma ferramenta barata para nao gastar uma ferramenta sofisticada com lixo obvio. O artefato visual mais importante e a matriz de correlacao produzida no laboratorio; ela deve ser lida como evidencia amostral, nao como mapa de causalidade.
+
+**Pergunta cultural:** por que a estatistica classica continua viva na era da XAI? Porque custo computacional, escala de dados e controle de qualidade continuam sendo problemas concretos, independentemente do nome do algoritmo.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** matriz de correlacao do toy example e tabela de colunas antes/depois.
+- **Referencia:** [VarianceThreshold](https://scikit-learn.org/stable/modules/feature_selection.html#variance-threshold) e documentacao de correlacao.
+- **Audio de abertura:** contar a faxina da sala antes da visita do especialista.
+- **Imagem mental:** estatua parada, clone em outra unidade e biomarcador que ainda precisa de SHAP.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Faxina auditada` quando o aluno justificar cada coluna removida sem chamar isso de causalidade.
+- **Debate:** “Quem autoriza descartar um exame: a estatistica, o modelo ou o especialista?”
+- **Papel rotativo:** estatistico, engenheiro, medico e auditor de vazamento.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** alterar `0,90` para `0,75` e `0,99`, comparar colunas e desempenho.
+- **Produto da aula:** relatorio antes/depois com variancia, correlacao, colunas removidas e impacto.
+- **Conexao profissional:** explicar por que o filtro aprende em `X_train` e apenas transforma `X_test`.
+
 ## Mapa da aula
 
 1. [Subcamada 10.1: O conceito na vida real](#subcamada-101-o-conceito-na-vida-real)
@@ -166,7 +193,7 @@ O `VarianceThreshold(threshold=0.01)` pergunta se a variancia da coluna e menor 
 Se, quando uma pessoa acelera, outra quase sempre acelera proporcionalmente, os movimentos sao parecidos. Pearson mede esse alinhamento linear:
 
 $$
-r_{XY} = \frac{\operatorname{cov}(X,Y)}{\sigma_X\sigma_Y}
+r_{XY} = \frac{\mathrm{cov}(X,Y)}{\sigma_X\sigma_Y}
 $$
 
 - `X` e `Y`: duas colunas;

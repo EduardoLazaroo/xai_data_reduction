@@ -39,6 +39,33 @@ Antes de rodar, faca tres previsoes: qual modelo tera maior acuracia de treino, 
 
 Explique assim: “Treino e a lista de exercicios; teste e a prova surpresa. Overfitting e decorar a lista. Generalizacao e conseguir resolver uma questao nova”. Se voce nao consegue explicar o `gap` usando essa historia, volte ao grafico antes de avancar.
 
+## Cultura, Historia e Referencias
+
+O problema “treinar no conhecido e funcionar no novo” e anterior ao nome Machine Learning. Em estatistica, ele aparece como generalizacao; em engenharia, como teste fora da amostra; na cultura de competicoes, como a diferenca entre decorar o conjunto de treino e sobreviver ao leaderboard. A documentacao do [train_test_split e validacao cruzada do scikit-learn](https://scikit-learn.org/stable/modules/cross_validation.html) explica por que o teste deve permanecer reservado.
+
+Leia tambem a [proposta de Dartmouth de 1956](http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html) para perceber que “aprender” sempre foi uma hipotese sobre comportamento, nao apenas uma chamada de biblioteca. No projeto, a figura [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png) transforma essa historia em evidencia observavel: um modelo pode parecer forte e ainda falhar em pacientes nunca vistos.
+
+**Pergunta cultural:** o que a cultura de “100% no treino” recompensa? Muitas vezes, recompensa exibicao de numero, nao aprendizado. A maturidade profissional comeca quando o estudante pergunta “em quais casos novos isso pode falhar?”.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png), lendo matriz de confusao e curva ROC.
+- **Animacao sugerida:** [Learning curves do scikit-learn](https://scikit-learn.org/stable/modules/learning_curve.html), para ver treino e validacao se separarem.
+- **Audio de abertura:** o professor pode narrar a historia “lista de exercicios versus prova surpresa” antes do codigo.
+- **Imagem mental:** duas fronteiras no mesmo plano: uma suave, outra tentando abraçar cada ponto.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Fundamento concluido` quando o estudante explicar treino, teste, gap e vazamento sem consultar definicoes.
+- **Pergunta para o grupo:** “Um modelo com 100% no treino merece parabens ou auditoria? Em que evidencia voce se baseia?”
+- **Papel rotativo:** um aluno defende o modelo, outro procura o vazamento e outro interpreta `FN` e `FP`.
+
+## 💡 Engajamento e Conhecimento
+
+- **Desafio relampago:** cada grupo recebe uma matriz de confusao diferente e calcula acuracia, recall e o erro clinico mais grave.
+- **Produto da aula:** um cartao “aprendeu ou decorou?” com tres evidencias do grafico e uma limitacao.
+- **Conexao profissional:** comparar a saida do toy example com o baseline do projeto e explicar por que o teste continua intocado.
+
 ## Mapa da aula
 
 1. [Subcamada 1.1: O conceito na vida real](#subcamada-11-o-conceito-na-vida-real)
@@ -188,13 +215,13 @@ No treinamento, o algoritmo procura uma regra que erre pouco nos exemplos conhec
 A acuracia responde: entre todas as previsoes, quantas estavam corretas?
 
 $$
-\operatorname{Acuracia} = \frac{\text{previsoes corretas}}{\text{total de casos}}
+\mathrm{Acuracia} = \frac{\text{previsoes corretas}}{\text{total de casos}}
 $$
 
 O **gap de overfitting** compara o desempenho no treino com o desempenho no teste:
 
 $$
-\text{Gap} = \operatorname{Acuracia}_{treino} - \operatorname{Acuracia}_{teste}
+\mathrm{Gap} = \mathrm{Acuracia}_{treino} - \mathrm{Acuracia}_{teste}
 $$
 
 Gap grande nao e uma prova isolada de que o modelo e inutil, mas e um alerta para investigar complexidade, vazamento, tamanho da amostra e ruido.
@@ -211,7 +238,7 @@ Para diagnostico, nem todo erro tem o mesmo custo:
 O recall da classe patologica e:
 
 $$
-\operatorname{Recall} = \frac{TP}{TP + FN}
+\mathrm{Recall} = \frac{TP}{TP + FN}
 $$
 
 Em um cenario clinico, acompanhar `FN` e recall e essencial, porque um caso doente classificado como saudavel pode atrasar o cuidado. Por isso, a acuracia nunca deve ser a unica regua.

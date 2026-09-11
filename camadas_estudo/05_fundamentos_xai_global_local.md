@@ -68,6 +68,33 @@ O exemplo mostra por que uma variavel importante na media pode nao ser a razao p
 
 Uma explicacao forte precisa ser fiel ao modelo, compreensivel para a audiencia e plausivel para o dominio. A Camada 06 formaliza essa ideia de atribuicao de credito com SHAP; a Camada 07 mostra uma aproximacao local agnostica ao modelo com LIME.
 
+## Cultura, Historia e Referencias
+
+“Explainable AI” nao surgiu apenas porque pesquisadores gostavam de graficos. A agenda ganhou forca quando modelos passaram a decidir em dominios onde justificativa, contestacao e responsabilidade importam. O programa [DARPA Explainable AI (XAI)](https://www.darpa.mil/program/explainable-artificial-intelligence) popularizou a pergunta sobre explicacoes uteis para humanos. O caso de pneumonia discutido nesta aula dialoga com o artigo de Caruana et al., [Intelligible Models for Healthcare](https://doi.org/10.1145/2939672.2939778).
+
+Compare os artefatos [modulo2_shap_summary.png](../assets/modulo2_shap_summary.png) e [modulo3_lime_local.png](../assets/modulo3_lime_local.png): um resume a populacao; o outro investiga uma instancia. A imagem nao e enfeite: ela explicita o escopo da afirmacao.
+
+**Pergunta cultural:** uma explicacao serve para convencer, contestar ou corrigir o modelo? Em uma cultura de auditoria, serve para as tres coisas.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** compare [SHAP global](../assets/modulo2_shap_summary.png) e [LIME local](../assets/modulo3_lime_local.png).
+- **Referencia historica:** [DARPA Explainable AI](https://www.darpa.mil/program/explainable-artificial-intelligence).
+- **Audio de abertura:** narrar o caso da pneumonia e perguntar “o modelo acertou pelo motivo certo?”.
+- **Imagem mental:** mapa de uma cidade contra a lupa em uma unica rua.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `XAI diferenciada` quando o estudante explicar escopo, fidelidade e causalidade sem mistura-los.
+- **Debate:** “Uma explicacao convincente pode acompanhar um modelo errado?”
+- **Papel rotativo:** modelo, paciente, auditor e especialista do dominio interpretam a mesma previsao.
+
+## 💡 Engajamento e Conhecimento
+
+- **Oficina:** cada grupo escreve uma explicacao global e outra local para o mesmo caso.
+- **Produto da aula:** ficha com previsao, referencia, atributos, direcao e limite da explicacao.
+- **Conexao profissional:** decidir quando uma explicacao deve bloquear implantacao ou apenas gerar investigacao.
+
 ## Mapa da aula
 
 1. [Subcamada 5.1: O conceito na vida real](#subcamada-51-o-conceito-na-vida-real)
@@ -145,7 +172,7 @@ Na pratica hospitalar, pacientes com asma eram encaminhados imediatamente a UTI 
 Seja $f(x)$ o modelo original caixa-preta (Random Forest) e $x$ a instancia do paciente. A explicabilidade post-hoc procura um modelo interpretavel $g \in G$ (como uma regressao linear ou regra aditiva) que seja fiel a $f$ na regiao de interesse:
 
 $$
-\operatorname{Explicacao}(x) = \arg\min_{g \in G} \mathcal{L}(f, g, \pi_x) + \Omega(g)
+\mathrm{Explicacao}(x) = \arg\min_{g \in G} \mathcal{L}(f, g, \pi_x) + \Omega(g)
 $$
 
 Traducao simbolo por simbolo:

@@ -68,6 +68,33 @@ Com limiar de `0,50`, a classe final e `1`. Se o limiar subir para `0,70`, a mes
 
 A floresta entrega uma previsao e uma probabilidade agregada. A Camada 03 ensina por que essa previsao precisa ser examinada por `TP`, `TN`, `FP`, `FN`, F1, recall e ROC-AUC, e nao apenas por uma porcentagem de acertos.
 
+## Cultura, Historia e Referencias
+
+O Random Forest foi formalizado por Leo Breiman no artigo [Random Forests (2001)](https://doi.org/10.1023/A:1010933404324). A ideia culturalmente importante e que uma boa solucao nem sempre e um especialista perfeito: um conjunto diverso de modelos imperfeitos pode generalizar melhor. A [documentacao oficial de florestas do scikit-learn](https://scikit-learn.org/stable/modules/ensemble.html#random-forests) tambem alerta que importancia por impureza pode enganar e recomenda comparar com importancia por permutacao.
+
+Observe essa diferenca no artefato [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png) e no ranking SHAP da camada seguinte. A floresta nao e uma “votacao democratica” no sentido humano: ela agrega previsoes matematicamente e ainda pode reproduzir vieses dos dados.
+
+**Pergunta cultural:** por que Breiman chamou atencao para diversidade de erros? Porque consenso sem diversidade e apenas duplicacao de opiniao. Essa ideia atravessa ensembles, revisao por pares e sistemas de recomendacao.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** fronteira do toy example da arvore contra a floresta; desenhe votos de 5 arvores para um paciente.
+- **Referencia visual:** [Random forests no scikit-learn](https://scikit-learn.org/stable/modules/ensemble.html#random-forests).
+- **Audio de abertura:** conte a origem do “comite” e leia em voz alta o exemplo `[1, 1, 0, 1]` antes da formula.
+- **Imagem mental:** varias arvores diferentes compartilhando uma urna de votos.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Floresta entendida` quando o estudante diferenciar bootstrap, `max_features`, profundidade e votacao.
+- **Debate:** “Uma floresta com muitas arvores e sempre melhor que uma arvore bem regulada?”
+- **Papel rotativo:** arquiteto da arvore, auditor de diversidade e relator da decisao agregada.
+
+## 💡 Engajamento e Conhecimento
+
+- **Experimento coletivo:** cada grupo altera apenas `n_estimators` ou `max_features` e compara fronteira, F1 e tempo.
+- **Produto da aula:** desenhar uma arvore e depois explicar por que 100 copias nao sao uma floresta se forem identicas.
+- **Conexao profissional:** registrar por que a floresta foi escolhida como baseline antes de usar SHAP.
+
 ## Mapa da aula
 
 1. [Subcamada 2.1: O conceito na vida real](#subcamada-21-o-conceito-na-vida-real)

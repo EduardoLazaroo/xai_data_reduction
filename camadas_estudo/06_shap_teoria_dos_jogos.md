@@ -62,6 +62,33 @@ Cada ponto representa uma observacao. A distancia horizontal mostra impacto: par
 
 O toy example torna visivel o credito; o momento serio aplica TreeSHAP ao Random Forest oficial. A etapa seguinte usa essas explicacoes para uma auditoria individual com LIME, sem confundir explicacao global com justificativa de um unico paciente.
 
+## Cultura, Historia e Referencias
+
+O nome SHAP conecta aprendizado de maquina a uma ideia de economia e cooperacao: Lloyd Shapley recebeu o Nobel de Economia de 2012 por trabalhos sobre alocacao e matching. O artigo moderno de Lundberg e Lee, [A Unified Approach to Interpreting Model Predictions](https://arxiv.org/abs/1705.07874), transformou valores de Shapley em uma familia pratica de explicacoes. A [documentacao do SHAP](https://shap.readthedocs.io/en/latest/) e util para comparar explainers, mas nao substitui a leitura dos pressupostos.
+
+Observe o [modulo2_shap_summary.png](../assets/modulo2_shap_summary.png) como uma ponte entre teoria dos jogos e auditoria: cada ponto e uma contribuicao situada, nao um certificado de causalidade. A historia da ideia importa porque mostra que “dividir credito” exige definir coalizao, referencia e regra de pagamento.
+
+**Pergunta cultural:** o que significa “justo” quando atributos sao correlacionados? A resposta depende da distribuicao de referencia e da forma como o jogo foi definido; nao existe neutralidade magica escondida no grafico.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [SHAP summary](../assets/modulo2_shap_summary.png), beeswarm e ranking global.
+- **Referencia:** [Documentacao oficial do SHAP](https://shap.readthedocs.io/en/latest/) e [artigo de Lundberg e Lee](https://arxiv.org/abs/1705.07874).
+- **Audio de abertura:** contar uma coalizao de jogadores repartindo um premio de 10 pontos.
+- **Imagem mental:** cada atributo entra em ordens diferentes e recebe credito marginal medio.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Credito explicado` quando o aluno traduz valor base, sinal, magnitude e soma aditiva.
+- **Debate:** “O que e justo quando dois atributos sao quase clones?”
+- **Papel rotativo:** atributo, coalizao, auditor matematico e especialista clinico.
+
+## 💡 Engajamento e Conhecimento
+
+- **Jogo de cartas:** embaralhar atributos e calcular contribuicoes marginais em ordens diferentes.
+- **Produto da aula:** interpretar cinco pontos do beeswarm sem usar a palavra “causa”.
+- **Conexao profissional:** propor um criterio para transformar ranking SHAP em selecao de atributos.
+
 ## Mapa da aula
 
 1. [Subcamada 6.1: O conceito na vida real](#subcamada-61-o-conceito-na-vida-real)

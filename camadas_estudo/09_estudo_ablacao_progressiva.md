@@ -78,6 +78,33 @@ De 40 para 10, removemos 75% das colunas e perdemos apenas `0,003` de F1. De 10 
 
 Depois de observar o custo da poda progressiva, a Camada 10 introduz uma faxina estatistica barata para remover estatuas e clones antes de gastar computacao com XAI.
 
+## Cultura, Historia e Referencias
+
+“Ablation study” veio de uma metafora cirurgica: remover uma parte para descobrir sua contribuicao no sistema. Em Machine Learning, a pratica ganhou importancia porque resultados agregados escondem dependencias entre componentes. O artigo de Sara Hooker, [The Generalization of Ablation Results](https://arxiv.org/abs/1904.08755), discute por que retirar uma parte e medir a queda nao e uma prova simples de importancia universal.
+
+Use o [modulo4_ablation_curves.png](../assets/modulo4_ablation_curves.png) como objeto de leitura historica e metodologica: uma curva conta mais que uma foto do melhor ponto, pois mostra o preco de cada remocao. A [documentacao de validacao cruzada do scikit-learn](https://scikit-learn.org/stable/modules/cross_validation.html) ajuda a evitar que o joelho seja escolhido olhando o teste.
+
+**Pergunta cultural:** toda remocao e uma experiencia? So quando existe uma comparacao controlada e uma pergunta definida antes de olhar o resultado.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [Curvas de ablação](../assets/modulo4_ablation_curves.png), com F1 e custo lado a lado.
+- **Referencia:** [The Generalization of Ablation Results](https://arxiv.org/abs/1904.08755), de Sara Hooker.
+- **Audio de abertura:** explicar ablação como retirar uma peca de uma maquina e observar o que muda.
+- **Imagem mental:** curva que desce devagar e depois despenca: o joelho do experimento.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Curva interpretada` quando o aluno diferenciar pico, plateau, joelho e queda.
+- **Debate:** “O menor conjunto de atributos e automaticamente o melhor?”
+- **Papel rotativo:** cientista experimental, engenheiro de custo e auditor de FN/recall.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** cada grupo escolhe um ponto de operacao e defende sua escolha com duas metricas.
+- **Produto da aula:** curva anotada com ponto recomendado, margem de incerteza e limite.
+- **Conexao profissional:** transformar a ablacao em evidencia para a decisao do pipeline.
+
 ## Mapa da aula
 
 1. [Subcamada 09.1: O conceito na vida real](#subcamada-091-o-conceito-na-vida-real)

@@ -26,6 +26,14 @@ O estudante deve caminhar sempre em tres movimentos: primeiro explicar a etapa p
 
 ---
 
+## Cultura, Historia e Referencias do Projeto
+
+Este projeto esta dentro de uma historia maior. A inteligencia artificial nasceu como programa de pesquisa no encontro de Dartmouth de 1956, mas a preocupacao atual nao e apenas fazer maquinas acertarem: e conseguir explicar, avaliar e governar suas decisoes. Vale conhecer a [proposta original do Dartmouth Summer Research Project](http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html), o [AI Risk Management Framework do NIST](https://www.nist.gov/itl/ai-risk-management-framework) e os principios da [OMS para etica e governanca de IA em saude](https://www.who.int/publications/i/item/9789240029200).
+
+O artefato visual central e o [dashboard comparativo do projeto](../assets/dashboard_final_comparativo.png). Observe-o como um documento historico da pesquisa: ele registra o momento em que precisao, custo, latencia e quantidade de dados deixam de ser assuntos separados e passam a formar uma decisao de engenharia.
+
+**Pergunta cultural:** quando um modelo melhora a metrica mas fica menos auditavel, isso e progresso? A resposta nao vem do algoritmo isolado; depende do contexto, das pessoas afetadas e do tipo de erro que a sociedade aceita.
+
 ## 1. O que Estudar em Profundidade?
 
 ### 1.1 O Paradoxo da Coleta Massiva de Dados

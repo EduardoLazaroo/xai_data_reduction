@@ -58,6 +58,33 @@ Altere o limiar de classificacao somente depois de compreender o padrao: reduzir
 
 O resultado deve ser escrito como uma tabela de erros e consequencias, nao como um unico numero vencedor. Antes de comparar modelos, fixe a classe positiva, o limiar, a particao e a metrica principal. A Camada 04 usa esse rigor para observar como o excesso de atributos altera a generalizacao.
 
+## Cultura, Historia e Referencias
+
+A curva ROC nasceu no contexto de deteccao de sinais e radares, nao de competicoes de Python. O texto de Tom Fawcett, [An introduction to ROC analysis](https://www.sciencedirect.com/science/article/pii/S016786550500303X), ajuda a entender que o limiar de decisao transforma probabilidades em acoes. Para problemas desbalanceados, leia [The Relationship Between Precision-Recall and ROC Curves](https://doi.org/10.1145/1143844.1143874), de Davis e Goadrich.
+
+O grafico [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png) deve ser lido como uma historia de decisoes: matriz de confusao mostra os custos concretos; ROC mostra separacao; F1 resume uma troca. A [documentacao de metricas do scikit-learn](https://scikit-learn.org/stable/modules/model_evaluation.html) insiste que a metrica deve nascer do objetivo da aplicacao.
+
+**Pergunta cultural:** quem decide qual erro vale mais? Nao e o algoritmo. Essa escolha pertence ao dominio, ao protocolo clinico e as pessoas que sofrerao as consequencias.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png), com matriz de confusao e ROC.
+- **Referencia interativa:** [Metricas de avaliacao do scikit-learn](https://scikit-learn.org/stable/modules/model_evaluation.html).
+- **Audio de abertura:** narrar o caso do alarme de fumaca: alarme falso incomoda; silencio diante do fogo e perigoso.
+- **Imagem mental:** quatro quadrantes da matriz como quatro destinos clinicos diferentes.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Metricas defendidas` quando o aluno justificar uma metrica pela consequencia de negocio ou clinica.
+- **Debate:** “Qual erro deve ser priorizado no pronto-socorro: `FP` ou `FN`?”
+- **Papel rotativo:** medico, gestor de custo, paciente e cientista de dados escolhem limiares diferentes.
+
+## 💡 Engajamento e Conhecimento
+
+- **Jogo de limiar:** grupos recebem probabilidades e simulam cortes em `0,30`, `0,50` e `0,70`.
+- **Produto da aula:** tabela com `TN`, `FP`, `FN`, `TP`, F1, recall e justificativa do limiar.
+- **Conexao profissional:** consultar a documentacao antes de escolher `scoring` em uma busca de hiperparametros.
+
 ## Mapa da aula
 
 1. [Subcamada 3.1: O conceito na vida real](#subcamada-31-o-conceito-na-vida-real)
@@ -139,16 +166,16 @@ AUC = 0.50 (equivalente a jogar moeda) | AUC = 1.00 (separacao perfeita)
 
 ### As formulas fundamentais
 
-$$\operatorname{Acuracia} = \frac{TP + TN}{TP + TN + FP + FN}$$
+$$\mathrm{Acuracia} = \frac{TP + TN}{TP + TN + FP + FN}$$
 
-$$\operatorname{Precision} = \frac{TP}{TP + FP} \quad \quad \operatorname{Recall} = \frac{TP}{TP + FN}$$
+$$\mathrm{Precision} = \frac{TP}{TP + FP} \quad \quad \mathrm{Recall} = \frac{TP}{TP + FN}$$
 
 ### Por que o F1-score usa a media harmonica?
 
 A media aritmetica simples permitiria compensacoes desonestas: se um modelo tivesse Precision `1.0` e Recall `0.0`, a media aritmetica daria `0.50`. A media harmonica despenca se um dos lados for nulo:
 
 $$
-F_1 = 2 \cdot \frac{\operatorname{Precision} \cdot \operatorname{Recall}}{\operatorname{Precision} + \operatorname{Recall}}
+F_1 = 2 \cdot \frac{\mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}
 $$
 
 Traducao simbolo por simbolo:

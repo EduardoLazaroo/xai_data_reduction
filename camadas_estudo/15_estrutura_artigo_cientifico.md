@@ -72,6 +72,33 @@ As frases nao sao repeticao. Cada uma responde a uma pergunta diferente: como fo
 
 Um artigo bem separado facilita responder perguntas: o que foi feito, que numero apareceu, como foi interpretado e o que ainda nao se sabe. A Camada 16 transforma essa cadeia em respostas de banca.
 
+## Cultura, Historia e Referencias
+
+O formato IMRaD se consolidou porque a comunidade cientifica precisava separar pergunta, procedimento, evidencia e interpretacao de modo que outros pesquisadores pudessem conferir o trabalho. A recomendacao editorial [Reporting standards and availability of data, materials, code and protocols da Nature](https://www.nature.com/nature-portfolio/editorial-policies/reporting-standards) mostra como essa cultura evoluiu para incluir codigo, dados e transparencia.
+
+Use o documento gerado por [gerar_artigo_word.py](../gerar_artigo_word.py) como objeto de inspeção: uma tabela pode parecer formal e ainda misturar resultado com opiniao. A historia do artigo cientifico e tambem a historia de tornar alegacoes contestaveis.
+
+**Pergunta cultural:** por que revisores pedem metodos detalhados? Nao para tornar o texto mais burocratico, mas para separar uma descoberta reproduzivel de uma narrativa que so funciona depois que o resultado foi conhecido.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** documento Word gerado e tabelas do pipeline, comparando Resultado com Discussao.
+- **Referencia:** [Reporting standards da Nature](https://www.nature.com/nature-portfolio/editorial-policies/reporting-standards).
+- **Audio de abertura:** ler duas frases, uma factual e outra interpretativa, e pedir que a turma identifique a diferenca.
+- **Imagem mental:** funil IMRaD: abre na Introducao, estreita na Metodologia e reabre na Discussao.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Manuscrito auditavel` quando outro leitor consegue reconstruir metodo, resultado e limite.
+- **Debate:** “Onde termina o resultado e começa a interpretacao?”
+- **Papel rotativo:** autor, revisor, estatistico e leitor leigo.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** reescrever uma frase exagerada em Resultado, Discussao e Limitacao.
+- **Produto da aula:** um paragrafo IMRaD com KPI, interpretacao e alcance declarado.
+- **Conexao profissional:** revisar o proprio artigo procurando promessas que os dados nao sustentam.
+
 ## Mapa da aula
 
 1. [Subcamada 15.1: O conceito na vida real](#subcamada-151-o-conceito-na-vida-real)

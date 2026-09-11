@@ -63,6 +63,33 @@ Registre o F1 de teste ou validacao a cada `k` atributos e o tempo acumulado. Um
 
 RFE oferece uma ordem gulosa de eliminacao. A Camada 09 amplia a pergunta e desenha a curva completa de desempenho conforme o numero de atributos diminui, procurando um ponto de equilibrio.
 
+## Cultura, Historia e Referencias
+
+Selecao de atributos nasceu do encontro entre estatistica, reconhecimento de padroes e engenharia de sinais. O artigo de Guyon e Elisseeff, [An Introduction to Variable and Feature Selection](https://doi.org/10.1073/pnas.2011085003), e uma referencia panoramica; a documentacao do [RFE no scikit-learn](https://scikit-learn.org/stable/modules/feature_selection.html#rfe) mostra como a ideia foi transformada em API.
+
+Historicamente, RFE representa a confianca em um modelo iterativo: o algoritmo aprende, elimina e aprende novamente. O [modulo4_ablation_curves.png](../assets/modulo4_ablation_curves.png) ajuda a lembrar que o ranking nao e o resultado final; o custo e a qualidade ao longo das rodadas tambem contam.
+
+**Pergunta cultural:** por que metodos antigos continuam importantes? Porque uma comparacao justa precisa enfrentar baselines conhecidos, e nao apenas uma tecnica nova com um nome atraente.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** curva de ablação [modulo4_ablation_curves.png](../assets/modulo4_ablation_curves.png).
+- **Referencia:** [Feature selection no scikit-learn](https://scikit-learn.org/stable/modules/feature_selection.html).
+- **Audio de abertura:** narrar a eliminacao de candidatos de uma equipe, sempre reavaliando quem ficou.
+- **Imagem mental:** ranking que muda a cada poda, como uma classificacao esportiva sob novas rodadas.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Baseline comparativo` quando o aluno souber explicar custo, ranking e desempenho do RFE.
+- **Debate:** “Um metodo antigo pode vencer uma tecnica nova? Como comparar honestamente?”
+- **Papel rotativo:** defensor do RFE, defensor de XAI e juiz do protocolo.
+
+## 💡 Engajamento e Conhecimento
+
+- **Desafio:** prever qual atributo sera removido, executar e explicar qualquer surpresa.
+- **Produto da aula:** tabela de cada rodada com atributos, F1, tempo e justificativa.
+- **Conexao profissional:** documentar por que o RFE foi escolhido como adversario de referencia.
+
 ## Mapa da aula
 
 1. [Subcamada 08.1: O conceito na vida real](#subcamada-081-o-conceito-na-vida-real)

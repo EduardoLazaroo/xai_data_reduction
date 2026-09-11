@@ -66,6 +66,33 @@ Leia `best_value` junto de `best_params`, numero de trials e variabilidade entre
 
 Optimizacao isolada nao e o objetivo. A Camada 13 mostra a ordem completa e quais artefatos devem ser registrados para tornar o experimento reproduzivel.
 
+## Cultura, Historia e Referencias
+
+A busca de hiperparametros tem uma historia que vai de tentativa manual a busca aleatoria e otimizacao bayesiana. O artigo de Bergstra e Bengio, [Random Search for Hyper-Parameter Optimization](https://jmlr.org/papers/v13/bergstra12a.html), mostrou que busca aleatoria pode ser mais eficiente que uma grade rigida; o artigo de Akiba et al., [Optuna](https://arxiv.org/abs/1907.10902), trouxe uma API moderna de estudos e trials.
+
+A [documentacao oficial do Optuna](https://optuna.readthedocs.io/en/stable/) e culturalmente interessante porque apresenta o estilo “define-by-run”: o espaco de busca pode ser construido pelo proprio programa. Observe tambem o historico de trials, nao apenas o melhor valor: a historia revela exploracao, aproveitamento e instabilidade.
+
+**Pergunta cultural:** automatizar a busca elimina o julgamento humano? Nao. O humano escolhe objetivo, limites, custo, validacao e criterio de parada; a ferramenta apenas executa a busca.
+
+## Recursos de Mídia (Visual e Áudio)
+
+- **Visual local:** historico de trials e importancia de hiperparametros do Optuna Dashboard.
+- **Referencia oficial:** [Optuna: define-by-run, trials e visualizacao](https://optuna.readthedocs.io/en/stable/).
+- **Audio de abertura:** narrar o garimpeiro que aprende com cada sondagem.
+- **Imagem mental:** pontos ruins abandonados, regioes promissoras ampliadas e teste final trancado.
+
+## 📊 Elementos de Comunidade e Status
+
+- **Status:** `Busca reproduzivel` quando o aluno declarar objetivo, espaco, CV, trials e criterio de parada.
+- **Debate:** “Se o algoritmo escolhe o hiperparametro, quem escolheu o objetivo?”
+- **Papel rotativo:** pesquisador, engenheiro de custo, auditor de validacao e dono do produto.
+
+## 💡 Engajamento e Conhecimento
+
+- **Atividade:** comparar busca em grade, aleatoria e TPE com o mesmo numero de tentativas.
+- **Produto da aula:** diario de trials com melhor valor, parametros, variacao e custo.
+- **Conexao profissional:** justificar por que o teste final nao pode participar da escolha.
+
 ## Mapa da aula
 
 1. [Subcamada 12.1: O conceito na vida real](#subcamada-121-o-conceito-na-vida-real)
