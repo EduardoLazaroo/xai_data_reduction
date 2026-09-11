@@ -1,14 +1,14 @@
 # Camada 01: Aprendizado Supervisionado e Overfitting
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes `gerar_dataset_sintetico_saude` e `train_test_split`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning  
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)  
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções `gerar_dataset_sintetico_saude` e `train_test_split`
 
-> **Objetivo da aula:** entender como um modelo aprende com exemplos rotulados, por que separar treino e teste e indispensavel e como atributos demais, especialmente ruido, podem fazer o modelo decorar em vez de generalizar.
+> **Objetivo da aula:** entender como um modelo aprende com exemplos rotulados, por que separar treino e teste é indispensável e como atributos demais, especialmente ruído, podem fazer o modelo decorar em vez de generalizar.
 
-## Campo Didatico: Roteiro Executavel da Aula
+## Campo Didático: Roteiro Executável da Aula
 
-Estude esta aula como uma sequencia de oito celulas mentais: **(1) criar dados, (2) separar treino e teste, (3) construir dois modelos, (4) treinar apenas com treino, (5) medir treino e teste, (6) desenhar as fronteiras, (7) calcular o gap e a matriz de confusao, (8) explicar a diferenca em linguagem comum**. Antes de rodar qualquer codigo, escreva o que espera observar.
+O experimento segue oito movimentos: **(1) criar dados, (2) separar treino e teste, (3) construir dois modelos, (4) treinar apenas com treino, (5) medir treino e teste, (6) desenhar as fronteiras, (7) calcular o gap e a matriz de confusão, (8) traduzir a diferença para a linguagem comum**.
 
 ```text
 dados rotulados -> split protegido -> modelo simples/complexo
@@ -17,62 +17,64 @@ dados rotulados -> split protegido -> modelo simples/complexo
    qual e o sinal?   o teste ficou oculto?  decorou ou aprendeu?
                               |
                               v
-                   treino vs teste -> generalizacao
+                   treino vs teste -> generalização
 ```
 
-Ao executar, observe tres evidencias: a fronteira do modelo, a distancia entre acuracia de treino e teste e os erros clinicos `FN/FP`. Um erro comum e chamar qualquer modelo com treino alto de excelente; o criterio correto e perguntar se o desempenho se sustenta em dados nunca vistos. A ponte para a Camada 02 e o baseline: depois de entender o problema, veremos por que uma floresta de arvores costuma ser mais estavel que uma arvore isolada.
+O resultado deve ser lido por três evidências: a fronteira do modelo, a distância entre acurácia de treino e teste e os erros clínicos `FN/FP`. Um erro comum é chamar qualquer modelo com treino alto de excelente; o critério correto é verificar se o desempenho se sustenta em dados nunca vistos. A ponte para a Camada 02 é o baseline: depois de entender o problema, a floresta de árvores aparece como uma alternativa mais estável que uma árvore isolada.
 
-### Roteiro de dominio
+### Roteiro de domínio
 
-Ao terminar, voce deve conseguir explicar sem codigo: **(a)** o que e uma amostra, atributo, alvo e previsao; **(b)** por que treino e teste precisam ser separados; **(c)** como reconhecer subajuste, boa generalizacao e sobreajuste; **(d)** por que `FN` e `FP` nao sao apenas numeros; e **(e)** por que mais colunas podem criar coincidencias falsas.
+Ao final, ficam definidos cinco pontos: **(a)** amostra, atributo, alvo e previsão; **(b)** separação entre treino e teste; **(c)** subajuste, boa generalização e sobreajuste; **(d)** significado clínico de `FN` e `FP`; e **(e)** coincidências falsas produzidas por colunas em excesso.
 
-Antes de rodar, faca tres previsoes: qual modelo tera maior acuracia de treino, qual tera maior gap e que tipo de ponto aparecera nas ilhas da fronteira. Depois compare previsao e resultado. Se forem diferentes, isso nao e fracasso: e justamente a evidencia que o experimento foi desenhado para revelar.
+Três previsões orientam a leitura: o modelo complexo deve ter maior acurácia de treino, provavelmente terá maior gap e deverá criar ilhas na fronteira. Se o resultado contrariar alguma previsão, isso não é fracasso; é evidência sobre a amostra, o ruído e a complexidade escolhida.
 
-### Duvidas que esta aula responde
+### Dúvidas que esta aula responde
 
-- **Treino e teste podem ter pacientes diferentes?** Devem ter, quando o objetivo e estimar comportamento em pacientes novos.
-- **Treino perfeito sempre e ruim?** Nao. Ele vira alerta quando o teste cai, quando a amostra e pequena ou quando houve vazamento.
-- **Ruido e o mesmo que erro de medicao?** Nao necessariamente: aqui ruido e uma variavel sem sinal preditivo; erro de medicao pode contaminar uma variavel que era util.
-- **Um split resolve tudo?** Nao. Ele e uma primeira protecao; validacao cruzada, repeticao de sementes e validacao externa aumentam a confianca.
+- **Treino e teste podem ter pacientes diferentes?** Devem ter, quando o objetivo é estimar comportamento em pacientes novos.
+- **Treino perfeito sempre é ruim?** Não. Ele vira alerta quando o teste cai, quando a amostra é pequena ou quando houve vazamento.
+- **Ruído é o mesmo que erro de medição?** Não necessariamente: aqui ruído é uma variável sem sinal preditivo; erro de medição pode contaminar uma variável que era útil.
+- **Um split resolve tudo?** Não. Ele é uma primeira proteção; validação cruzada, repetição de sementes e validação externa aumentam a confiança.
 
-### Regra de explicacao Feynman
+### Regra de explicação Feynman
 
-Explique assim: “Treino e a lista de exercicios; teste e a prova surpresa. Overfitting e decorar a lista. Generalizacao e conseguir resolver uma questao nova”. Se voce nao consegue explicar o `gap` usando essa historia, volte ao grafico antes de avancar.
+Treino é a lista de exercícios; teste é a prova surpresa. Overfitting é decorar a lista. Generalização é conseguir resolver uma questão nova. O `gap` é a distância entre essas duas situações.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
-O problema “treinar no conhecido e funcionar no novo” e anterior ao nome Machine Learning. Em estatistica, ele aparece como generalizacao; em engenharia, como teste fora da amostra; na cultura de competicoes, como a diferenca entre decorar o conjunto de treino e sobreviver ao leaderboard. A documentacao do [train_test_split e validacao cruzada do scikit-learn](https://scikit-learn.org/stable/modules/cross_validation.html) explica por que o teste deve permanecer reservado.
+O problema “treinar no conhecido e funcionar no novo” é anterior ao nome Machine Learning. Em estatística, ele aparece como generalização; em engenharia, como teste fora da amostra; na cultura de competições, como a diferença entre decorar o conjunto de treino e sobreviver ao leaderboard. A documentação de [validação cruzada do scikit-learn](https://scikit-learn.org/stable/modules/cross_validation.html) explica por que o teste deve permanecer reservado.
 
-Leia tambem a [proposta de Dartmouth de 1956](http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html) para perceber que “aprender” sempre foi uma hipotese sobre comportamento, nao apenas uma chamada de biblioteca. No projeto, a figura [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png) transforma essa historia em evidencia observavel: um modelo pode parecer forte e ainda falhar em pacientes nunca vistos.
+Leia também a [proposta de Dartmouth de 1956](http://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html) para perceber que “aprender” sempre foi uma hipótese sobre comportamento, não apenas uma chamada de biblioteca. No projeto, a figura abaixo transforma essa história em evidência observável: um modelo pode parecer forte e ainda falhar em pacientes nunca vistos.
 
-**Pergunta cultural:** o que a cultura de “100% no treino” recompensa? Muitas vezes, recompensa exibicao de numero, nao aprendizado. A maturidade profissional comeca quando o estudante pergunta “em quais casos novos isso pode falhar?”.
+![Matriz de confusão e curva ROC do baseline](../assets/modulo1_baseline_metrics.png)
+
+**Pergunta cultural:** o que a cultura de “100% no treino” recompensa? Muitas vezes, recompensa exibição de número, não aprendizado. A maturidade profissional começa quando se pergunta “em quais casos novos isso pode falhar?”.
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png), lendo matriz de confusao e curva ROC.
-- **Animacao sugerida:** [Learning curves do scikit-learn](https://scikit-learn.org/stable/modules/learning_curve.html), para ver treino e validacao se separarem.
-- **Audio de abertura:** o professor pode narrar a historia “lista de exercicios versus prova surpresa” antes do codigo.
+- **Visual local:** [matriz de confusão e curva ROC](../assets/modulo1_baseline_metrics.png).
+- **Visual interativo:** [curvas de aprendizado do scikit-learn](https://scikit-learn.org/stable/modules/learning_curve.html), mostrando treino e validação se separarem.
+- **Áudio sugerido:** a história “lista de exercícios versus prova surpresa”, em contraste com o som de um gabarito sendo decorado.
 - **Imagem mental:** duas fronteiras no mesmo plano: uma suave, outra tentando abraçar cada ponto.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Fundamento concluido` quando o estudante explicar treino, teste, gap e vazamento sem consultar definicoes.
-- **Pergunta para o grupo:** “Um modelo com 100% no treino merece parabens ou auditoria? Em que evidencia voce se baseia?”
-- **Papel rotativo:** um aluno defende o modelo, outro procura o vazamento e outro interpreta `FN` e `FP`.
+- **Status:** `Fundamento concluído` quando treino, teste, gap e vazamento puderem ser explicados sem recorrer a definições decoradas.
+- **Pergunta para discussão:** “Um modelo com 100% no treino merece parabéns ou auditoria? Em que evidência você se baseia?”
+- **Conversa técnica:** uma pessoa defende o modelo, outra procura o vazamento e outra interpreta `FN` e `FP`.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Desafio relampago:** cada grupo recebe uma matriz de confusao diferente e calcula acuracia, recall e o erro clinico mais grave.
-- **Produto da aula:** um cartao “aprendeu ou decorou?” com tres evidencias do grafico e uma limitacao.
-- **Conexao profissional:** comparar a saida do toy example com o baseline do projeto e explicar por que o teste continua intocado.
+- **Desafio relâmpago:** uma matriz de confusão diferente é calculada em acurácia, recall e erro clínico mais grave.
+- **Produto da aula:** um cartão “aprendeu ou decorou?” com três evidências do gráfico e uma limitação.
+- **Conexão profissional:** a saída do toy example é comparada com o baseline do projeto, mantendo o teste intocado.
 
 ## Mapa da aula
 
 1. [Subcamada 1.1: O conceito na vida real](#subcamada-11-o-conceito-na-vida-real)
 2. [Subcamada 1.2: Desenhando o conceito](#subcamada-12-desenhando-o-conceito)
 3. [Subcamada 1.3: Desmistificando a teoria](#subcamada-13-desmistificando-a-teoria-e-a-notacao-formal)
-4. [Subcamada 1.4: Laboratorio ludico no Colab](#subcamada-14-laboratorio-ludico-no-colab)
-5. [Subcamada 1.5: O momento serio da nossa aplicacao](#subcamada-15-o-momento-serio-da-nossa-aplicacao)
+4. [Subcamada 1.4: Laboratório lúdico no Colab](#subcamada-14-laboratorio-ludico-no-colab)
+5. [Subcamada 1.5: O momento sério da nossa aplicação](#subcamada-15-o-momento-serio-da-nossa-aplicacao)
 6. [Subcamada 1.6: Checkpoint de autonomia](#subcamada-16-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
@@ -81,28 +83,28 @@ Leia tambem a [proposta de Dartmouth de 1956](http://www-formal.stanford.edu/jmc
 
 ### A historia do aluno que decorou o gabarito
 
-Imagine dois alunos se preparando para uma prova de fisica. O primeiro entende as leis por tras dos exercicios. O segundo decora que a questao 34 tem resposta `42` e que a questao 78 tem alternativa `C`.
+Imagine dois alunos se preparando para uma prova de física. O primeiro entende as leis por trás dos exercícios. O segundo decora que a questão 34 tem resposta `42` e que a questão 78 tem alternativa `C`.
 
-Se a prova repetir exatamente as mesmas questoes, os dois podem tirar nota alta. Mas, diante de uma questao nova, apenas o primeiro consegue raciocinar. O segundo aprendeu a lista, nao aprendeu a materia.
+Se a prova repetir exatamente as mesmas questões, os dois podem tirar nota alta. Mas, diante de uma questão nova, apenas o primeiro consegue raciocinar. O segundo aprendeu a lista, não aprendeu a matéria.
 
-O aprendizado supervisionado funciona como um professor que mostra exemplos completos:
+O aprendizado supervisionado funciona como um processo que mostra exemplos completos:
 
 - **pistas:** exames, sensores e medidas;
-- **gabarito:** o diagnostico ja confirmado;
-- **tarefa:** descobrir uma regra que funcione tambem para um paciente novo.
+- **gabarito:** o diagnóstico já confirmado;
+- **tarefa:** descobrir uma regra que funcione também para um paciente novo.
 
-Neste projeto, o modelo recebe exames e aprende a responder: `0`, saudavel, ou `1`, patologia.
+Neste projeto, o modelo recebe exames e aprende a responder: `0`, saudável, ou `1`, patologia.
 
-**A grande sacada:** acertar exemplos conhecidos nao e a meta final. A meta e acertar casos que ainda nao foram vistos.
+**A grande sacada:** acertar exemplos conhecidos não é a meta final. A meta é acertar casos que ainda não foram vistos.
 
 ### Classificacao e regressao: duas perguntas diferentes
 
 | Tipo | Pergunta | Resposta | Exemplo medico |
 |---|---|---|---|
-| Regressao | Quanto? | numero continuo | glicose estimada: `112,4 mg/dL` |
-| Classificacao | Qual grupo? | categoria ou classe | saudavel `0` ou patologia `1` |
+| Regressão | Quanto? | número contínuo | glicose estimada: `112,4 mg/dL` |
+| Classificação | Qual grupo? | categoria ou classe | saudável `0` ou patologia `1` |
 
-O projeto usa **classificacao binaria**. Nao estamos prevendo uma quantidade; estamos escolhendo entre dois rotulos.
+O projeto usa **classificação binária**. Não estamos prevendo uma quantidade; estamos escolhendo entre dois rótulos.
 
 ---
 
@@ -112,10 +114,10 @@ O projeto usa **classificacao binaria**. Nao estamos prevendo uma quantidade; es
 
 ```text
              PISTAS OBSERVADAS                         VEREDITO CONHECIDO
-        exames e biomarcadores X                         diagnostico y
+        exames e biomarcadores X                         diagnóstico y
 
   Paciente A: [glicose, idade, IMC, ...]  ------------>  1 = patologia
-  Paciente B: [glicose, idade, IMC, ...]  ------------>  0 = saudavel
+    Paciente B: [glicose, idade, IMC, ...]  ------------>  0 = saudável
   Paciente C: [glicose, idade, IMC, ...]  ------------>  1 = patologia
 
                          durante o treinamento
@@ -139,10 +141,10 @@ O projeto usa **classificacao binaria**. Nao estamos prevendo uma quantidade; es
        o modelo pode estudar           o modelo nunca estudou
                 |                               |
                 v                               v
-       ajusta arvores e regras         mede generalizacao
+    ajusta árvores e regras         mede generalização
 ```
 
-O teste e uma prova surpresa. Se o modelo consulta o teste enquanto aprende, a prova deixa de ser surpresa.
+O teste é uma prova surpresa. Se o modelo consulta o teste enquanto aprende, a prova deixa de ser surpresa.
 
 ### O termometro do overfitting
 
@@ -158,16 +160,16 @@ Desempenho
 Treino alto + teste muito menor = sinal de sobreajuste
 ```
 
-| Observacao | Interpretacao |
+| Observação | Interpretação |
 |---|---|
-| treino baixo e teste baixo | modelo ainda nao aprendeu o padrao: subajuste |
-| treino alto e teste parecido | boa generalizacao |
+| treino baixo e teste baixo | modelo ainda não aprendeu o padrão: subajuste |
+| treino alto e teste parecido | boa generalização |
 | treino quase perfeito e teste bem menor | overfitting |
 
-### Por que o ruido engana?
+### Por que o ruído engana?
 
 ```text
-10 sinais uteis + 20 colunas de ruido
+10 sinais úteis + 20 colunas de ruído
                   |
                   v
      algumas coincidencias aparecem no treino
@@ -179,20 +181,22 @@ Treino alto + teste muito menor = sinal de sobreajuste
      no teste, a coincidencia desaparece
 ```
 
-Quanto mais colunas sem relacao real, mais oportunidades existem para uma coincidencia parecer uma descoberta.
+Quanto mais colunas sem relação real, mais oportunidades existem para uma coincidência parecer uma descoberta.
+
+![Fronteira de decisão: modelo controlado e modelo complexo](../assets/modulo1_baseline_metrics.png)
 
 ---
 
-## Subcamada 1.3: Desmistificando a Teoria e a Notacao Formal
+## Subcamada 1.3: Desmistificando a Teoria e a Notação Formal
 
-### Dados, modelo e previsao
+### Dados, modelo e previsão
 
-Depois de enxergar a historia, podemos nomear as pecas. Pense em uma planilha: cada linha e um paciente, cada coluna e uma pista.
+Depois de enxergar a história, podemos nomear as peças. Pense em uma planilha: cada linha é um paciente, cada coluna é uma pista.
 
 - `X`: matriz de atributos, as pistas observadas;
-- `y`: vetor de alvos, o gabarito ou diagnostico;
+- `y`: vetor de alvos, o gabarito ou diagnóstico;
 - `f`: regra aprendida pelo algoritmo;
-- `y_hat`: previsao produzida pela regra.
+- `y_hat`: previsão produzida pela regra.
 
 A ideia pode ser escrita assim:
 
@@ -200,58 +204,58 @@ $$
 \hat{y} = f(X)
 $$
 
-Traducao simbolo por simbolo:
+Tradução símbolo por símbolo:
 
-| Simbolo | Leitura simples |
+| Símbolo | Leitura simples |
 |---|---|
 | `X` | os exames entregues ao modelo |
 | `f` | a regra que o modelo aprendeu |
 | `y_hat` | a resposta que o modelo previu |
 
-No treinamento, o algoritmo procura uma regra que erre pouco nos exemplos conhecidos. O desafio e escolher uma regra que tambem funcione fora deles.
+No treinamento, o algoritmo procura uma regra que erre pouco nos exemplos conhecidos. O desafio é escolher uma regra que também funcione fora deles.
 
-### Acuracia e gap de generalizacao
+### Acurácia e gap de generalização
 
-A acuracia responde: entre todas as previsoes, quantas estavam corretas?
+A acurácia responde: entre todas as previsões, quantas estavam corretas?
 
 $$
-\mathrm{Acuracia} = \frac{\text{previsoes corretas}}{\text{total de casos}}
+\mathrm{Acurácia} = \frac{\text{previsões corretas}}{\text{total de casos}}
 $$
 
 O **gap de overfitting** compara o desempenho no treino com o desempenho no teste:
 
 $$
-\mathrm{Gap} = \mathrm{Acuracia}_{treino} - \mathrm{Acuracia}_{teste}
+\mathrm{Gap} = \mathrm{Acurácia}_{treino} - \mathrm{Acurácia}_{teste}
 $$
 
-Gap grande nao e uma prova isolada de que o modelo e inutil, mas e um alerta para investigar complexidade, vazamento, tamanho da amostra e ruido.
+Gap grande não é uma prova isolada de que o modelo é inútil, mas é um alerta para investigar complexidade, vazamento, tamanho da amostra e ruído.
 
-### A matriz de confusao
+### A matriz de confusão
 
-Para diagnostico, nem todo erro tem o mesmo custo:
+Para diagnóstico, nem todo erro tem o mesmo custo:
 
-| | Real saudavel (`0`) | Real patologia (`1`) |
+| | Real saudável (`0`) | Real patologia (`1`) |
 |---|---:|---:|
-| Previsto saudavel (`0`) | TN: acerto | FN: deixou passar uma patologia |
+| Previsto saudável (`0`) | TN: acerto | FN: deixou passar uma patologia |
 | Previsto patologia (`1`) | FP: alarme falso | TP: acerto |
 
-O recall da classe patologica e:
+O recall da classe patológica é:
 
 $$
 \mathrm{Recall} = \frac{TP}{TP + FN}
 $$
 
-Em um cenario clinico, acompanhar `FN` e recall e essencial, porque um caso doente classificado como saudavel pode atrasar o cuidado. Por isso, a acuracia nunca deve ser a unica regua.
+Em um cenário clínico, acompanhar `FN` e recall é essencial, porque um caso doente classificado como saudável pode atrasar o cuidado. Por isso, a acurácia nunca deve ser a única régua.
 
 ### Data leakage: quando a prova vaza
 
-O vazamento acontece quando uma informacao do teste influencia o aprendizado. Exemplos:
+O vazamento acontece quando uma informação do teste influencia o aprendizado. Exemplos:
 
 - selecionar atributos usando todos os pacientes antes do split;
-- calcular media e desvio com treino e teste juntos;
+- calcular média e desvio com treino e teste juntos;
 - ajustar limiares olhando a resposta dos pacientes reservados.
 
-A ordem correta e sempre:
+A ordem correta é sempre:
 
 ```text
 separar ---> aprender transformacoes no treino ---> aplicar no teste ---> avaliar
@@ -259,11 +263,11 @@ separar ---> aprender transformacoes no treino ---> aplicar no teste ---> avalia
 
 ---
 
-## Subcamada 1.4: Laboratorio Ludico no Colab
+## Subcamada 1.4: Laboratório Lúdico no Colab
 
 ### Toy example: uma fronteira simples contra uma fronteira decoradora
 
-O codigo usa 120 pontos em duas dimensoes. Uma arvore rasa aceita algum ruido para manter uma regra simples; uma arvore profunda cria regioes pequenas para memorizar a amostra.
+O código usa 120 pontos em duas dimensões. Uma árvore rasa aceita algum ruído para manter uma regra simples; uma árvore profunda cria regiões pequenas para memorizar a amostra.
 
 ```python
 import numpy as np
@@ -291,17 +295,17 @@ for ax, (nome, modelo) in zip(axes, modelos.items()):
 plt.tight_layout(); plt.show()
 ```
 
-> **O que voce deve notar no grafico:** a arvore profunda tende a desenhar ilhas e recortes para capturar pontos individuais. Compare a acuracia de treino com a de teste: quando a primeira fica muito acima da segunda, a fronteira aprendeu detalhes da amostra em vez de uma regra geral.
+> **O que aparece no gráfico:** a árvore profunda tende a desenhar ilhas e recortes para capturar pontos individuais. A diferença entre acurácia de treino e teste revela quando a fronteira aprendeu detalhes da amostra em vez de uma regra geral.
 
-**Mini-experimento:** mude `max_depth=3` para `1`, `5` e `None`. Registre treino, teste e gap. Procure o ponto em que aumentar a complexidade deixa de melhorar o teste.
+**Mini-experimento:** altere `max_depth=3` para `1`, `5` e `None`. Registre treino, teste e gap. Procure o ponto em que aumentar a complexidade deixa de melhorar o teste.
 
 ---
 
-## Subcamada 1.5: O Momento Serio da Nossa Aplicacao
+## Subcamada 1.5: O Momento Sério da Nossa Aplicação
 
-> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+> **Chega de brinquedo!** Agora que o conceito está cristalino, vamos para a trincheira real da nossa aplicação com os dados do projeto.
 
-Usaremos a matriz oficial sintetica: 2.000 pacientes, 40 atributos, 10 informativos, 10 redundantes e 20 ruidos metabolicos. O Random Forest tera 100 arvores. O codigo separa treino e teste antes de medir os KPIs e deixa os valores serem calculados na sua propria maquina.
+Usaremos a matriz oficial sintética: 2.000 pacientes, 40 atributos, 10 informativos, 10 redundantes e 20 ruídos metabólicos. O Random Forest terá 100 árvores. O código separa treino e teste antes de medir os KPIs e deixa os valores serem calculados no ambiente de execução.
 
 ```python
 import time
@@ -349,50 +353,50 @@ for nome, valor in resultado.items():
 
 ### Tabela oficial de KPIs
 
-Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+Os valores abaixo são produzidos pelo código, não devem ser decorados como constantes. Tempo, latência e até pequenas variações de desempenho dependem do ambiente e da versão das bibliotecas.
 
-| KPI | Interpretacao | O que investigar |
+| KPI | Interpretação | O que investigar |
 |---|---|---|
-| Acuracia treino | desempenho nos casos estudados | o modelo conseguiu aprender? |
-| Acuracia teste | desempenho em casos reservados | ele generaliza? |
-| Gap de overfitting | treino menos teste | a diferenca e aceitavel? |
-| F1-score | equilibrio entre precision e recall | o desempenho da classe positiva e consistente? |
-| Precision | proporcao de alertas corretos | quantos alarmes sao falsos? |
-| Recall | proporcao de patologias encontradas | quantos casos foram perdidos? |
-| ROC-AUC | qualidade do ranking de risco | o modelo separa classes em varios limiares? |
-| Latencia por paciente | tempo medio de inferencia em us | cabe no fluxo operacional? |
-| Tempo de treino | duracao do ajuste em ms | o retreinamento e viavel? |
-| TN, FP, FN, TP | tipos de acerto e erro | qual erro tem maior custo clinico? |
+| Acurácia treino | desempenho nos casos estudados | o modelo conseguiu aprender? |
+| Acurácia teste | desempenho em casos reservados | ele generaliza? |
+| Gap de overfitting | treino menos teste | a diferença é aceitável? |
+| F1-score | equilíbrio entre precision e recall | o desempenho da classe positiva é consistente? |
+| Precision | proporção de alertas corretos | quantos alarmes são falsos? |
+| Recall | proporção de patologias encontradas | quantos casos foram perdidos? |
+| ROC-AUC | qualidade do ranking de risco | o modelo separa classes em vários limiares? |
+| Latência por paciente | tempo médio de inferência em us | cabe no fluxo operacional? |
+| Tempo de treino | duração do ajuste em ms | o retreinamento é viável? |
+| TN, FP, FN, TP | tipos de acerto e erro | qual erro tem maior custo clínico? |
 
-### Interpretacao clinica e de negocio
+### Interpretação clínica e de negócio
 
-- Treino muito alto e teste bem menor sugerem que as 20 colunas de ruido oferecem oportunidades de coincidencia para as arvores.
-- `FN` e o caso mais delicado desta aplicacao: o paciente tem patologia, mas recebe previsao `0`. A decisao de negocio deve considerar o custo desse erro, nao apenas a acuracia.
-- Reduzir exames pode economizar coleta, armazenamento e tempo de processamento, mas o valor financeiro precisa ser calculado com custos reais do servico de saude.
-- A Camada 01 estabelece o baseline. As proximas camadas devem provar, com a mesma separacao e as mesmas metricas, se SHAP, filtros e selecao conseguem reduzir atributos sem piorar a generalizacao.
+- Treino muito alto e teste bem menor sugerem que as 20 colunas de ruído oferecem oportunidades de coincidência para as árvores.
+- `FN` é o caso mais delicado desta aplicação: o paciente tem patologia, mas recebe previsão `0`. A decisão de negócio deve considerar o custo desse erro, não apenas a acurácia.
+- Reduzir exames pode economizar coleta, armazenamento e tempo de processamento, mas o valor financeiro precisa ser calculado com custos reais do serviço de saúde.
+- A Camada 01 estabelece o baseline. As próximas camadas devem provar, com a mesma separação e as mesmas métricas, se SHAP, filtros e seleção conseguem reduzir atributos sem piorar a generalização.
 
 ---
 
-## Subcamada 1.6: Checkpoint de Autonomia e Fixacao Ativa
+## Subcamada 1.6: Checkpoint de Autonomia e Fixação Ativa
 
-Explique sem consultar o texto e depois confira sua resposta:
+Responda às perguntas e compare as justificativas com os conceitos apresentados:
 
-1. Por que uma acuracia de treino muito alta pode ser um alerta em vez de uma vitoria?
-2. Explique para uma pessoa leiga a diferenca entre regressao e classificacao.
-3. Como uma coluna de ruido pode parecer util no treino por pura coincidencia?
-4. O que e data leakage e por que o teste precisa permanecer escondido?
-5. Por que `FN` pode ser mais importante que acuracia em uma triagem de saude?
-6. Qual e a diferenca entre aprender um padrao e memorizar exemplos?
+1. Por que uma acurácia de treino muito alta pode ser um alerta em vez de uma vitória?
+2. Qual é a diferença entre regressão e classificação?
+3. Como uma coluna de ruído pode parecer útil no treino por pura coincidência?
+4. O que é data leakage e por que o teste precisa permanecer escondido?
+5. Por que `FN` pode ser mais importante que acurácia em uma triagem de saúde?
+6. Qual é a diferença entre aprender um padrão e memorizar exemplos?
 
-### Mini-desafio pratico
+### Mini-desafio prático
 
-Altere o experimento serio para comparar tres cenarios, mantendo a mesma semente e o mesmo split:
+O experimento sério pode comparar três cenários, mantendo a mesma semente e o mesmo split:
 
 ```text
 cenario              atributos       acuracia_treino  acuracia_teste  gap  F1  recall  FN
 40 atributos         40              ...               ...             ...  ... ...     ...
 10 informativos      10              ...               ...             ...  ... ...     ...
-40 sem ruido puro    20              ...               ...             ...  ... ...     ...
+40 sem ruído puro    20              ...               ...             ...  ... ...     ...
 ```
 
-Para o cenario de 10 atributos, gere a base com `n_features=10`, `n_informative=10` e `n_redundant=0`. Para o cenario sem ruido puro, mantenha os 10 informativos e 10 redundantes. Depois escreva uma explicacao Feynman: **qual mudanca reduziu o gap sem aumentar o numero de falsos negativos?**
+No cenário de 10 atributos, use `n_features=10`, `n_informative=10` e `n_redundant=0`. No cenário sem ruído puro, mantenha os 10 informativos e 10 redundantes. A síntese final deve responder: **qual mudança reduziu o gap sem aumentar o número de falsos negativos?**
