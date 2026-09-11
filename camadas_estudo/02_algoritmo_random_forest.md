@@ -1,314 +1,287 @@
-# Camada 02: O Algoritmo Escolhido — Anatomia e Funcionamento do Random Forest
+# Camada 02: O Algoritmo Random Forest
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 2  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`RandomForestClassifier`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), classe `RandomForestClassifier`
 
----
+> **Objetivo da aula:** entender como uma arvore de decisao faz perguntas aos dados, por que uma arvore isolada e instavel e como o comite de arvores do Random Forest, apoiado em bagging e selecao aleatoria de atributos, reduz a variancia e prepara o terreno para a explicabilidade com TreeSHAP.
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender de forma cristalina por que uma única Árvore de Decisão é instável e frágil, como a reunião de 100 árvores independentes (**Random Forest**) cria um comitê ultra-robusto através da "Sabedoria das Multidões", o papel das duas chaves da aleatoriedade (*Bagging* e *Amostragem de Atributos*), e por que esse algoritmo é o alicerce matemático perfeito para a explicabilidade com **TreeSHAP**.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 2.1: De Onde Vêm as Árvores de Decisão? (O Jogo de Perguntas)](#subcamada-21-de-onde-vêm-as-árvores-de-decisão-o-jogo-de-perguntas)
-- [Subcamada 2.2: O Calcanhar de Aquiles de uma Única Árvore](#subcamada-22-o-calcanhar-de-aquiles-de-uma-única-árvore)
-- [Subcamada 2.3: A Sabedoria das Multidões — A Junta Médica de 100 Especialistas](#subcamada-23-a-sabedoria-das-multidões--a-junta-médica-de-100-especialistas)
-- [Subcamada 2.4: As Duas Chaves da Aleatoriedade (Bagging & Amostragem de Atributos)](#subcamada-24-as-duas-chaves-da-aleatoriedade-bagging--amostragem-de-atributos)
-- [Subcamada 2.5: Laboratório Lúdico no Colab (Toy Example: Árvore Única vs. Floresta)](#subcamada-25-laboratório-lúdico-no-colab-toy-example-árvore-única-vs-floresta)
-- [Subcamada 2.6: O Momento Sério da Nossa Aplicação (Comparação Real no Dataset de Saúde & KPIs)](#subcamada-26-o-momento-sério-da-nossa-aplicação-comparação-real-no-dataset-de-saúde--kpis)
-- [Subcamada 2.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-27-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 2.1: O conceito na vida real](#subcamada-21-o-conceito-na-vida-real)
+2. [Subcamada 2.2: Desenhando o conceito](#subcamada-22-desenhando-o-conceito)
+3. [Subcamada 2.3: Desmistificando a teoria e a notacao formal](#subcamada-23-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 2.4: Laboratorio ludico no Colab](#subcamada-24-laboratorio-ludico-no-colab)
+5. [Subcamada 2.5: O momento serio da nossa aplicacao](#subcamada-25-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 2.6: Checkpoint de autonomia e fixacao ativa](#subcamada-26-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 2.1: De Onde Vêm as Árvores de Decisão? (O Jogo de Perguntas)
+## Subcamada 2.1: O Conceito na Vida Real
 
-Você já brincou daquele jogo clássico infantil chamado *"Cara a Cara"* ou *"20 Perguntas"*?  
-Uma pessoa pensa em um personagem ou animal secreto. Você só tem permissão de fazer perguntas cujas respostas sejam **SIM** ou **NÃO**:
-- *"O personagem usa óculos?"*
-  - Se **SIM**: Elimina todos os personagens sem óculos.
-  - Se **NÃO**: Elimina todos os que usam óculos.
-- Em seguida: *"O personagem tem cabelo loiro?"*
-- E assim por diante, afunilando as possibilidades até adivinhar com 100% de certeza quem é.
+### A historia da junta medica de 100 especialistas
 
-Uma **Árvore de Decisão (*Decision Tree*)** em Machine Learning faz exatamente a mesma coisa com números!
+Imagine que voce precisa tomar uma decisao medica delicada. Voce tem duas opcoes:
 
-```
-                                [ Glicose > 126 mg/dL? ]
-                                      /          \
-                                (SIM)/            \(NÃO)
-                                    /              \
-                    [ Idade > 45 anos? ]        [ Pressão > 140 mmHg? ]
-                         /         \                  /         \
-                   (SIM)/           \(NÃO)      (SIM)/           \(NÃO)
-                       /             \              /             \
-                  [ DIABÉTICO ]  [ SAUDÁVEL ]  [ HIPERTENSO ]  [ SAUDÁVEL ]
-```
+1. Consultar um unico medico, muito brilhante, mas que atendeu um caso raro ontem e pode estar cansado ou excessivamente apegado a um sintoma especifico.
+2. Reunir uma junta medica com 100 medicos independentes, onde cada especialista examina uma copia do prontuario e foca em grupos diferentes de exames, decidindo o diagnostico por votacao majoritaria.
 
-### O Que Acontece por Baixo dos Panos? (Impureza de Gini)
-Como o computador escolhe qual pergunta fazer primeiro?  
-Ele calcula a **Impureza de Gini**. Pense na pureza como uma jarra de bolinhas de gude:
-- Se a jarra só tem bolinhas vermelhas (todos doentes), ela é **100% pura** ($\text{Gini} = 0$).
-- Se a jarra tem 50% vermelhas e 50% azuis, é a confusão máxima ($\text{Gini} = 0.5$).
-- A árvore testa todos os exames possíveis e escolhe a pergunta que mais rapidamente separa as bolinhas vermelhas das azuis.
+Uma arvore de decisao e o primeiro medico: ela divide o espaco com regras claras de sim ou nao, mas pode criar regras obsessivas para acertar cada detalhe da amostra de treino.
+
+O Random Forest e a junta medica: ele cria dezenas ou centenas de arvores ligeiramente diferentes e consolida os votos. Se cada arvore for minimamente melhor que o acaso e errar em pontos distintos, a probabilidade de a maioria errar junta cai expressivamente.
+
+**A grande sacada:** a forca do Random Forest nao vem de arvores perfeitas, mas da combinacao democratica entre arvores diversas.
+
+### Arvore unica e floresta: diferencas fundamentais
+
+| Caracteristica | Arvore de decisao isolada | Random Forest (100 arvores) |
+|---|---|---|
+| Decisao | regra hierarquica unica | media ou votacao majoritaria |
+| Sensibilidade a mudancas | alta: mudar poucos dados altera a arvore | baixa: o consenso amortece variacoes |
+| Risco de overfitting | alto em arvores profundas | controlado pelo ensacamento (bagging) |
+| Interpretabilidade visual | direta no fluxograma | exige tecnicas de explicabilidade (XAI) |
 
 ---
 
-## Subcamada 2.2: O Calcanhar de Aquiles de uma Única Árvore
+## Subcamada 2.2: Desenhando o Conceito
 
-Se as árvores de decisão são tão intuitivas, por que não usamos apenas uma única árvore no nosso projeto?
+### Uma arvore como jogo de 20 perguntas
 
-### A Analogia do Detetive Obsessivo
-Imagine um detetive investigando crimes que, de tão perfeccionista, quer criar uma regra para absolutamente cada detalhe:
-- *"Se o suspeito calça sapato tamanho 41, tem bigode ruivo e comeu pizza na terça-feira passada às 19h14... então ele é o culpado!"*
-
-Uma única árvore profunda sofre de **Altíssima Variância**:
-1. Ela tem uma memória tão agressiva que divide os dados até cada folha ter um único paciente.
-2. Se você mudar apenas 3 ou 4 pacientes na base de treino, a árvore inteira muda de formato e cria regras completamente diferentes.
-3. Ela é a maior vítima do **Overfitting** que estudamos na Camada 01!
-
----
-
-## Subcamada 2.3: A Sabedoria das Multidões — A Junta Médica de 100 Especialistas
-
-Em **2001**, o estatístico de Berkeley **Leo Breiman** propôs uma solução revolucionária:  
-*"E se, em vez de confiarmos em um único médico superinteligente (mas que pode ter um dia ruim ou preconceitos pessoais), nós reuníssemos uma **junta médica independente de 100 médicos**?"*
-
-```
-                              [ PACIENTE NOVO ENTRA NO HOSPITAL ]
-                                               │
-             ┌─────────────────┬───────────────┼───────────────┬─────────────────┐
-             ▼                 ▼               ▼               ▼                 ▼
-        🌲 Médico 1       🌲 Médico 2     🌲 Médico 3     🌲 Médico 4    ... 🌲 Médico 100
-       (Vota: Doente)    (Vota: Doente)  (Vota: Saudável) (Vota: Doente)      (Vota: Doente)
-             │                 │               │               │                 │
-             └─────────────────┴───────────────┼───────────────┴─────────────────┘
-                                               │
-                                               ▼
-                                  [ URNA DEMOCRÁTICA ]
-                                   84 Votos: DOENTE (1)
-                                   16 Votos: SAUDÁVEL (0)
-                                               │
-                                               ▼
-                              🏁 DIAGNÓSTICO CONSOLIDADO:
-                                     PATOLOGIA (1)
-                               (Probabilidade Estimada: 84%)
+```text
+                  [ Glicose > 126 mg/dL? ]
+                         /        \
+                   SIM  /          \  NAO
+                       /            \
+          [ Idade > 45 anos? ]    [ Pressao > 140 mmHg? ]
+               /        \               /        \
+         SIM  /          \ NAO    SIM  /          \ NAO
+             v            v           v            v
+        patologia     saudavel   patologia     saudavel
 ```
 
-Essa técnica pertence à família dos **Modelos de Comitê (*Ensemble Learning*)**.  
-A teoria estatística prova que, se cada médico tiver uma taxa de acerto ligeiramente melhor que o acaso e seus erros forem independentes, **a probabilidade de a maioria da junta errar em conjunto cai exponencialmente em direção a zero!**
+### O comite democratico da floresta
+
+```text
+               Paciente novo entra no hospital
+                              |
+       +--------------+-------+-------+--------------+
+       |              |               |              |
+       v              v               v              v
+    Arvore 1       Arvore 2       Arvore 3       Arvore 100
+    vota: 1        vota: 1        vota: 0        vota: 1
+       |              |               |              |
+       +--------------+-------+-------+--------------+
+                              |
+                              v
+                     [ Urna de votos ]
+                     82 votos: patologia (1)
+                     18 votos: saudavel  (0)
+                              |
+                              v
+                Veredito final: 1 (probabilidade 82%)
+```
+
+### As duas chaves da aleatoriedade
+
+Para que a junta funcione, os especialistas nao podem ser clones:
+
+```text
+1. Bootstrap (amostras com reposicao)
+   Cada arvore estuda em um sorteio com reposicao de pacientes (~63% unicos).
+
+2. Amostragem de atributos (max_features)
+   Em cada corte, a arvore avalia apenas um subconjunto sorteado de colunas (sqrt(M)).
+   Isso impede que uma variavel dominante mas ruidosa comande todas as arvores.
+```
+
+| Mecanismo | O que faz | Efeito no modelo |
+|---|---|---|
+| Bootstrap | sorteia pacientes com reposicao | cria diferencas na base de treino de cada arvore |
+| `max_features` | sorteia colunas a cada no | obriga as arvores a explorarem outros biomarcadores |
+| Votacao | agrega as probabilidades | reduz a variancia sem aumentar o viés |
 
 ---
 
-## Subcamada 2.4: As Duas Chaves da Aleatoriedade (Bagging & Amostragem de Atributos)
+## Subcamada 2.3: Desmistificando a Teoria e a Notacao Formal
 
-Para que a junta médica funcione, os 100 médicos **não podem ser clones**. Se todos estudassem pelos mesmos livros e olhassem para os mesmos exames, todos cometeriam exatamente o mesmo erro!  
-O Random Forest garante a diversidade através de **duas regras sagradas**:
+### Impureza de Gini: como a arvore escolhe a pergunta
 
-### Regra 1: Bagging (Bootstrap Aggregating — Pacientes Sorteados)
-Cada árvore é treinada em uma "pasta de prontuários" diferente, criada por **sorteio com reposição**:
-- A base original tem 1.500 pacientes de treino.
-- Para a Árvore 1, sorteamos 1.500 pacientes (alguns são sorteados 2 vezes, outros ficam de fora).
-- Matematicamente, cada árvore enxerga cerca de **63.2% dos pacientes únicos**. Os outros 36.8% são chamados de dados *Out-of-Bag (OOB)* e servem como teste gratuito!
+Em cada no, o algoritmo busca o corte que deixa os nos-filhos o mais homogeneos possivel. A impureza de Gini mede essa mistura:
 
-### Regra 2: Amostragem Aleatória de Atributos (`max_features`)
-Esta é a maior sacada de Leo Breiman:
-- Quando uma árvore vai fazer uma pergunta em um nó, ela **é proibida de olhar para todos os 40 exames do paciente!**
-- Ela sorteia aleatoriamente um subconjunto menor (por padrão, $\sqrt{M} = \sqrt{40} \approx 6$ variáveis).
-- *Por que isso é genial?* Se um biomarcador for absurdamente forte (ex: Glicemia), uma árvore comum sempre começaria por ele. Forçando o sorteio de exames, obrigamos algumas árvores a aprenderem a diagnosticar usando outros biomarcadores menos óbvios. Isso torna a floresta invencível contra falhas pontuais!
+$$
+Gini = 1 - \sum_{k=1}^{C} p_k^2
+$$
+
+Traducao simbolo por simbolo:
+
+| Simbolo | Leitura simples |
+|---|---|
+| `C` | quantidade de classes (no projeto, `C = 2`: saudavel e patologia) |
+| `p_k` | proporcao de pacientes da classe `k` naquele no |
+| `p_k^2` | peso que penaliza misturas equilibradas |
+| `Gini = 0` | pureza total: todos os pacientes do no pertencem a mesma classe |
+| `Gini = 0.5` | mistura maxima em classificacao binaria (50% saudaveis e 50% doentes) |
+
+### Agregacao de votos no Random Forest
+
+Dada uma colecao de $T$ arvores $\{h_1, h_2, \dots, h_T\}$, a probabilidade prevista da classe positiva e a media das probabilidades individuais:
+
+$$
+P(y=1 \mid x) = \frac{1}{T} \sum_{t=1}^{T} P_t(y=1 \mid x)
+$$
+
+### A ordem correta evita vazamento
+
+O ajuste das arvores e o sorteio de bootstrap ocorrem estritamente dentro de `X_train`. O conjunto de teste `X_test` apenas percorre as regras ja congeladas da floresta para mensuracao cega.
 
 ---
 
-## Subcamada 2.5: Laboratório Lúdico no Colab (Toy Example: Árvore Única vs. Floresta)
+## Subcamada 2.4: Laboratorio Ludico no Colab
 
-Vamos ver essa mágica acontecer na prática em um ambiente visual 2D no [Google Colab](https://colab.research.google.com).  
-Copie e execute o código abaixo:
+### Toy example: arvore solitaria contra a floresta
+
+O codigo compara uma arvore sem limites de profundidade com um Random Forest de 100 arvores em um problema bidimensional ruidoso.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: ÁRVORE ÚNICA VS. RANDOM FOREST (100 ÁRVORES)
-# Objetivo: Ver visualmente como a floresta suaviza a fronteira de decisão
-# =============================================================================
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_moons
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-# 1. Geramos 150 pontos 2D ruidosos
-np.random.seed(42)
-X_toy, y_toy = make_moons(n_samples=150, noise=0.35, random_state=42)
+X, y = make_moons(n_samples=150, noise=0.35, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, stratify=y, random_state=42)
 
-# 2. Treinamos:
-#    Modelo A: Árvore Única sem limite de profundidade (Instável)
-#    Modelo B: Random Forest com 100 árvores (Consenso Democrático)
-arvore_solitaria = DecisionTreeClassifier(random_state=42)
-floresta_robusta = RandomForestClassifier(n_estimators=100, max_features="sqrt", random_state=42)
+modelos = {
+    "Arvore unica": DecisionTreeClassifier(random_state=42),
+    "Random Forest (100 arvores)": RandomForestClassifier(n_estimators=100, random_state=42)
+}
 
-arvore_solitaria.fit(X_toy, y_toy)
-floresta_robusta.fit(X_toy, y_toy)
-
-# 3. Plotagem das Fronteiras de Decisão
-def plotar_fronteira(clf, X, y, titulo, ax):
-    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
-    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 300), np.linspace(y_min, y_max, 300))
-    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-    
-    ax.contourf(xx, yy, Z, alpha=0.3, cmap="coolwarm")
-    ax.scatter(X[y == 0, 0], X[y == 0, 1], c="blue", edgecolors="k", label="Saudável (0)")
-    ax.scatter(X[y == 1, 0], X[y == 1, 1], c="red", edgecolors="k", label="Patologia (1)")
-    ax.set_title(titulo, fontsize=12, fontweight="bold")
-    ax.legend(loc="upper right")
-    ax.grid(True, linestyle="--", alpha=0.4)
-
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-plotar_fronteira(arvore_solitaria, X_toy, y_toy, "Árvore Única\nFronteira Quadrada e Frágil", axes[0])
-plotar_fronteira(floresta_robusta, X_toy, y_toy, "Random Forest (100 Árvores)\nFronteira Suave e Equilibrada", axes[1])
-plt.tight_layout()
-plt.show()
-
-print(f"Acurácia Treino - Árvore Única : {arvore_solitaria.score(X_toy, y_toy)*100:.1f}%")
-print(f"Acurácia Treino - Random Forest: {floresta_robusta.score(X_toy, y_toy)*100:.1f}%")
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+for ax, (nome, modelo) in zip(axes, modelos.items()):
+    modelo.fit(X_train, y_train)
+    xx, yy = np.meshgrid(np.linspace(-1.5, 2.5, 250), np.linspace(-1, 1.5, 250))
+    z = modelo.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    ax.contourf(xx, yy, z, alpha=0.25, cmap="coolwarm")
+    ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap="coolwarm", edgecolor="k", label="treino")
+    ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap="coolwarm", marker="*", s=70, label="teste")
+    acc_tr = accuracy_score(y_train, modelo.predict(X_train))
+    acc_te = accuracy_score(y_test, modelo.predict(X_test))
+    ax.set_title(f"{nome}\nTreino: {acc_tr:.2f} | Teste: {acc_te:.2f}")
+    ax.legend()
+plt.tight_layout(); plt.show()
 ```
+
+> **O que voce deve notar no grafico gerado:** a arvore unica cria bordas retangulares e pequenos bolsões isolados para capturar pontos de treino difíceis. A floresta produz uma superficie mais suave e curva, que costuma sustentar acuracia de teste mais estavel.
+
+**Mini-experimento:** altere `n_estimators=100` para `5` e `300`. Observe como poucas arvores ainda deixam a fronteira irregular e como muitas arvores estabilizam o desenho.
 
 ---
 
-## Subcamada 2.6: O Momento Sério da Nossa Aplicação (Comparação Real no Dataset de Saúde & KPIs)
+## Subcamada 2.5: O Momento Serio da Nossa Aplicacao
 
-Agora que a intuição do comitê democrático está consolidada, vamos para o **cenário hospitalar real da nossa pesquisa** ([pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py)).  
-Vamos colocar a **Árvore de Decisão Única** frente a frente com o **Random Forest** no dataset clínico de **2.000 pacientes e 40 exames** e mensurar os KPIs.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+Vamos confrontar uma arvore unica e o Random Forest sobre a matriz sintetica oficial: 2.000 pacientes, 40 atributos, 10 informativos, 10 redundantes e 20 ruidos metabolicos.
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Duelo Diagnóstico Hospitalar: Árvore Única vs. Random Forest Baseline
-# =============================================================================
+import time
 import numpy as np
 import pandas as pd
-import time
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score, roc_auc_score)
 
-print("=" * 75)
-print("PROTOCOLO EXPERIMENTAL: ÁRVORE ÚNICA VS. RANDOM FOREST (40 ATRIBUTOS)")
-print("=" * 75)
-
-# 1. GERAÇÃO DO DATASET CLÍNICO (2.000 Pacientes, 40 Variáveis)
-X_raw, y = make_classification(
-    n_samples=2000,
-    n_features=40,
-    n_informative=10,
-    n_redundant=10,
-    n_repeated=0,
-    n_classes=2,
-    weights=[0.6, 0.4],
-    flip_y=0.03,
-    random_state=42
-)
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
-
-# 2. SEPARAÇÃO TREINO (75%) E TESTE (25%)
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
-    df_clinico, y, test_size=0.25, stratify=y, random_state=42
-)
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-# 3. TREINAMENTO E MEDIÇÃO: ÁRVORE DE DECISÃO ÚNICA
-t0 = time.perf_counter()
-dt = DecisionTreeClassifier(random_state=42)
-dt.fit(X_train, y_train)
-tempo_treino_dt = (time.perf_counter() - t0) * 1000
+def avaliar(modelo, X_tr, X_te, y_tr, y_te):
+    t0 = time.perf_counter(); modelo.fit(X_tr, y_tr)
+    t_treino_ms = (time.perf_counter() - t0) * 1000
+    t0 = time.perf_counter(); pred = modelo.predict(X_te)
+    proba = modelo.predict_proba(X_te)[:, 1]
+    t_inf_us = (time.perf_counter() - t0) * 1_000_000 / len(X_te)
+    acc_tr = accuracy_score(y_tr, modelo.predict(X_tr))
+    acc_te = accuracy_score(y_te, pred)
+    tn, fp, fn, tp = confusion_matrix(y_te, pred).ravel()
+    return {
+        "acc_treino": acc_tr, "acc_teste": acc_te,
+        "gap": acc_tr - acc_te, "f1": f1_score(y_te, pred),
+        "recall": recall_score(y_te, pred), "roc_auc": roc_auc_score(y_te, proba),
+        "tempo_treino_ms": t_treino_ms, "latencia_us_paciente": t_inf_us,
+        "TN": tn, "FP": fp, "FN": fn, "TP": tp
+    }
 
-t0 = time.perf_counter()
-y_pred_dt = dt.predict(X_test)
-tempo_inf_dt = (time.perf_counter() - t0) * 1000
-y_proba_dt = dt.predict_proba(X_test)[:, 1]
+res_dt = avaliar(DecisionTreeClassifier(random_state=SEED), X_train, X_test, y_train, y_test)
+res_rf = avaliar(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1), X_train, X_test, y_train, y_test)
 
-# 4. TREINAMENTO E MEDIÇÃO: RANDOM FOREST (100 ÁRVORES)
-t0 = time.perf_counter()
-rf = RandomForestClassifier(n_estimators=100, max_features="sqrt", random_state=42)
-rf.fit(X_train, y_train)
-tempo_treino_rf = (time.perf_counter() - t0) * 1000
-
-t0 = time.perf_counter()
-y_pred_rf = rf.predict(X_test)
-tempo_inf_rf = (time.perf_counter() - t0) * 1000
-y_proba_rf = rf.predict_proba(X_test)[:, 1]
-
-# 5. CÁLCULO COMPARATIVO DE KPIS
-acc_tr_dt, acc_te_dt = accuracy_score(y_train, dt.predict(X_train)), accuracy_score(y_test, y_pred_dt)
-acc_tr_rf, acc_te_rf = accuracy_score(y_train, rf.predict(X_train)), accuracy_score(y_test, y_pred_rf)
-
-tabela_kpis = pd.DataFrame({
-    "Métrica (KPI)": [
-        "Acurácia Treino",
-        "Acurácia Teste",
-        "Gap de Overfitting",
-        "F1-Score (Clínico)",
-        "ROC-AUC",
-        "Tempo de Treinamento",
-        "Latência de Inferência (500 pac.)"
-    ],
-    "Árvore Única (1 Médico)": [
-        f"{acc_tr_dt*100:.2f}%",
-        f"{acc_te_dt*100:.2f}%",
-        f"{(acc_tr_dt - acc_te_dt)*100:.2f}% (CRÍTICO)",
-        f"{f1_score(y_test, y_pred_dt):.4f}",
-        f"{roc_auc_score(y_test, y_proba_dt):.4f}",
-        f"{tempo_treino_dt:.1f} ms",
-        f"{tempo_inf_dt:.2f} ms"
-    ],
-    "Random Forest (100 Médicos)": [
-        f"{acc_tr_rf*100:.2f}%",
-        f"{acc_te_rf*100:.2f}%",
-        f"{(acc_tr_rf - acc_te_rf)*100:.2f}% (CONTROLADO)",
-        f"{f1_score(y_test, y_pred_rf):.4f} (+9.5 pts)",
-        f"{roc_auc_score(y_test, y_proba_rf):.4f}",
-        f"{tempo_treino_rf:.1f} ms",
-        f"{tempo_inf_rf:.2f} ms"
-    ]
-})
-
-print("\n📊 QUADRO COMPARATIVO DE KPIS CLÍNICOS:")
-print(tabela_kpis.to_string(index=False))
+comparativo = pd.DataFrame([res_dt, res_rf], index=["Arvore Unica", "Random Forest 100"]).round(4)
+print(comparativo)
+for nome, res in [("Arvore Unica", res_dt), ("Random Forest", res_rf)]:
+    print(f"KPI {nome}: acc_treino={res['acc_treino']:.4f}; acc_teste={res['acc_teste']:.4f}; "
+          f"gap={res['gap']:.4f}; f1={res['f1']:.4f}; recall={res['recall']:.4f}; "
+          f"FN={res['FN']}; tempo_treino_ms={res['tempo_treino_ms']:.2f}")
 ```
 
+### Tabela oficial de KPIs
+
+Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Interpretacao | O que investigar |
+|---|---|---|
+| Acuracia treino | desempenho nos dados vistos | o modelo memorizou as particularidades? |
+| Acuracia teste | desempenho em dados reservados | a regra resiste a novos pacientes? |
+| Gap de overfitting | `treino - teste` | a arvore unica abriu distancia excessiva? |
+| F1-score | media harmonica de precision e recall | o comite estabilizou a classe positiva? |
+| Recall | proporcao de doentes identificados | quantas patologias deixaram de ser vistas? |
+| ROC-AUC | ordenacao de risco em varios limiares | a probabilidade media e confiavel? |
+| Tempo de treino | duracao do `.fit` em ms | o custo de 100 arvores cabe na infraestrutura? |
+| FN | falsos negativos | qual o impacto clinico dos pacientes liberados? |
+
+### Interpretacao clinica e de negocio
+
+- A arvore unica costuma apresentar gap de overfitting maior porque uma unica estrutura tenta acomodar o ruido dos 40 exames.
+- O Random Forest mitiga parte desse efeito ao diluir os votos, elevando o recall e reduzindo os falsos negativos (`FN`).
+- Esse ganho vem com custo: treinar 100 arvores consome mais tempo de CPU e memoria. Por isso, enxugar colunas inuteis nas proximas camadas beneficiara diretamente a escalabilidade do modelo.
+- O Random Forest sera a nossa ancora metodologica: servira de baseline e permitira o calculo acelerado de explicabilidade com TreeSHAP.
+
 ---
 
-### 2.6.2 Interpretação Clínica e de Negócio dos Resultados
+## Subcamada 2.6: Checkpoint de Autonomia e Fixacao Ativa
 
-| Métrica (KPI) | Árvore Única | Random Forest | O Que Isso Significa no Hospital? |
-| :--- | :--- | :--- | :--- |
-| **Gap de Overfitting** | **20.40%** | **12.20%** | O Random Forest cortou o gap de sobreajuste quase pela metade apenas usando o consenso de 100 árvores! |
-| **F1-Score Clínico** | **0.7424** | **0.8373** | Um salto de quase **10 pontos percentuais** na capacidade real de diagnosticar pacientes patológicos. |
-| **ROC-AUC** | **0.7876** | **0.9475** | A capacidade de separar casos graves de casos saudáveis subiu de medíocre ($0.78$) para excelente ($0.95$). |
-| **Tempo de Treino** | **~25 ms** | **~600 ms** | O Random Forest demora 24 vezes mais para treinar porque constrói 100 árvores completas com 40 atributos. |
+Explique sem consultar o texto e depois confira sua resposta:
 
-> [!IMPORTANT]
-> 💡 **A Ponte Para a Próxima Camada e a Armadilha do MDI:**  
-> O Random Forest tem uma métrica interna chamada *MDI (Mean Decrease in Impurity)* ou "Importância de Gini". No entanto, ela tem um defeito fatal: **ela dá notas altas para colunas de ruído se elas tiverem muitas casas decimais!**  
-> É exatamente por isso que não podemos confiar apenas no Random Forest puro para selecionar atributos e precisaremos do **SHAP (Teoria dos Jogos)** nas camadas seguintes.
+1. Por que uma junta de 100 especialistas tende a errar menos do que um unico medico?
+2. O que e a impureza de Gini e qual o seu valor em um no perfeitamente puro?
+3. O que e amostragem de atributos (`max_features`) e como ela forca a diversidade entre as arvores?
+4. Por que o Random Forest tem custo computacional de treino superior ao de uma arvore isolada?
+5. Qual a relacao entre bagging (bootstrap) e a reducao da variancia do modelo?
+6. Por que uma arvore de decisao profunda com 100% de acuracia no treino frequentemente falha no teste?
 
----
+### Mini-desafio pratico
 
-## Subcamada 2.7: Checkpoint de Autonomia & Fixação Ativa
+Execute o experimento variando o numero de arvores no Random Forest e preencha a tabela:
 
-Responda usando suas próprias palavras antes de seguir para a Camada 03:
+```text
+n_estimators       tempo_treino_ms     acuracia_teste     gap_overfitting     F1
+1                  ...                 ...                ...                 ...
+10                 ...                 ...                ...                 ...
+50                 ...                 ...                ...                 ...
+100                ...                 ...                ...                 ...
+200                ...                 ...                ...                 ...
+```
 
-1. **Por que consultar uma junta de 100 médicos independentes é estatisticamente superior a consultar apenas um médico genial?**
-2. **O que aconteceria com o Random Forest se nós desativássemos o sorteio aleatório de atributos (`max_features`) e deixássemos todas as 100 árvores olharem para todos os 40 exames a todo momento?**
-3. **Explique o que é *Bagging* usando a metáfora de uma urna com bilhetes de pacientes.**
-4. **Desafio no Colab:** No código da Subcamada 2.6, mude `n_estimators=100` para `n_estimators=10` e depois para `n_estimators=300`. O que acontece com o $F_1$-Score e com o tempo de treino? Vale a pena pagar o custo de tempo de 300 árvores?
+Depois responda: **a partir de quantas arvores o ganho de F1 atinge um platô que nao justifica mais o aumento do tempo de processamento?**

@@ -1,225 +1,384 @@
-# Camada 13: O Pipeline Completo — Orquestração de Ponta a Ponta
+# Camada 13: Pipeline Completo e Integrado
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 13  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`executar_pipeline_completo`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_pipeline_completo`
 
----
-
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender a engenharia de **MLOps (Machine Learning Operations)** que transforma dezenas de conceitos isolados em uma **linha de montagem industrial contínua, automatizada e 100% reprodutível**. Aprender a narrar com clareza o fluxo completo de dados que vai da geração sintética até o laudo final, e dominar o papel de cada uma das 6 etapas da função mestra `executar_pipeline_completo()`.
+> **Objetivo da aula:** Analisar a arquitetura de orquestracao de ponta a ponta em MLOps, examinando o encadeamento deterministico entre geracao controlada de dados, avaliacao de linha de base, explicabilidade analitica, reducao estatistica de dimensionalidade e calibracao bayesiana, assegurando reprodutibilidade cientifica integral e ausencia de vazamento de dados.
 
 ---
 
-## Sumário da Aula
+## Mapa da aula
 
-- [Subcamada 13.1: A Analogia da Fábrica de Carros e a Esteira Automatizada](#subcamada-131-a-analogia-da-fábrica-de-carros-e-a-esteira-automatizada)
-- [Subcamada 13.2: Os 6 Movimentos da Sinfonia Diagnóstica](#subcamada-132-os-6-movimentos-da-sinfonia-diagnóstica)
-- [Subcamada 13.3: O Princípio da Reprodutibilidade Científica Total](#subcamada-133-o-princípio-da-reprodutibilidade-científica-total)
-- [Subcamada 13.4: Como Contar a História do Pipeline em uma Entrevista Técnica ou Banca](#subcamada-134-como-contar-a-história-do-pipeline-em-uma-entrevista-técnica-ou-banca)
-- [Subcamada 13.5: Laboratório Lúdico no Colab (Toy Example: Uma Mini-Esteira de 30 Linhas)](#subcamada-135-laboratório-lúdico-no-colab-toy-example-uma-mini-esteira-de-30-linhas)
-- [Subcamada 13.6: O Momento Sério da Nossa Aplicação (Execução do Pipeline Completo & Cronometria de KPIs)](#subcamada-136-o-momento-sério-da-nossa-aplicação-execução-do-pipeline-completo--cronometria-de-kpis)
-- [Subcamada 13.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-137-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 13.1: O conceito na vida real](#subcamada-131-o-conceito-na-vida-real)
+2. [Subcamada 13.2: Desenhando o conceito](#subcamada-132-desenhando-o-conceito)
+3. [Subcamada 13.3: Desmistificando a teoria e a notacao formal](#subcamada-133-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 13.4: Laboratorio ludico no Colab](#subcamada-134-laboratorio-ludico-no-colab)
+5. [Subcamada 13.5: O momento serio da nossa aplicacao](#subcamada-135-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 13.6: Checkpoint de autonomia e fixacao ativa](#subcamada-136-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 13.1: A Analogia da Fábrica de Carros e a Esteira Automatizada
+## Subcamada 13.1: O conceito na vida real
 
-Imagine uma montadora moderna de automóveis:
-- **Estação 1:** Chega a chapa de aço bruta vinda da siderúrgica (Dados brutos).
-- **Estação 2:** O chassi recebe as rodas e o motor básico para um primeiro teste de pista (Baseline).
-- **Estação 3:** O scanner a laser inspeciona cada milímetro do chassi procurando peças desnecessárias (Auditoria XAI com SHAP e LIME).
-- **Estação 4:** Braços robóticos cortam 75% das peças pesadas e descartam o excesso de peso (Pré-Filtro e shap-select).
-- **Estação 5:** O engenheiro-chefe recalibra o motor no dinamômetro para a nova aerodinâmica leve (Optuna).
-- **Estação 6:** O carro de corrida enxuto sai da fábrica pronto para acelerar na pista de testes (Dashboard Final).
+### A analogia da linha de montagem industrial automatizada
 
+Em uma fabrica automobilistica de padrao internacional, a fabricacao de um veiculo nao ocorre por meio de operacoes dispersas e manuais em galpoes desconectados:
+- Na primeira estacao, as chapas de aco brutas sao moldadas sob parametros rigorosos.
+- Na segunda estacao, monta-se o chassi basico para checagem imediata dos padroes minimos de seguranca.
+- Na terceira estacao, sistemas de escaneamento a laser inspecionam o veiculo procurando pecas desnecessarias ou peso morto estrutural.
+- Na quarta estacao, prensas de alta precisao eliminam o excesso de peso sem comprometer as vigas de sustentacao.
+- Na quinta estacao, o motor e recalibrado em um dinamometro digital para operar com maxima potencia sob a nova massa reduzida.
+- Na sexta estacao, o veiculo e submetido a pista de testes externa em condicoes que simulam o transito real.
+
+Se cada etapa dependesse de anotacoes manuais em planilhas soltas e transferencias manuais de arquivos entre salas, a linha produziria veiculos inconsistentes, com alto indice de defeitos e sem garantia de padronizacao.
+
+O pipeline integrado de aprendizado de maquina (MLOps) atua como essa linha de montagem contínua: um unico comando executa todas as fases do protocolo de forma encadeada, garantindo que a saida de cada modulo alimente rigorosamente a entrada do modulo seguinte, com sementes controladas e auditoria cronometrada.
+
+### O risco dos experimentos artesanais desconectados
+
+Pesquisas cientificas frequentemente falham em comites de revisao pelos seguintes motivos:
+- **Scripts fragmentados:** o pesquisador roda um script para filtrar dados, salva um arquivo intermediario, abre outro script para treinar o modelo e plota o grafico em um terceiro arquivo.
+- **Inconsistencia de sementes:** variacoes aleatorias entre scripts geram amostras ligeiramente distintas, invalidando a comparabilidade direta entre o modelo original e o modelo reduzido.
+- **Vazamento acidental de dados (*Data Leakage*):** passos de transformacao ou selecao executados antes da separacao de treino e teste contaminam a avaliacao cega.
+
+**A grande sacada:** a unificacao das rotinas na funcao mestra `executar_pipeline_completo()` elimina intervencoes humanas intermediarias, transformando o experimento em um artefato cienfifico 100% reproduzivel.
+
+| Dimensao | Desenvolvimento Artesanal com Scripts Soltos | Pipeline Integrado MLOps (`pipeline_completo.py`) |
+| :--- | :--- | :--- |
+| **Reprodutibilidade** | Baixa; sensivel a ordem de execucao de arquivos | Absoluta; deterministica por sementes globais |
+| **Seguranca de dados** | Alto risco de vazamento de teste para treino | Particao de teste blindada e avaliada apenas no fechamento |
+| **Auditoria de tempo** | Medicoes imprecisas ou inexistentes | Cronometragem analitica com `time.perf_counter()` por estacao |
+| **Prontidao operacional** | Codigo de rascunho restrito a pesquisa | Modulos exportaveis para implantacao hospitalar em producao |
+
+---
+
+## Subcamada 13.2: Desenhando o conceito
+
+O diagrama abaixo representa a esteira de execucao das seis estacoes coordenadas no `pipeline_completo.py`:
+
+```text
+ESTRUTURA MODULAR DO PIPELINE INTEGRADO
+==================================================================================
+
+1. GERACAO & PARTICICAO CEGA   ---> Cria 2.000 pacientes (40 atributos).
+                                    Aplica train_test_split (75% Treino / 25% Teste).
+                                    Trava X_test e y_test contra qualquer acesso.
+             |
+             v
+2. MODELO BASELINE COMPLETO    ---> Ajusta Random Forest com todos os 40 atributos.
+                                    Registra metricas de referencia (F1, AUC, Latencia).
+             |
+             v
+3. AUDITORIA EXPLICAVEL (XAI)  ---> SHAP TreeExplainer extrai importancia global.
+                                    LIME audita paciente critico no limiar de 50%.
+             |
+             v
+4. REDUCAO DE DADOS EM 2 FASES ---> Pre-Filtro Estatistico (CV e Correlacao Pearson).
+                                    shap-select Econometrico (Beta > 0 e p < 0.05).
+             |
+             v
+5. CALIBRACAO BAYESIANA        ---> Optuna (15 trials com 3-Fold CV em X_train enxuto).
+                                    Encontra a configuracao campea de hiperparametros.
+             |
+             v
+6. AVALIACAO FINAL CEGA        ---> Submete modelo campeao reduzido ao mesmo X_test
+                                    utilizado na estacao Baseline de 40 atributos.
+==================================================================================
 ```
-    [ DADOS BRUTOS ] ──► [ BASELINE ] ──► [ AUDITORIA XAI ] ──► [ PODA ESTATÍSTICA ] ──► [ OPTUNA ] ──► [ CAMPEÃO ]
-    (40 Atributos)       (Mede a Régua)   (SHAP & LIME)         (Corta 75% do Lixo)     (Sintonia)    (Dashboard)
+
+O isolamento metodologico entre as fases impede qualquer contaminacao entre a particao de desenvolvimento e a particao de teste:
+
+```text
+[ DADOS BRUTOS TOTAIS ]
+           │
+           ├────────────────────────────┐
+           ▼                            ▼
+[ PARTICAO DE TREINO (75%) ]    [ PARTICAO DE TESTE CEGO (25%) ]
+- Baseline (Fit)                (TRANCADA EM COFRE)
+- Calculo SHAP (Phi)                     │
+- Pre-Filtro Hibrido                     │  Permanece isolada ate
+- shap-select (Beta, p-valor)            │  o modelo campeao final
+- Optuna Tuning (3-Fold CV)              │  estar consolidado!
+- Fit do Campeao Reduzido                │
+           │                             │
+           └──────────────┬──────────────┘
+                          ▼
+           [ AVALIACAO CEGA FINAL COMPARATIVA ]
+           (Baseline 40 Vars vs. Campeao 10 Vars)
 ```
 
-Se cada funcionário trabalhasse em uma sala separada e levasse as peças a pé de um lado para o outro em caixas de papelão, a fábrica produziria 1 carro por mês e cheia de defeitos.  
-O **Pipeline Integrado** é a esteira automatizada: você clica em "Executar" e todo o processo roda sem nenhuma intervenção humana, garantindo precisão cirúrgica e reprodutibilidade instantânea!
+| Estacao | Entrada | Saida Gerada | Criterio de Sucesso |
+| :--- | :--- | :--- | :--- |
+| **1. Split** | Dataset de 40 colunas | Matrizes `X_train`, `X_test`, `y_train`, `y_test` | Proporcao de classes mantida via estratificacao |
+| **2. Baseline** | `X_train` completo | Metricas da floresta com 40 atributos | Marco de comparacao para os passos seguintes |
+| **3. Auditoria** | Modelo ajustado | Valores SHAP e laudo local LIME | Compreensao transparente dos fatores determinantes |
+| **4. Poda** | `X_train` e matriz $\Phi$ | Lista restrita $\mathcal{S}^*$ com 10 atributos de elite | Reducao de 75% da dimensionalidade sem perda |
+| **5. Tuning** | `X_train[:, S*]` | Parametros $\boldsymbol{\theta}^*$ otimizados | Regularizacao contra overfitting |
+| **6. Avaliacao** | `X_test` e `y_test` | Quadro comparativo final de KPIs | $F_{1, \text{campeao}} \ge F_{1, \text{baseline}}$ |
 
 ---
 
-## Subcamada 13.2: Os 6 Movimentos da Sinfonia Diagnóstica
+## Subcamada 13.3: Desmistificando a teoria e a notacao formal
 
-No código [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py), a função mestra `executar_pipeline_completo()` orquestra seis módulos perfeitamente encadeados:
+### A formalizacao funcional do pipeline
 
-```
-                      ESTRUTURA MODULAR DO PIPELINE INTEGRADO
-                      
-    1. GERAÇÃO & PARTIÇÃO     -> Cria 2.000 pacientes e tranca o teste a 7 chaves.
-               │
-    2. BASELINE CLÍNICO       -> Treina com 40 atributos e extrai tempo, F1 e acurácia.
-               │
-    3. AUDITORIA DE XAI       -> SHAP (visão global) + LIME (paciente crítico de 50%).
-               │
-    4. REDUÇÃO ATIVA          -> Pré-Filtro Híbrido + shap-select (β > 0, p < 0.05).
-               │
-    5. OTIMIZAÇÃO BAYESIANA   -> Optuna afina o modelo compacto em 15 trials (3-Fold CV).
-               │
-    6. TESTE CEGO FINAL       -> Avalia o campeão nos mesmos dados de teste do Baseline!
-```
+Matematicamente, o pipeline integrado pode ser descrito como a composicao estrita de operadores funcionais sobre a distribuicao amostral $\mathcal{D}$:
 
-Nenhum módulo funciona isolado: a saída da Etapa 3 vira a entrada da Etapa 4, alimentando a esteira até a emissão do laudo final.
+$$\mathcal{P}(\mathcal{D}) = \left( \mathcal{E}_{\text{eval}} \circ \mathcal{O}_{\text{tune}} \circ \mathcal{F}_{\text{select}} \circ \mathcal{A}_{\text{audit}} \circ \mathcal{M}_{\text{base}} \circ \mathcal{S}_{\text{split}} \right)(\mathcal{D})$$
 
----
+Em que cada operador atua de acordo com as seguintes restricoes formais:
 
-## Subcamada 13.3: O Princípio da Reprodutibilidade Científica Total
+1. **Operador de Particao ($\mathcal{S}_{\text{split}}$):**
 
-Por que isso é tão respeitado na comunidade acadêmica e pelas revistas Qualis A / Q1?  
-Porque em Ciência de Dados, **um resultado que ninguém consegue reproduzir não é ciência, é ilusão!**
+$$\mathcal{S}_{\text{split}}(\mathcal{D}; s) = \left( \mathcal{D}_{\text{train}}, \, \mathcal{D}_{\text{test}} \right), \quad \mathcal{D}_{\text{train}} \cap \mathcal{D}_{\text{test}} = \emptyset$$
 
-O pipeline garante três pilares:
-1. **Sementes Controladas (`random_state=42`):** Se um pesquisador em Tóquio ou Londres baixar seu código e rodar, obterá exatamente as mesmas métricas até a 4ª casa decimal.
-2. **Blindagem Contra Vazamento de Dados (*Data Leakage*):** O conjunto de teste cego gerado no Movimento 1 fica trancado em uma redoma de vidro e só é tocado no Movimento 6.
-3. **Execução em Bloco Único:** Elimina dependências manuais ("rode o script A primeiro, copie o CSV para a pasta B e depois rode o script C").
+2. **Operador de Selecao Estatistica ($\mathcal{F}_{\text{select}}$):**
 
----
+$$\mathcal{S}^* = \mathcal{F}_{\text{select}}\left(\mathcal{D}_{\text{train}}, \, \Phi(\mathcal{D}_{\text{train}})\right) \subset \{1, \dots, p\}, \quad |\mathcal{S}^*| \ll p$$
 
-## Subcamada 13.4: Como Contar a História do Pipeline em uma Entrevista Técnica ou Banca
+3. **Operador de Calibracao ($\mathcal{O}_{\text{tune}}$):**
 
-Quando perguntarem *"O que você desenvolveu neste projeto?"*, narre o pipeline em 6 frases elegantes:
+$$\hat{f}^* = \arg\max_{f_{\boldsymbol{\theta}}} \mathbb{E}_{\text{CV}}\left[ \text{F1}\left(f_{\boldsymbol{\theta}}\left(\mathcal{D}_{\text{train}}[:, \mathcal{S}^*]\right)\right) \right]$$
 
-> 1. *"Comecei criando um cenário clínico complexo com 40 exames, contendo biomarcadores reais misturados a ruídos aleatórios e exames repetitivos."*  
-> 2. *"Treinei um modelo Random Forest Baseline de força bruta com todas as 40 variáveis, mensurando seu custo computacional e taxa de acerto como régua de comparação."*  
-> 3. *"Usei Inteligência Artificial Explicável (SHAP e LIME) para abrir a caixa-preta do modelo e mapear a relevância causal global de cada exame, além de auditar um paciente no limiar crítico de 50% de probabilidade."*  
-> 4. *"Transformei essa explicabilidade em engenharia de dados ativa: criei um Pré-Filtro Estatístico e a metodologia shap-select com regressão e p-valor, eliminando mais de 75% dos exames desnecessários."*  
-> 5. *"Re-calibrei a arquitetura da floresta enxuta usando Otimização Bayesiana com Optuna em validação cruzada estratificada."*  
-> 6. *"Por fim, submeti o modelo reduzido ao teste cego original, provando que ele manteve o mesmo F1-Score do modelo pesado, sendo até 3x mais rápido e economizando milhares de reais em exames!"*
+4. **Operador de Avaliacao Cega ($\mathcal{E}_{\text{eval}}$):**
+
+$$\mathcal{M}_{\text{final}} = \text{MetricScore}\left(y_{\text{test}}, \, \hat{f}^*\left(\mathcal{D}_{\text{test}}[:, \mathcal{S}^*]\right)\right)$$
+
+### O teorema da invariancia por semente
+
+Para qualquer execucao em ambientes computacionais distintos, a fixacao do vetor de estados pseudo-aleatorios $\mathbf{r} = [r_{\text{data}}, r_{\text{split}}, r_{\text{model}}]$ garante a reproducao identica dos resultados:
+
+$$\forall \, t_1, t_2 \implies \mathcal{P}(\mathcal{D}; \mathbf{r})_{t_1} \equiv \mathcal{P}(\mathcal{D}; \mathbf{r})_{t_2}$$
+
+| Simbolo | Significado Formal | Leitura Operacional |
+| :--- | :--- | :--- |
+| $\mathcal{D}_{\text{train}}$ | Subconjunto de treino amostral | 1.500 pacientes utilizados no desenvolvimento |
+| $\mathcal{D}_{\text{test}}$ | Subconjunto de teste mantido cego | 500 pacientes avaliados apenas na etapa final |
+| $\Phi$ | Matriz de explicabilidades de treino | Valores aditivos extraidos via TreeExplainer |
+| $\mathcal{S}^*$ | Subconjunto dimensional reduzido | Os 10 biomarcadores de elite sobreviventes |
+| $\hat{f}^*$ | Classificador campeao ajustado | Random Forest otimizada com 10 atributos |
+| $\mathcal{M}_{\text{final}}$ | Vetor de metricas finais no teste cego | $F_1$, Acuracia, AUC-ROC e latencia de inferencia |
+
+### A ordem correta evita vazamento
+
+A manutencao da integridade cientifica exige o cumprimento irrevogavel da sequencia: nenhuma informacao derivada de $\mathcal{D}_{\text{test}}$ (como medias, variancias, desvios ou coeficientes de correlacao) pode participar do pre-filtro, do calculo do SHAP ou da busca de hiperparametros.
 
 ---
 
-## Subcamada 13.5: Laboratório Lúdico no Colab (Toy Example: Uma Mini-Esteira de 30 Linhas)
+## Subcamada 13.4: Laboratorio ludico no Colab
 
-Copie e execute no [Google Colab](https://colab.research.google.com) para ver uma esteira automatizada rodar do início ao fim:
+Execute o bloco abaixo no Google Colab para acompanhar uma mini-esteira funcional automatizada de 30 linhas demonstrando a orquestracao:
 
 ```python
 # =============================================================================
-# LABORATÓRIO DIDÁTICO: MINI-ESTEIRA MLOPS DE 30 LINHAS
-# Objetivo: Ver um pipeline completo encadear dados -> baseline -> corte -> campeão
+# CAMADA 13: LABORATORIO LUDICO DE ORQUESTRACAO DE PIPELINE
+# Demonstracao: Mini-Esteira MLOps Encadeada de Ponta a Ponta
 # =============================================================================
+import time
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 
-def mini_pipeline():
-    print("🚀 DISPARANDO ESTEIRA AUTOMATIZADA...")
+def executar_mini_pipeline():
+    tempos = {}
     
-    # 1. Dados: 1.000 pacientes, 20 colunas (5 úteis, 15 ruídos)
+    # 1. Geracao e Particao dos Dados
+    t0 = time.perf_counter()
     X, y = make_classification(n_samples=1000, n_features=20, n_informative=5, random_state=42)
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.30, random_state=42)
+    tempos["1. Particao"] = (time.perf_counter() - t0) * 1000
     
-    # 2. Baseline (20 colunas)
-    rf_base = RandomForestClassifier(n_estimators=50, random_state=42).fit(X_tr, y_tr)
+    # 2. Ajuste do Baseline
+    t0 = time.perf_counter()
+    rf_base = RandomForestClassifier(n_estimators=50, random_state=42)
+    rf_base.fit(X_tr, y_tr)
     f1_base = f1_score(y_te, rf_base.predict(X_te))
-    print(f"  [Passo 1] Baseline Treinado (20 Vars) -> F1: {f1_base:.4f}")
+    tempos["2. Baseline"] = (time.perf_counter() - t0) * 1000
     
-    # 3. Poda Rápida: Pega o Top 5 segundo a importância
-    top5_idx = np.argsort(rf_base.feature_importances_)[-5:]
-    print(f"  [Passo 2] Poda Cirúrgica Realizada    -> Cortadas 15 colunas inúteis!")
+    # 3. Poda de Atributos
+    t0 = time.perf_counter()
+    indices_top5 = np.argsort(rf_base.feature_importances_)[-5:]
+    tempos["3. Poda"] = (time.perf_counter() - t0) * 1000
     
-    # 4. Campeão Reduzido (Apenas 5 colunas de elite)
-    rf_campeao = RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42).fit(X_tr[:, top5_idx], y_tr)
-    f1_campeao = f1_score(y_te, rf_campeao.predict(X_te[:, top5_idx]))
-    print(f"  [Passo 3] Campeão Enxuto Testado      -> F1: {f1_campeao:.4f}")
+    # 4. Ajuste do Modelo Enxuto
+    t0 = time.perf_counter()
+    rf_enxuto = RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42)
+    rf_enxuto.fit(X_tr[:, indices_top5], y_tr)
+    f1_enxuto = f1_score(y_te, rf_enxuto.predict(X_te[:, indices_top5]))
+    tempos["4. Enxuto"] = (time.perf_counter() - t0) * 1000
     
-    print(f"\n🏁 ESTEIRA CONCLUÍDA: 75% menos dados com F1 preservado ({f1_campeao:.4f} vs {f1_base:.4f})!")
+    # Visualizacao grafica do tempo consumido por estacao
+    plt.figure(figsize=(8, 3.5))
+    barras = plt.barh(list(tempos.keys()), list(tempos.values()), color="#34495e", edgecolor="black", height=0.55)
+    plt.title("Cronometria de Estacoes da Mini-Esteira", fontsize=11, fontweight="bold")
+    plt.xlabel("Tempo Consumido (Milissegundos)", fontsize=10)
+    plt.grid(axis="x", linestyle=":", alpha=0.6)
+    
+    for b in barras:
+        v = b.get_width()
+        plt.text(v + 1.0, b.get_y() + 0.18, f"{v:.1f} ms", fontsize=9, fontweight="bold")
+        
+    plt.tight_layout()
+    plt.show()
+    
+    print("Relatorio da Mini-Esteira:")
+    print(f"  - F1-Score do Baseline (20 Atributos): {f1_base:.4f}")
+    print(f"  - F1-Score do Enxuto   (5 Atributos) : {f1_enxuto:.4f}")
+    print(f"  - Reducao de Dados     : 75% do espaco dimensional descartado.")
 
-mini_pipeline()
+executar_mini_pipeline()
 ```
+
+> **O que voce deve notar no grafico gerado:**
+> 1. As etapas de treinamento e ajuste consom a maior parte da latencia da esteira; as operacoes de particionamento e ordenacao executam em fracoes de milissegundo.
+> 2. O desempenho diagnostico $F_1$ do modelo enxuto preserva a eficacia preditiva do baseline original.
+
+**Mini-experimento:** altere a semente de `random_state=42` para `random_state=99` em todas as estacoes. Os valores absolutos de tempo oscilam, mas a conclusao metodologica de preservacao de $F_1$ permanece inalterada?
 
 ---
 
-## Subcamada 13.6: O Momento Sério da Nossa Aplicação (Execução do Pipeline Completo & Cronometria de KPIs)
+## Subcamada 13.5: O momento serio da nossa aplicacao
 
-Agora executamos o protocolo oficial da função `executar_pipeline_completo()` do [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py), cronometrando o tempo gasto em cada estação da linha de montagem.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+No projeto de pesquisa, a funcao `executar_pipeline_completo()` coordena a execucao integral sobre o dataset hospitalar de 40 variaveis, cronometrando o tempo individualizado de cada modulo.
 
 ```python
 # =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Cronometria Estação por Estação do Pipeline Integrado Oficial
+# APLICACAO REAL: EXECUCAO INTEGRADA DO PIPELINE COMPLETO
+# Base oficial: 2.000 pacientes, 40 atributos clinicos
 # =============================================================================
+import time
 import numpy as np
 import pandas as pd
-import time
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import f1_score, accuracy_score, roc_auc_score
 
-print("=" * 70)
-print("INICIANDO PROTOCOLO MLOPS: CRONOMETRIA INTEGRADA DO PIPELINE")
-print("=" * 70)
+print("=" * 76)
+print("INICIANDO ORQUESTRACAO MLOPS: PIPELINE COMPLETO DE PONTA A PONTA")
+print("=" * 76)
 
-tempos = {}
+cronometro = {}
 
-# ESTAÇÃO 1: GERAÇÃO E SPLIT CEGO
+# ESTACAO 1: GERACAO DE DADOS E SPLIT ESTRATIFICADO
 t0 = time.perf_counter()
 X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
+    n_samples=2000,
+    n_features=40,
+    n_informative=10,
+    n_redundant=10,
+    n_classes=2,
+    weights=[0.6, 0.4],
+    flip_y=0.03,
+    random_state=42
 )
-X_train, X_test, y_train, y_test = train_test_split(X_raw, y, test_size=0.25, stratify=y, random_state=42)
-tempos["1. Geração de Dados & Split Cego"] = (time.perf_counter() - t0) * 1000
+feature_names = (
+    [f"biomarcador_{i+1:02d}" for i in range(10)] +
+    [f"redundante_{i+1:02d}" for i in range(10)] +
+    [f"ruido_{i+1:02d}" for i in range(20)]
+)
+df_clinico = pd.DataFrame(X_raw, columns=feature_names)
+X_train, X_test, y_train, y_test = train_test_split(
+    df_clinico, y, test_size=0.25, stratify=y, random_state=42
+)
+cronometro["1. Geracao Sintetica e Split Cego"] = (time.perf_counter() - t0) * 1000
 
-# ESTAÇÃO 2: TREINAMENTO DO BASELINE (40 ATRIBUTOS)
+# ESTACAO 2: AJUSTE DO MODELO BASELINE (40 ATRIBUTOS)
 t0 = time.perf_counter()
-rf_baseline = RandomForestClassifier(n_estimators=100, random_state=42).fit(X_train, y_train)
-f1_base = f1_score(y_test, rf_baseline.predict(X_test))
-tempos["2. Modelo Baseline (40 Atributos)"] = (time.perf_counter() - t0) * 1000
+rf_base = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+rf_base.fit(X_train, y_train)
+y_pred_base = rf_base.predict(X_test)
+y_prob_base = rf_base.predict_proba(X_test)[:, 1]
+f1_base = f1_score(y_test, y_pred_base)
+acc_base = accuracy_score(y_test, y_pred_base)
+auc_base = roc_auc_score(y_test, y_prob_base)
+cronometro["2. Modelo Baseline (40 Atributos)"] = (time.perf_counter() - t0) * 1000
 
-# ESTAÇÃO 3: PODA CIRÚRGICA (SIMULAÇÃO PRÉ-FILTRO + SHAP-SELECT)
+# ESTACAO 3: SELECAO CIRURGICA DE ATRIBUTOS (TOP 10)
 t0 = time.perf_counter()
-# Extrai as 10 melhores colunas como resultado consolidado da filtragem
-top10_cols = np.argsort(rf_baseline.feature_importances_)[-10:]
-tempos["3. Filtragem Ativa (Pré-Filtro + XAI)"] = (time.perf_counter() - t0) * 1000
+# Na esteira oficial completa, aqui atuam o Pre-Filtro e o shap-select
+indices_selecionados = np.argsort(rf_base.feature_importances_)[-10:]
+colunas_selecionadas = [feature_names[i] for i in indices_selecionados]
+cronometro["3. Filtragem Hibrida e shap-select"] = (time.perf_counter() - t0) * 1000
 
-# ESTAÇÃO 4: MODELO CAMPEÃO ENXUTO OTIMIZADO
+# ESTACAO 4: AJUSTE DO MODELO CAMPEAO ENXUTO
 t0 = time.perf_counter()
-rf_campeao = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42).fit(X_train[:, top10_cols], y_train)
-f1_campeao = f1_score(y_test, rf_campeao.predict(X_test[:, top10_cols]))
-tempos["4. Treinamento do Modelo Campeão Enxuto"] = (time.perf_counter() - t0) * 1000
+# Na esteira oficial completa, os hiperparametros provem da busca Optuna
+rf_campeao = RandomForestClassifier(n_estimators=100, max_depth=6, min_samples_leaf=2, random_state=42)
+rf_campeao.fit(X_train[colunas_selecionadas], y_train)
+y_pred_campeao = rf_campeao.predict(X_test[colunas_selecionadas])
+y_prob_campeao = rf_campeao.predict_proba(X_test[colunas_selecionadas])[:, 1]
+f1_campeao = f1_score(y_test, y_pred_campeao)
+acc_campeao = accuracy_score(y_test, y_pred_campeao)
+auc_campeao = roc_auc_score(y_test, y_prob_campeao)
+cronometro["4. Treinamento do Modelo Campeao"] = (time.perf_counter() - t0) * 1000
 
-# TEMPO TOTAL
-tempo_total_ms = sum(tempos.values())
+tempo_total_ms = sum(cronometro.values())
 
-print("\n⏱️ RELATÓRIO DE CRONOMETRIA DA ESTEIRA INTEGRADA:")
-print("-" * 65)
-for estacao, t_ms in tempos.items():
-    print(f"  • {estacao.ljust(40)}: {t_ms:6.1f} ms ({(t_ms/tempo_total_ms)*100:4.1f}%)")
-print("-" * 65)
-print(f"  🏁 TEMPO TOTAL DO PIPELINE DE PONTA A PONTA : {tempo_total_ms:6.1f} ms (~{tempo_total_ms/1000:.2f} s)\n")
+print("\nRELATORIO ANALITICO DE CRONOMETRIA DA ESTEIRA:")
+print("-" * 76)
+for estacao, t_ms in cronometro.items():
+    pct = (t_ms / tempo_total_ms) * 100.0
+    print(f"  - {estacao.ljust(42)}: {t_ms:7.2f} ms ({pct:5.1f}%)")
+print("-" * 76)
+print(f"  TEMPO TOTAL DE EXECUCAO DO PIPELINE         : {tempo_total_ms:7.2f} ms (~{tempo_total_ms/1000:.2f} s)\n")
 
-print("📊 RESULTADO DIAGNÓSTICO FINAL DA ESTEIRA:")
-print(f"  • F1-Score Modelo Baseline (40 Atributos): {f1_base:.4f}")
-print(f"  • F1-Score Modelo Campeão (10 Atributos) : {f1_campeao:.4f} (DESEMPENHO PRESERVADO!)")
-print(f"  • Redução Efetiva de Dimensionalidade    : 75.0% dos atributos eliminados!")
+print("QUADRO COMPARATIVO CONSOLIDADO (TESTE CEGO):")
+print("-" * 76)
+df_kpi = pd.DataFrame([
+    {"Modelo": "Baseline Completo", "Atributos": 40, "F1-Score": f"{f1_base:.4f}", "Acuracia": f"{acc_base*100:.2f}%", "AUC-ROC": f"{auc_base:.4f}"},
+    {"Modelo": "Campeao Enxuto",   "Atributos": 10, "F1-Score": f"{f1_campeao:.4f}", "Acuracia": f"{acc_campeao*100:.2f}%", "AUC-ROC": f"{auc_campeao:.4f}"}
+])
+print(df_kpi.to_string(index=False))
+print("=" * 76)
 ```
 
----
+### Tabela oficial de KPIs
 
-### 13.6.1 Quadro de KPIs de Engenharia e MLOps
+> Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
 
-| Métrica de MLOps (KPI) | Resultado na Esteira | Impacto de Engenharia |
+| KPI | Como e calculado | Pergunta operacional |
 | :--- | :--- | :--- |
-| **Tempo Total de Execução** | **$\approx 1.5$ a 3.0 segundos** | Todo o pipeline pode ser executado em tempo de compilação ou CI/CD. |
-| **Gargalo Computacional** | **Treino dos Ensembles (65% do tempo)** | O corte de 40 para 10 colunas alivia esse gargalo para os futuros retreinos. |
-| **Intervenção Manual** | **Zero.** | Execução 100% autônoma via linha de comando (`python pipeline_completo.py`). |
-| **Reprodutibilidade** | **100% Determinística** | Sementes fixadas garantem auditoria médica e científica. |
+| **Tempo Total do Pipeline (s)** | Somatorio do tempo de todas as 6 estacoes em `pipeline_completo.py` | A execucao e rapida o suficiente para integracao em esteiras de CI/CD? |
+| **Retencao Diagnostica ($\Delta F_1$)** | $F_{1, \text{campeao}} - F_{1, \text{baseline}}$ no teste cego | O modelo enxuto preservou a capacidade de deteccao de patologia? |
+| **Taxa de Reducao de Dados (%)** | $(1 - k_{\text{final}} / p_{\text{inicial}}) \times 100$ | Quantas colunas foram descartadas do armazenamento e da coleta? |
+| **Gargalo Computacional Predominante** | Modulo com maior percentual de tempo no relatorio analitico | Onde reside a maior demanda de processamento de hardware? |
+
+### Interpretacao clinica e de negocio
+
+A implantacao de uma esteira orquestrada oferece beneficios operacionais diretos para organizacoes de saude:
+
+1. **Agilidade em auditorias hospitalares:** quando novos protocolos ou legislacoes de privacidade demandam reavaliar o modelo, a organizacao pode reexecutar a esteira inteira em segundos, gerando relatorios deterministicos e certificados.
+2. **Mitigacao de Falsos Negativos sistemicos:** padronizar a avaliacao em um teste cego trancado impede que equipes tecnicas ajustem limiares manualmente para maquiar o desempenho, garantindo a protecao de pacientes vulneraveis.
+3. **Reducao de custos operacionais:** demonstrar que a esteira consome menos de 3 segundos para rodar do dado bruto ao modelo enxuto viabiliza recalibracoes semanais ou mensais na rotina de producao hospitalar.
 
 ---
 
-## Subcamada 13.7: Checkpoint de Autonomia & Fixação Ativa
+## Subcamada 13.6: Checkpoint de autonomia e fixacao ativa
 
-Responda para fixar os conceitos de orquestração:
+Explique sem consultar o texto e depois confira sua resposta:
 
-1. **Por que dividir um projeto de Machine Learning em vários scripts soltos com salvamento intermediário de planilhas Excel é considerado uma péssima prática de MLOps?**
-2. **Explique o princípio do isolamento de dados no pipeline: em qual etapa o conjunto de teste foi separado e em qual etapa ele foi avaliado pela primeira vez?**
-3. **Se você fosse defender esse pipeline diante de uma banca de mestrado ou para o CTO de um hospital, como você resumiria a jornada dos dados em menos de 1 minuto?**
-4. **Desafio no Colab:** Na Subcamada 13.5, adicione uma medição de tempo com `time.perf_counter()` para o Baseline e para o Campeão. O modelo com 5 variáveis treinou mais rápido do que o modelo com 20 variáveis?
+1. **Quais sao os riscos tecnicos de conduzir um projeto de Machine Learning por meio de scripts isolados com troca manual de planilhas?**
+2. **Como a arquitetura modular da funcao mestra `executar_pipeline_completo()` assegura a reprodutibilidade cientifica?**
+3. **Em qual momento do pipeline o conjunto de teste cego foi isolado e em qual momento ele foi avaliado pela primeira vez?**
+4. **Qual e o objetivo pratico de cronometrar individualmente cada estacao da linha de montagem com `time.perf_counter()`?**
+5. **Se um comite hospitalar questionar a integridade metodologica dos resultados obtidos, qual evidencia do pipeline comprova a ausencia de vazamento de dados?**
+6. **Como o encadeamento de todas as etapas viabiliza a integracao continua (CI/CD) do modelo em sistemas hospitalares?**
+
+### Mini-desafio pratico
+
+Execute a esteira variando a fracao de teste no `train_test_split` e registre a sensibilidade observada:
+
+| Fracao de Teste Cego | Amostras no Treino | Amostras no Teste | $F_1$ do Baseline | $F_1$ do Campeao |
+| :--- | :--- | :--- | :--- | :--- |
+| `test_size = 0.15` | 1.700 | 300 | | |
+| `test_size = 0.25` (Padrao) | 1.500 | 500 | | |
+| `test_size = 0.35` | 1.300 | 700 | | |
+
+**Pergunta reflexiva:** a reducao amostral no treino provocou degradacao relevante no desempenho diagnostico do modelo enxuto em relacao ao modelo completo?

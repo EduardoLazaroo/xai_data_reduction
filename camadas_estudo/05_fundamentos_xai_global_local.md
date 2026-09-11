@@ -1,272 +1,234 @@
-# Camada 05: Fundamentos de XAI — Da Caixa-Preta à Explicabilidade Global e Local
+# Camada 05: Fundamentos de XAI (Global e Local)
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 5  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`executar_etapa_shap` e `executar_etapa_lime`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes `executar_etapa_shap` e `executar_etapa_lime`
 
----
+> **Objetivo da aula:** compreender por que a precisao isolada de uma caixa-preta e insuficiente em areas criticas, conhecer o caso historico em que uma IA aprendeu regras perigosas e diferenciar a explicabilidade global (o mapa da populacao com SHAP) da explicabilidade local (a auditoria individual com LIME).
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender o nascimento da **Inteligência Artificial Explicável (XAI — Explainable Artificial Intelligence)**. Desmistificar o dilema da "Caixa-Preta", entender por que confiar cegamente na acurácia pode ser fatal na medicina (o perigo das causas espúrias), dominar a diferença crucial entre a **Visão Global** (o mapa da população) e a **Visão Local** (o microscópio do paciente individual), e entender como a explicabilidade se transforma em uma ferramenta ativa de redução de dados.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 5.1: A Analogia da Oficina Mecânica e o Dilema da Caixa-Preta](#subcamada-51-a-analogia-da-oficina-mecânica-e-o-dilema-da-caixa-preta)
-- [Subcamada 5.2: O Caso Histórico da Asma e Pneumonia (Por Que Acertar Não Basta)](#subcamada-52-o-caso-histórico-da-asma-e-pneumonia-por-que-acertar-não-basta)
-- [Subcamada 5.3: Os Dois Olhares da Explicabilidade: Visão Global vs. Visão Local](#subcamada-53-os-dois-olhares-da-explicabilidade-visão-global-vs-visão-local)
-- [Subcamada 5.4: XAI Passiva (Auditoria) vs. XAI Ativa (Engenharia de Redução)](#subcamada-54-xai-passiva-auditoria-vs-xai-ativa-engenharia-de-redução)
-- [Subcamada 5.5: Laboratório Lúdico no Colab (Toy Example: Abrindo uma Caixa-Preta)](#subcamada-55-laboratório-lúdico-no-colab-toy-example-abrindo-uma-caixa-preta)
-- [Subcamada 5.6: O Momento Sério da Nossa Aplicação (Auditoria Global SHAP no Dataset Clínico & KPIs)](#subcamada-56-o-momento-sério-da-nossa-aplicação-auditoria-global-shap-no-dataset-clínico--kpis)
-- [Subcamada 5.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-57-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 5.1: O conceito na vida real](#subcamada-51-o-conceito-na-vida-real)
+2. [Subcamada 5.2: Desenhando o conceito](#subcamada-52-desenhando-o-conceito)
+3. [Subcamada 5.3: Desmistificando a teoria e a notacao formal](#subcamada-53-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 5.4: Laboratorio ludico no Colab](#subcamada-54-laboratorio-ludico-no-colab)
+5. [Subcamada 5.5: O momento serio da nossa aplicacao](#subcamada-55-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 5.6: Checkpoint de autonomia e fixacao ativa](#subcamada-56-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 5.1: A Analogia da Oficina Mecânica e o Dilema da Caixa-Preta
+## Subcamada 5.1: O Conceito na Vida Real
 
-Imagine que você deixa seu carro na oficina porque o motor está fazendo um barulho estranho. No fim da tarde, o mecânico te entrega uma conta:
-> **"São R$ 7.800,00."**  
-> Você se assusta e pergunta: *"Mas o que estava quebrado? Qual peça você trocou?"*  
-> E o mecânico responde com um sorriso misterioso:  
-> *"Não posso te contar. Meu cérebro é uma caixa-preta genial. O carro vai funcionar perfeitamente, apenas passe o cartão e confie!"*
+### A historia da oficina mecanica e o caso da pneumonia
 
-Você pagaria essa conta? **Jamais!**  
-Você exigiria uma nota fiscal discriminando exatamente cada peça, o valor da mão de obra e a justificativa física do reparo.
+Imagine levar seu carro a oficina e o mecanico cobrar R$ 5.000,00 dizendo apenas: "Confie em mim, o motor agora funciona, mas nao posso explicar quais pecas troquei". Ninguem aceitaria isso. Exigimos uma nota detalhada com cada servico executado.
 
+Na medicina, a exigencia e ainda mais grave. Em um estudo real nos Estados Unidos (Caruana et al.), uma rede neural foi treinada para prever risco de morte por pneumonia. O modelo teve alta acuracia, mas descobriu-se uma regra interna alarmante: pacientes com historico de asma recebiam menor risco de morte.
+
+Na pratica hospitalar, pacientes com asma eram encaminhados imediatamente a UTI e recebiam cuidado redobrado, o que reduzia sua mortalidade. O modelo aprendeu a associacao estatistica dos dados, mas inverteu o nexo causal. Se fosse adotado na triagem sem auditoria, mandaria pacientes graves para casa.
+
+**A grande sacada:** acertar estatisticamente nao e garantia de aprender biologia real. A explicabilidade (XAI) e a ferramenta que audita se o modelo decidiu pelos motivos corretos.
+
+### As duas perspectivas da explicabilidade
+
+| Perspectiva | Pergunta que responde | Analogia | Ferramenta no projeto |
+|---|---|---|---|
+| Global | No conjunto todo, quais exames mais pesam nas decisoes? | Mapa de satelite de todo o percurso | SHAP (`TreeExplainer`) |
+| Local | Por que ESTE paciente especifico recebeu previsao positiva? | Zoom no GPS na curva da rua | LIME (`LimeTabularExplainer`) |
+
+---
+
+## Subcamada 5.2: Desenhando o Conceito
+
+### A caixa-preta contra a caixa transparente
+
+```text
+    MODELO TRADICIONAL CAIXA-PRETA               MODELO COM AUDITORIA XAI
+       [ 40 exames do paciente ]                 [ 40 exames do paciente ]
+                   |                                         |
+                   v                                         v
+       +-----------------------+                 +-----------------------+
+       |   ??? REGRAS ???      |                 |     Random Forest     |
+       |  100 arvores em voto  |                 +-----------+-----------+
+       +-----------+-----------+                             |
+                   |                                         v
+                   v                             [ LAUDO DE EXPLICABILIDADE ]
+       Previsao: 85% patologia                   - Troponina alta: +35% risco
+       Motivo: desconhecido                      - Glicemia alta:  +15% risco
+                                                 - Ruidos 1 a 20:   zero efeito
 ```
-       MODELO TRADICIONAL CAIXA-PRETA                   MODELO COM INTELIGÊNCIA EXPLICÁVEL (XAI)
-       
-       [ 40 Exames do Paciente ]                        [ 40 Exames do Paciente ]
-                  │                                                │
-                  ▼                                                ▼
-       ┌─────────────────────┐                          ┌─────────────────────┐
-       │   ??? MISTÉRIO ???  │                          │  RANDOM FOREST COM  │
-       │  (100 Árvores em    │                          │      AUDITORIA      │
-       │   Voto Paralelo)    │                          └──────────┬──────────┘
-       └──────────┬──────────┘                                     │
-                  │                                                ▼
-                  ▼                                   [ LAUDO CAUSAL TRANSPARENTE: ]
-       "Diagnóstico: DOENTE!                          • Troponina alta: +38% de risco
-        Motivo: Não sei, confia."                     • Glicemia alta:  +18% de risco
-                                                      • Ruídos 1 a 20:   ZERO impacto!
-                                                      • Veredito: DOENTE (Justificado!)
-```
 
-Em medicina e direito, a Inteligência Artificial não pode ser uma caixa-preta:
-- Se um algoritmo nega um empréstimo ou diz que um paciente tem câncer, **o médico e o paciente têm o direito legal e ético de saber o porquê** (previsto na LGPD no Brasil e no *AI Act* da União Europeia).
+### O mapa global e a lupa local
 
----
-
-## Subcamada 5.2: O Caso Histórico da Asma e Pneumonia (Por Que Acertar Não Basta)
-
-Na década de 1990, um grupo de pesquisadores médicos nos EUA (liderados por Rich Caruana) treinou uma rede neural complexa para prever quais pacientes com pneumonia tinham maior risco de morrer. O objetivo era internar os pacientes de alto risco imediatamente na UTI.
-
-O modelo atingiu uma acurácia extraordinária! Parecia pronto para salvar vidas.  
-No entanto, quando os pesquisadores usaram regras interpretáveis para auditar a mente da IA, descobriram uma regra interna chocante:
-> **"SE o paciente tiver histórico de Asma grave, REDUZA o risco de morte previsto!"**
-
-Para a IA, ter asma parecia proteger o paciente contra a morte por pneumonia!  
-*Qual era a explicação real?*
-- No hospital físico, quando um paciente asmático chegava tossindo com pneumonia, os médicos entravam em pânico imediatamente, não o deixavam na fila de espera e o internavam direto na UTI sob tratamento intensivo de ponta.
-- Graças a esse cuidado heróico dos médicos humanos, a taxa de mortalidade dos asmáticos caía!
-- A IA viu a correlação estatística nos dados e concluiu o oposto da verdade biológica: achou que a asma curava a pneumonia!
-
-Se esse modelo caixa-preta tivesse sido instalado no hospital sem auditoria de XAI, ele teria classificado os asmáticos como "baixo risco", eles seriam mandados para casa com xarope e **centenas teriam morrido**!
-
----
-
-## Subcamada 5.3: Os Dois Olhares da Explicabilidade: Visão Global vs. Visão Local
-
-Imagine que você está planejando uma viagem de carro:
-1. **O Mapa Rodoviário do País (Visão Global):** Mostra as grandes rodovias, serras e capitais. Dá a visão estratégica do conjunto.
-2. **O GPS da Rua (Visão Local):** Dá um zoom no exato cruzamento onde você está e avisa: *"Vire à direita em 50 metros na Rua das Flores porque há um buraco à frente"*.
-
-Em XAI, nós precisamos exatamente desses dois olhares:
-
-```
-                            AS DUAS DIMENSÕES DA EXPLICABILIDADE
-                                              │
-               ┌──────────────────────────────┴──────────────────────────────┐
-               ▼                                                             ▼
-     🌐 EXPLICABILIDADE GLOBAL                                     🔬 EXPLICABILIDADE LOCAL
-   (O Satélite / O Mapa Geral)                                   (O Microscópio / O Paciente)
-               │                                                             │
-   Pergunta: "No geral, considerando                             Pergunta: "Por que ESTE paciente
-   todos os 2.000 pacientes, quais                               específico (Sr. Carlos, 62 anos)
-   exames a IA mais valorizou?"                                  recebeu o diagnóstico de Doente?"
-               │                                                             │
-   Ferramenta: SHAP (Valores Shapley)                            Ferramenta: LIME (Perturbação Local)
-               │                                                             │
-   Aplicação: Cortar as colunas inúteis                          Aplicação: Entregar o laudo médico
-   e enxugar o banco de dados do hospital.                       explicando o tratamento ao paciente.
+```text
+                  AUDITORIA DE XAI NO PROJETO
+                               |
+             +-----------------+-----------------+
+             |                                   |
+             v                                   v
+      VISAO GLOBAL (SHAP)                 VISAO LOCAL (LIME)
+   Mapeia toda a populacao              Examina o paciente individual
+   "Quais colunas comandam o modelo?"   "Por que este paciente foi classificado assim?"
+             |                                   |
+             v                                   v
+   Usado para podar 30 colunas inuteis  Usado para laudo e justificativa clinica
 ```
 
 ---
 
-## Subcamada 5.4: XAI Passiva (Auditoria) vs. XAI Ativa (Engenharia de Redução)
+## Subcamada 5.3: Desmistificando a Teoria e a Notacao Formal
 
-Na maioria das empresas e artigos, a XAI é usada de forma **passiva**: o cientista de dados treina um modelo pesado, gera um gráfico bonito no final para colocar no slide e encerra o projeto.
+### Modelos substitutos interpretáveis
 
-No nosso projeto de pesquisa, fazemos algo muito mais audacioso e inovador: **XAI Ativa de Engenharia de Dados**:
-1. Treinamos o modelo com todos os 40 exames.
-2. Usamos a explicabilidade global para auditar quais variáveis têm valor causal comprovado.
-3. **Usamos a explicabilidade como uma tesoura cirúrgica**: eliminamos os 20 ruídos metabólicos e os exames redundantes.
-4. Treinamos um novo modelo ultra-enxuto com apenas 8 a 10 atributos de elite, provando que ele preserva o mesmo $F_1$-Score gastando 75% menos exames!
+Seja $f(x)$ o modelo original caixa-preta (Random Forest) e $x$ a instancia do paciente. A explicabilidade post-hoc procura um modelo interpretavel $g \in G$ (como uma regressao linear ou regra aditiva) que seja fiel a $f$ na regiao de interesse:
+
+$$
+\operatorname{Explicacao}(x) = \arg\min_{g \in G} \mathcal{L}(f, g, \pi_x) + \Omega(g)
+$$
+
+Traducao simbolo por simbolo:
+
+| Simbolo | Leitura simples |
+|---|---|
+| `f` | o modelo original complexo |
+| `g` | a explicacao simples e compreensivel |
+| `L` | a diferenca entre o que `f` preve e o que `g` explica |
+| `pi_x` | peso de proximidade: focar na vizinhança daquele paciente |
+| `Omega(g)` | penalidade de complexidade: a explicacao deve ter poucos termos |
+
+### A ordem correta evita vazamento
+
+A explicabilidade global para selecao de variaveis deve ser calculada estritamente sobre dados de treino. Se calcularmos valores SHAP usando a base inteira antes do split, introduzimos informacao do teste na selecao.
 
 ---
 
-## Subcamada 5.5: Laboratório Lúdico no Colab (Toy Example: Abrindo uma Caixa-Preta)
+## Subcamada 5.4: Laboratorio Ludico no Colab
 
-Copie e execute no [Google Colab](https://colab.research.google.com) para ver como a explicabilidade desmascara variáveis inúteis em um instante:
+### Toy example: interrogando a importancia de variaveis
+
+O codigo treina um modelo simples em 4 colunas (2 informativas e 2 ruidos puros) e inspeciona se a IA realmente aprendeu a ignorar o ruido.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: ABRINDO A CAIXA-PRETA COM TREE IMPORTANCE
-# Objetivo: Ver a IA confessar quais variáveis realmente usou
-# =============================================================================
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
-# 1. Criamos um dataset brinquedo com 4 variáveis:
-#    - Var 1 e Var 2: Biomarcadores Reais
-#    - Var 3 e Var 4: Puro Ruído Aleatório
 np.random.seed(42)
-N = 500
-var1 = np.random.normal(0, 1, N)
-var2 = np.random.normal(0, 1, N)
-ruido1 = np.random.normal(0, 1, N)
-ruido2 = np.random.normal(0, 1, N)
+n = 400
+v1 = np.random.normal(0, 1, n)
+v2 = np.random.normal(0, 1, n)
+r1 = np.random.normal(0, 1, n)
+r2 = np.random.normal(0, 1, n)
 
-# A regra da vida real: a doença depende APENAS de var1 e var2!
-prob = 1 / (1 + np.exp(-(2.5 * var1 - 1.8 * var2)))
-y_toy = (prob > 0.5).astype(int)
+y = ((1.8 * v1 - 1.2 * v2 + np.random.normal(0, 0.4, n)) > 0).astype(int)
+df = pd.DataFrame({"Biomarcador_A": v1, "Biomarcador_B": v2, "Ruido_1": r1, "Ruido_2": r2})
 
-df_toy = pd.DataFrame({
-    "Biomarcador_Vital_A": var1,
-    "Biomarcador_Vital_B": var2,
-    "Ruido_Aleatorio_1": ruido1,
-    "Ruido_Aleatorio_2": ruido2
-})
+rf = RandomForestClassifier(n_estimators=50, random_state=42).fit(df, y)
+importancias = pd.Series(rf.feature_importances_, index=df.columns).sort_values()
 
-# 2. Treinamos uma Random Forest Caixa-Preta
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(df_toy, y_toy)
-
-# 3. Interrogamos a Caixa-Preta (Importância Global das Variáveis)
-importancias = pd.Series(clf.feature_importances_, index=df_toy.columns).sort_values()
-
-# 4. Gráfico Visual da Auditoria
-plt.figure(figsize=(9, 4))
+plt.figure(figsize=(8, 3.5))
 importancias.plot(kind="barh", color=["gray", "gray", "steelblue", "navy"])
-plt.title("Auditoria Inicial da Caixa-Preta: O Algoritmo Confessou!", fontweight="bold")
-plt.xlabel("Grau de Importância Relativa Atribuído pelo Modelo", fontweight="bold")
-plt.grid(True, linestyle="--", alpha=0.4)
-plt.tight_layout()
-plt.show()
+plt.title("Auditoria de Importancia: o Modelo Confessando")
+plt.xlabel("Peso relativo atribuido"); plt.grid(True, linestyle="--", alpha=0.5)
+plt.tight_layout(); plt.show()
 
-print("Confissão do Modelo:")
-for var, imp in importancias.items():
-    print(f"  • {var.ljust(25)}: {imp*100:.2f}% de importância")
+print(importancias.round(4))
 ```
 
-### O Que Você Deve Observar:
-O modelo atribuiu a imensa maioria do peso diagnóstico aos biomarcadores reais ($A$ e $B$), enquanto os ruídos ficaram no rodapé. A explicabilidade nos deu a autorização moral e matemática para descartar as colunas cinzas!
+> **O que voce deve notar no grafico gerado:** os dois biomarcadores reais acumulam a maior parte do peso relativo, enquanto os ruidos ficam no rodapé. Essa confissao do modelo fundamenta a poda de atributos.
+
+**Mini-experimento:** inverta a regra do alvo para depender apenas de `r1`. Veja como as barras se invertem imediatamente.
 
 ---
 
-## Subcamada 5.6: O Momento Sério da Nossa Aplicação (Auditoria Global SHAP no Dataset Clínico & KPIs)
+## Subcamada 5.5: O Momento Serio da Nossa Aplicacao
 
-Agora vamos instalar e rodar a auditoria oficial de **Explicabilidade Global com SHAP** no nosso modelo hospitalar com 40 variáveis do [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py).
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+Vamos calcular a explicabilidade global com `shap.TreeExplainer` no modelo treinado com 40 atributos, verificando se o algoritmo prioriza os 10 biomarcadores ou se foi iludido pelos 20 ruidos.
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Auditoria Global com SHAP (TreeExplainer) nos 40 Atributos Hospitalares
-# =============================================================================
+import time
 import numpy as np
 import pandas as pd
 import shap
-import time
-import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
-print("=" * 70)
-print("INICIANDO PROTOCOLO DE AUDITORIA GLOBAL XAI: SHAP TREE-EXPLAINER")
-print("=" * 70)
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-# 1. Dataset Clínico (2.000 Pacientes, 40 Atributos)
-X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
-)
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
-X_train, X_test, y_train, y_test = train_test_split(df_clinico, y, test_size=0.25, stratify=y, random_state=42)
+rf = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1).fit(X_train, y_train)
 
-# 2. Treino do Baseline
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-rf.fit(X_train, y_train)
-
-# 3. Execução do TreeExplainer do SHAP com Cronometria
 t0 = time.perf_counter()
 explainer = shap.TreeExplainer(rf)
-# Amostra representativa de 200 pacientes do teste para cálculo rápido
-shap_values = explainer.shap_values(X_test.iloc[:200])
+amostra = X_train.iloc[:200]
+sv = explainer.shap_values(amostra)
 tempo_shap_ms = (time.perf_counter() - t0) * 1000
 
-# Se for classificação binária, o SHAP retorna lista com valores para classe 0 e 1
-if isinstance(shap_values, list):
-    valores_classe_1 = shap_values[1]
-else:
-    valores_classe_1 = shap_values[:, :, 1] if len(shap_values.shape) == 3 else shap_values
+valores = sv[1] if isinstance(sv, list) else (sv[:, :, 1] if len(sv.shape) == 3 else sv)
+media_abs = np.abs(valores).mean(axis=0)
+ranking = pd.Series(media_abs, index=nomes).sort_values(ascending=False)
 
-# 4. Cálculo do Impacto Médio Global (|SHAP|)
-impacto_medio = np.abs(valores_classe_1).mean(axis=0)
-ranking_shap = pd.Series(impacto_medio, index=feature_names).sort_values(ascending=False)
+impacto_total = ranking.sum()
+impacto_top10 = ranking.head(10).sum()
+impacto_ruidos = ranking[[c for c in nomes if "ruido" in c]].sum()
 
-print(f"\n⏱️ Tempo de Cálculo do SHAP para 200 pacientes: {tempo_shap_ms:.1f} ms")
-print(f"⏱️ Tempo Médio por Laudo Explicável: {tempo_shap_ms / 200:.2f} ms\n")
-
-print("🏆 TOP 10 ATRIBUTOS MAIS IMPORTANTES (SEGUNDO A AUDITORIA SHAP):")
-print("-" * 55)
-for pos, (feat, val) in enumerate(ranking_shap.head(10).items(), 1):
-    tipo = "🧪 Informativo" if "biomarcador" in feat else ("📋 Redundante" if "redundante" in feat else "🌪️ Ruído")
-    print(f"  {pos:2d}. {feat.ljust(22)} | {tipo} | Impacto: {val:.4f}")
-
-print("\n🗑️ BOTTOM 5 ATRIBUTOS MENOS IMPORTANTES (CANDIDATOS AO LIXO):")
-print("-" * 55)
-for pos, (feat, val) in enumerate(ranking_shap.tail(5).items(), 36):
-    tipo = "🌪️ Ruído" if "ruido" in feat else "Outro"
-    print(f"  {pos:2d}. {feat.ljust(22)} | {tipo} | Impacto: {val:.4f}")
+print(f"Tempo SHAP para {len(amostra)} pacientes: {tempo_shap_ms:.2f} ms")
+print(f"Latencia media por laudo: {tempo_shap_ms / len(amostra):.2f} ms")
+print(f"Concentracao de impacto no Top 10: {(impacto_top10 / impacto_total)*100:.2f}%")
+print(f"Impacto total dos 20 ruidos: {(impacto_ruidos / impacto_total)*100:.2f}%")
+print("\nTop 5 atributos mais influentes:")
+print(ranking.head(5).round(4))
 ```
 
+### Tabela oficial de KPIs
+
+Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Interpretacao | O que investigar |
+|---|---|---|
+| Tempo de calculo SHAP | custo em ms para extrair explicacoes da amostra | o explicador cabe no fluxo de treinamento? |
+| Concentracao no Top 10 | proporcao do impacto retida pelas 10 primeiras colunas | o sinal esta concentrado ou espalhado? |
+| Impacto residual dos ruidos | soma da importancia atribuida aos 20 ruidos | o modelo aprendeu a ignorar o lixo estatistico? |
+| Top 1 atributo | biomarcador de maior magnitude absoluta | esse achado tem respaldo na fisiopatologia? |
+
+### Interpretacao clinica e de negocio
+
+- O ranking global de SHAP mostra que os 10 biomarcadores concentram mais de 90% da massa de decisao do Random Forest, validando empiricamente o descarte das 30 colunas restantes.
+- A explicabilidade transforma-se em ferramenta ativa: nao e usada apenas para justificar laudos no final, mas para orientar a reducao cirurgica de custos no hospital.
+- O tempo de milissegundos por laudo viabiliza auditoria em tempo real sem comprometer o fluxo de atendimento da equipe de saude.
+
 ---
 
-### 5.6.1 Quadro de KPIs da Auditoria de Explicabilidade
+## Subcamada 5.6: Checkpoint de Autonomia e Fixacao Ativa
 
-| Indicador de Explicabilidade | Valor Obtido | Significado Científico | Impacto no Projeto |
-| :--- | :--- | :--- | :--- |
-| **Tempo de Execução SHAP** | **~850 ms** | Cálculo de valores Shapley para 200 prontuários médicos. | Viável em tempo real: menos de $4.5\text{ ms}$ por paciente. |
-| **Concentração no Top 10** | **91.4% do impacto total** | Quase toda a decisão reside nos primeiros atributos informativos. | Prova que podemos cortar os 30 atributos restantes sem colapso. |
-| **Posicionamento dos Ruídos**| **Ocupam o rodapé (posições 25 a 40)** | O SHAP confirmou que as 20 colunas aleatórias quase não agregam sinal real. | Justificativa matemática inquestionável para a remoção no pré-filtro. |
+Explique sem consultar o texto e depois confira sua resposta:
 
----
+1. O que foi o caso da pneumonia e da asma e por que ele e considerado um marco da necessidade de XAI?
+2. Qual e a diferenca entre explicabilidade global e explicabilidade local?
+3. Em que situacao o diretor clinico de um hospital usaria o SHAP e em que situacao usaria o LIME?
+4. Por que calcular a explicabilidade sobre todos os dados antes da separacao de treino e teste e uma falha metodologica?
+5. Como a concentracao de impacto no Top 10 justifica a reducao de atributos?
+6. O que e um modelo substituto interpretavel e qual o seu compromisso de fidelidade?
 
-## Subcamada 5.7: Checkpoint de Autonomia & Fixação Ativa
+### Mini-desafio pratico
 
-Responda com clareza para fixar o conceito:
+No codigo da Subcamada 5.5, aumente a amostra de explicacao de `200` para `500` pacientes e registre:
 
-1. **Por que você não confiaria em um laudo médico gerado por uma IA que teve 95% de acurácia em um teste de triagem se ela não for capaz de explicar suas razões internas? (Lembre-se do caso da pneumonia e da asma).**
-2. **Qual é a diferença fundamental entre Explicabilidade Global e Explicabilidade Local? Dê um exemplo de quando o diretor do hospital usaria uma e quando o médico plantonista usaria a outra.**
-3. **Explique a diferença entre usar a XAI como auditoria passiva (para enfeitar slide) e como engenharia ativa (nosso projeto).**
-4. **Desafio no Colab:** No código da Subcamada 5.6, plote um gráfico de barras com `ranking_shap.plot(kind='bar', figsize=(14, 4))`. Você consegue identificar a olho nu o degrau onde os atributos informativos terminam e os ruídos começam?
+```text
+tamanho_amostra     tempo_total_ms     latencia_por_laudo_ms     top1_biomarcador
+200                 ...                ...                       ...
+500                 ...                ...                       ...
+```
+
+Depois responda: **o tempo cresceu de forma linear com o numero de pacientes avaliados?**

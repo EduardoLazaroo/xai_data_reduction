@@ -1,135 +1,119 @@
-# Camada 04: A Anatomia dos Dados e o Problema da Alta Dimensionalidade
+# Camada 04: Alta Dimensionalidade e o Fenomeno de Hughes
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 4  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`gerar_dataset_sintetico_saude`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `gerar_dataset_sintetico_saude`
 
----
+> **Objetivo da aula:** compreender a dinamica geometrica do mal da dimensionalidade, distinguir formalmente atributos informativos, redundantes e ruidos puros, e entender o Fenomeno de Hughes, onde adicionar variaveis alem de um ponto otimo comeca a prejudicar a generalizacao.
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender a anatomia profunda de uma matriz de dados em saúde. Desvendar a taxonomia das variáveis em **informativas**, **redundantes** e **ruído puro**, entender o fenômeno geométrico do **Mal da Dimensionalidade** (*Curse of Dimensionality*), o **Fenômeno de Hughes** (onde mais dados pioram o modelo), e mensurar o impacto direto no tempo de CPU e no custo financeiro dos hospitais.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 4.1: A Analogia da Mochila Pesada do Explorador](#subcamada-41-a-analogia-da-mochila-pesada-do-explorador)
-- [Subcamada 4.2: A Taxonomia dos 40 Atributos do Nosso Projeto](#subcamada-42-a-taxonomia-dos-40-atributos-do-nosso-projeto)
-- [Subcamada 4.3: O Vazio do Hipercubo (A Geometria do Espaço Esparso)](#subcamada-43-o-vazio-do-hipercubo-a-geometria-do-espaço-esparso)
-- [Subcamada 4.4: O Fenômeno de Hughes (Quando Mais Colunas Destroem a IA)](#subcamada-44-o-fenômeno-de-hughes-quando-mais-colunas-destroem-a-ia)
-- [Subcamada 4.5: Laboratório Lúdico no Colab (Toy Example: A Curva de Degradação de Hughes)](#subcamada-45-laboratório-lúdico-no-colab-toy-example-a-curva-de-degradação-de-hughes)
-- [Subcamada 4.6: O Momento Sério da Nossa Aplicação (Análise de Custo, Latência e KPIs com 40 Atributos)](#subcamada-46-o-momento-sério-da-nossa-aplicação-análise-de-custo-latência-e-kpis-com-40-atributos)
-- [Subcamada 4.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-47-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 4.1: O conceito na vida real](#subcamada-41-o-conceito-na-vida-real)
+2. [Subcamada 4.2: Desenhando o conceito](#subcamada-42-desenhando-o-conceito)
+3. [Subcamada 4.3: Desmistificando a teoria e a notacao formal](#subcamada-43-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 4.4: Laboratorio ludico no Colab](#subcamada-44-laboratorio-ludico-no-colab)
+5. [Subcamada 4.5: O momento serio da nossa aplicacao](#subcamada-45-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 4.6: Checkpoint de autonomia e fixacao ativa](#subcamada-46-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 4.1: A Analogia da Mochila Pesada do Explorador
+## Subcamada 4.1: O Conceito na Vida Real
 
-Imagine um montanhista se preparando para escalar o Monte Everest. Ele tem uma mochila e precisa decidir o que levar:
+### A analogia da mochila do montanhista
 
-```
-    CENÁRIO A: MOCHILA VAZIA              CENÁRIO B: MOCHILA IDEAL             CENÁRIO C: MOCHILA HIPERTROFIADA
-    (Sub-ajuste / Underfitting)          (Enxuta & Eficiente - 10 Itens)       (Mal da Dimensionalidade - 40 Itens)
-    
-           [ VAZIO ]                               [ ENXUTA ]                             [ PESADA DEMAIS ]
-    Leva apenas 1 casaco fino.          Leva oxigênio, corda, bota,         Leva oxigênio, 5 casacos repetidos,
-    Não tem ferramentas para            barraca, água e comida.             videogame, pedras achadas na trilha...
-    sobreviver no frio extremo.                                             
-    Resultado: Desiste no km 1.         Resultado: Conquista o CUME!        Resultado: Desaba de exaustão no meio!
-```
+Imagine um montanhista se preparando para escalar uma serra ingreme:
 
-Em Ciência de Dados, muitos acreditam ingenuamente no mantra: *"Quanto mais colunas e exames eu colocar na tabela, mais inteligente a IA vai ficar"*.  
-A realidade científica é exatamente o oposto: **colunas inúteis pesam como pedras na mochila do algoritmo**, tornando-o lento, consumindo gigabytes de memória e fazendo-o alucinar correlações que não existem na vida real.
+- Se ele nao levar nada na mochila, ficara desidratado e passara frio (subajuste).
+- Se ele levar exatamente os 8 itens essenciais (agua, agasalho, mapa, corda, lanterna), subira com leveza e energia (ponto otimo).
+- Se ele resolver colocar na mochila 40 itens — incluindo panelas de ferro, livros velhos e pedras que achou no chao (ruido puro) —, suas costas doerao, ele andara devagar e desabara de exaustao antes do topo.
 
----
+Em ciencia de dados, existe o mito de que "quanto mais colunas dermos para o modelo, mais inteligente ele ficara". Na realidade, colunas inuteis funcionam como pedras na mochila do algoritmo: aumentam a memoria, tornam o treino lento e criam correlacoes acidentais.
 
-## Subcamada 4.2: A Taxonomia dos 40 Atributos do Nosso Projeto
+**A grande sacada:** coletar dados tem custo financeiro e computacional. Excesso de variaveis sem sinal util degrada a capacidade do modelo em vez de expandi-la.
 
-No nosso laboratório ([pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py)), desenhamos com precisão cirúrgica 40 exames médicos divididos em três famílias com comportamentos matemáticos distintos:
+### A taxonomia dos atributos clinicos
 
-```
-                            MATRIZ DE 40 EXAMES COLETADOS
-                                          │
-            ┌─────────────────────────────┼─────────────────────────────┐
-            ▼                             ▼                             ▼
-   🧪 10 INFORMATIVOS             📋 10 REDUNDANTES              🌪️ 20 RUÍDOS PUROS
- (Biomarcadores Vitais)        (Exames Repetitivos)          (Flutuações Aleatórias)
- Troponina, Glicemia, etc.     IMC vs Peso/Altura.            Ruído estático de sensor.
- Ganho real de informação!     Consome memória sem somar.     Facilita o sobreajuste!
-```
-
-### Detalhamento da Taxonomia:
-
-| Categoria | Definição Matemática | Exemplo Clínico | Efeito nas Árvores de Decisão |
-| :--- | :--- | :--- | :--- |
-| **1. Informativo** | Alta dependência mútua com o alvo $y$ ($I(X; y) \gg 0$). Relação de causa ou forte correlação biológica. | **Troponina sérica:** se está alta, indica necrose do músculo cardíaco (infarto iminente). | Maximiza a queda de impureza de Gini. É o "oxigênio" do modelo. |
-| **2. Redundante** | Forte correlação linear ($|r| > 0.85$) com um atributo já existente. É a mesma informação com outro nome. | **Hemoglobina Glicada vs Glicemia Média:** ambas medem o açúcar no sangue. | Divide a importância das variáveis pela metade. Faz o modelo demorar o dobro do tempo para treinar. |
-| **3. Ruído Puro** | Distribuição gaussiana aleatória pura ($X \sim \mathcal{N}(0, 1)$), totalmente independente de $y$ ($P(y \mid X) = P(y)$). | A cor da meia do paciente; ruído térmico da tomada onde o eletrocardiógrafo estava ligado. | Cria ramificações absurdas na árvore, gerando ilhas de overfitting e atrasando a inferência. |
+| Tipo | Definicao pratica | Exemplo na saude | Efeito no algoritmo |
+|---|---|---|---|
+| Informativo | Relacao de causa ou forte associacao com o alvo | Troponina elevada em infarto agudo | Fornece ganho real de informacao nos cortes |
+| Redundante | Informacao valida, mas repetida por outra coluna | Glicemia em mg/dL e em g/L; IMC e peso/altura | Consome tempo e dilui a importancia dos atributos |
+| Ruido Puro | Distribuicao aleatoria independente do diagnostico | Numero do calcado do paciente; ruido de sensor | Cria ilhas de memorizacao e facilita overfitting |
 
 ---
 
-## Subcamada 4.3: O Vazio do Hipercubo (A Geometria do Espaço Esparso)
+## Subcamada 4.2: Desenhando o Conceito
 
-Por que a matemática diz que o excesso de dimensões é uma "maldição"? Pense na densidade dos dados:
+### O vazio dimensional (esparsidade)
 
+```text
+1 DIMENSAO (Linha)          2 DIMENSOES (Plano)           3 DIMENSOES (Cubo)
+  *---*---*---*               +-------+                     +-------+
+  10 pontos preenchem         | *   * |                    / *   * /|
+  a linha com folga!          |   *   |                   +-------+ |
+                              +-------+                   | *   * | +
+                              10^2 = 100 pontos           |   *   |/
+                              para cobrir o plano.        10^3 = 1.000 pontos.
+
+Em 40 dimensoes, seriam necessarios 10^40 pacientes para manter a mesma densidade!
+Com apenas 2.000 pacientes, o espaco de 40 atributos e quase 100% puro vácuo.
 ```
-   1 DIMENSÃO (Linha)              2 DIMENSÕES (Plano)                3 DIMENSÕES (Cubo)
-   
-   •---•---•---•---•               ┌───•───•───┐                      ┌───────┐
-   10 pacientes cobrem             │ •       • │                      │ •   • │
-   a linha perfeitamente!          │   •   •   │                      │  •    │
-                                   └───•───•───┘                      └───────┘
-                                   Precisa de 10² = 100               Precisa de 10³ = 1.000
-                                   para cobrir o quadrado!            para preencher o cubo!
+
+### A curva do Fenomeno de Hughes
+
+```text
+Desempenho no Teste
+      ^
+      |                ★ PICO OTIMO DE HUGHES
+      |              /   \
+      |             /     \    QUEDA POR RUIDO:
+      |            /       \   o modelo se perde em correlacoes
+      |           /         \  acidentais da amostra de treino
+      +----------+-----------+--------------------------> Quantidade de Atributos
+               Poucos       Excesso (40+)
 ```
-
-Para preencher um hipercubo de **40 dimensões** com a mesma densidade com que 10 pacientes cobrem uma linha 1D, nós precisaríamos de:
-$$10^{40} \text{ pacientes!}$$
-Isso é um número com 40 zeros — **infinitamente maior do que a quantidade total de seres humanos que já nasceram na Terra desde a pré-história!**
-
-Como nós temos "apenas" 2.000 pacientes:
-- Em 40 dimensões, nossos 2.000 pacientes são pontos minúsculos e solitários perdidos em um oceano gigantesco de vácuo multidimensional.
-- Quase todos os pacientes ficam a distâncias enormes uns dos outros.
-- O modelo de IA é forçado a inventar palpites para preencher as regiões vazias do espaço.
 
 ---
 
-## Subcamada 4.4: O Fenômeno de Hughes (Quando Mais Colunas Destroem a IA)
+## Subcamada 4.3: Desmistificando a Teoria e a Notacao Formal
 
-Em **1968, Gordon F. Hughes** publicou uma demonstração matemática que chocou o mundo da computação:
+### O volume do hipercubo unitario
 
-```
-   Acurácia no Teste
-      ▲
-      │                   ★ PICO ÓTIMO DE HUGHES
-      │                 *   *
-      │               *       *
-      │             *           * ───► ADIÇÃO DE RUÍDO:
-      │           *                     O modelo se perde no ruído e o
-      │         *                       desempenho no teste cego desaba!
-      │       *
-      └───────┴─────────────────────────────► Número de Atributos (Dimensões)
-           Poucos                Muitos
-```
+Considere um espaco de $d$ atributos, onde cada atributo foi normalizado entre `0` e `1`. O volume total do espaco cresce exponencialmente com a dimensao:
 
-Mantendo o mesmo número de pacientes de treino:
-1. Conforme adicionamos os primeiros biomarcadores úteis, a acurácia sobe rapidamente.
-2. Ela atinge um **pico ótimo** (o ponto ideal da nossa pesquisa, entre 8 e 10 variáveis).
-3. Conforme continuamos entulhando o modelo com exames redundantes e ruídos aleatórios, **a precisão preditiva no teste cego despenca!**
+$$
+V = 1^d = 1
+$$
+
+Contudo, a distancia media entre dois pontos vizinhos aleatorios cresce com a raiz da dimensao:
+
+$$
+\operatorname{dist}(x, x') = \sqrt{\sum_{j=1}^{d} (x_j - x'_j)^2}
+$$
+
+Traducao simbolo por simbolo:
+
+| Simbolo | Leitura simples |
+|---|---|
+| `d` | quantidade de atributos (dimensao do dataset: no projeto, `d = 40`) |
+| `x_j` | valor do exame `j` para um paciente |
+| `x'_j` | valor do mesmo exame para outro paciente |
+| `dist` | no espaco de alta dimensao, todos os pacientes ficam distantes entre si |
+
+Em alta dimensao, os pontos tornam-se isolados e equidistantes. Os algoritmos precisam interpolar em regioes vazias onde nao ha observacoes suficientes.
+
+### A ordem correta evita vazamento
+
+A remocao de atributos redundantes e ruidos deve aprender estritamente sobre a base de treino `X_train`. O teste `X_test` apenas herda a mascara de colunas selecionadas.
 
 ---
 
-## Subcamada 4.5: Laboratório Lúdico no Colab (Toy Example: A Curva de Degradação de Hughes)
+## Subcamada 4.4: Laboratorio Ludico no Colab
 
-Vamos comprovar experimentalmente o Fenômeno de Hughes no [Google Colab](https://colab.research.google.com).  
-Copie e rode o código abaixo:
+### Toy example: a curva de Hughes com adicao de ruido
+
+O codigo comeca com 10 atributos informativos reais e adiciona progressivamente colunas de puro ruido gaussiano, medindo o impacto na acuracia de treino e teste.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: O FENÔMENO DE HUGHES NA PRÁTICA
-# Objetivo: Provar que injetar colunas de ruído puro derruba o teste cego
-# =============================================================================
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
@@ -137,112 +121,136 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
-# 1. Base fixa com 1.000 pacientes e 10 biomarcadores informativos puros
 np.random.seed(42)
 X_puro, y = make_classification(n_samples=1000, n_features=10, n_informative=10, n_redundant=0, random_state=42)
 
 quantidades_ruido = [0, 10, 30, 60, 100]
-acuracias_treino = []
-acuracias_teste = []
+acc_tr_lista = []
+acc_te_lista = []
 
-for n_ruido in quantidades_ruido:
-    if n_ruido == 0:
+for n_r in quantidades_ruido:
+    if n_r == 0:
         X = X_puro
     else:
-        ruidos = np.random.normal(0, 1, size=(1000, n_ruido))
+        ruidos = np.random.normal(0, 1, size=(1000, n_r))
         X = np.hstack([X_puro, ruidos])
-        
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, random_state=42)
-    rf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
-    rf.fit(X_tr, y_tr)
-    
-    acuracias_treino.append(accuracy_score(y_tr, rf.predict(X_tr)))
-    acuracias_teste.append(accuracy_score(y_te, rf.predict(X_te)))
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.30, random_state=42)
+    rf = RandomForestClassifier(n_estimators=50, max_depth=8, random_state=42).fit(X_tr, y_tr)
+    acc_tr_lista.append(accuracy_score(y_tr, rf.predict(X_tr)))
+    acc_te_lista.append(accuracy_score(y_te, rf.predict(X_te)))
 
-# 2. Gráfico da Curva de Hughes
-plt.figure(figsize=(10, 5))
-plt.plot(quantidades_ruido, [a*100 for a in acuracias_treino], marker="o", color="blue", lw=2, label="Treino (Memoriza tudo: 100%)")
-plt.plot(quantidades_ruido, [a*100 for a in acuracias_teste], marker="s", color="red", lw=2, label="Teste Cego (O Fenômeno de Hughes)")
-plt.title("O Fenômeno de Hughes: O Impacto Destrutivo do Ruído Aleatório", fontsize=13, fontweight="bold")
-plt.xlabel("Quantidade de Colunas de Ruído Adicionadas ao Dataset", fontweight="bold")
-plt.ylabel("Acurácia (%)", fontweight="bold")
-plt.ylim(75, 103)
-plt.grid(True, linestyle="--", alpha=0.5)
-plt.legend(fontsize=11)
-plt.show()
-
-for n, tr, te in zip(quantidades_ruido, acuracias_treino, acuracias_teste):
-    print(f"Ruídos: {n:3d} colunas | Acurácia Treino: {tr*100:.1f}% | Acurácia Teste: {te*100:.1f}% | Gap: {(tr-te)*100:.1f}%")
+plt.figure(figsize=(9, 4))
+plt.plot(quantidades_ruido, acc_tr_lista, marker="o", label="Treino (memoriza)")
+plt.plot(quantidades_ruido, acc_te_lista, marker="s", color="red", label="Teste (Hughes)")
+plt.title("Comprovacao Experimental do Fenomeno de Hughes")
+plt.xlabel("Colunas de ruido adicionadas"); plt.ylabel("Acuracia")
+plt.grid(True, linestyle="--", alpha=0.5); plt.legend()
+plt.tight_layout(); plt.show()
 ```
 
-### O Que Você Deve Notar:
-Enquanto a Acurácia no Treino permanece congelada em **100%** (o modelo finge ser perfeito), a Acurácia no Teste despenca de **90.7% para menos de 83%**, abrindo um abismo de overfitting de quase 17 pontos percentuais!
+> **O que voce deve notar no grafico gerado:** enquanto o treino permanece elevado (o modelo continua achando regras para tudo), o teste decai conforme o volume de ruido aumenta, ilustrando o Fenomeno de Hughes.
+
+**Mini-investigacao:** aumente `n_samples` de `1000` para `3000`. O efeito do ruido diminui? Mais amostras ajudam a diluir as coincidencias estocasticas.
 
 ---
 
-## Subcamada 4.6: O Momento Sério da Nossa Aplicação (Análise de Custo, Latência e KPIs com 40 Atributos)
+## Subcamada 4.5: O Momento Serio da Nossa Aplicacao
 
-No cenário real do nosso hospital ([pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py)), cada uma das 40 colunas tem um custo no mundo físico e na infraestrutura de TI:
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+Vamos comparar a matriz completa oficial (40 atributos com 20 ruidos) contra um cenario hipotetico onde conhecemos apenas os 10 biomarcadores informativos puros.
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Mensuração do Custo Computacional de Treinamento e Inferência (40 Atributos)
-# =============================================================================
+import time
 import numpy as np
 import pandas as pd
-import time
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import train_test_split
 
-# 1. Dataset com 2.000 Pacientes e 40 Atributos
-X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
-)
-X_train, X_test, y_train, y_test = train_test_split(X_raw, y, test_size=0.25, stratify=y, random_state=42)
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
 
-# 2. Cronometria de Alta Precisão (10 repetições para média estável)
-tempos_treino = []
-for _ in range(5):
-    t0 = time.perf_counter()
-    rf = RandomForestClassifier(n_estimators=100, random_state=42)
-    rf.fit(X_train, y_train)
-    tempos_treino.append((time.perf_counter() - t0) * 1000)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-t0 = time.perf_counter()
-_ = rf.predict(X_test)
-tempo_inf_ms = (time.perf_counter() - t0) * 1000
+def cronometrar(modelo, X_tr, X_te, y_tr, y_te):
+    t0 = time.perf_counter(); modelo.fit(X_tr, y_tr)
+    tempo_treino_ms = (time.perf_counter() - t0) * 1000
+    t0 = time.perf_counter(); pred = modelo.predict(X_te)
+    proba = modelo.predict_proba(X_te)[:, 1]
+    latencia_us = (time.perf_counter() - t0) * 1_000_000 / len(X_te)
+    return {
+        "atributos": X_tr.shape[1],
+        "acc_teste": accuracy_score(y_te, pred),
+        "f1": f1_score(y_te, pred),
+        "recall": recall_score(y_te, pred),
+        "roc_auc": roc_auc_score(y_te, proba),
+        "tempo_treino_ms": tempo_treino_ms,
+        "latencia_us": latencia_us
+    }
 
-print("=" * 65)
-print("AUDITORIA DE PERFORMANCE COMPUTACIONAL DO BASELINE (40 ATRIBUTOS)")
-print("=" * 65)
-print(f"  • Tempo Médio de Treinamento  : {np.mean(tempos_treino):.1f} ms")
-print(f"  • Latência de Inferência Lote : {tempo_inf_ms:.2f} ms (500 pacientes)")
-print(f"  • Latência Unitária Estimada  : {(tempo_inf_ms / 500)*1000:.1f} µs por paciente")
-print(f"  • Uso de Memória da Matriz X  : {X_raw.nbytes / 1024:.1f} KB")
-print("=" * 65)
+base_40 = cronometrar(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1),
+                      X_train, X_test, y_train, y_test)
+enxuto_10 = cronometrar(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1),
+                        X_train.iloc[:, :10], X_test.iloc[:, :10], y_train, y_test)
+
+df_comp = pd.DataFrame([base_40, enxuto_10], index=["40 Atributos (Baseline)", "10 Atributos (Sem Ruido)"]).round(4)
+print(df_comp)
+for nome, res in [("Baseline", base_40), ("Enxuto", enxuto_10)]:
+    print(f"KPI {nome}: atributos={res['atributos']}; acc_teste={res['acc_teste']:.4f}; "
+          f"f1={res['f1']:.4f}; tempo_treino_ms={res['tempo_treino_ms']:.2f}; "
+          f"latencia_us={res['latencia_us']:.2f}")
 ```
 
+### Tabela oficial de KPIs
+
+Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Interpretacao | O que investigar |
+|---|---|---|
+| Quantidade de atributos | numero de colunas submetidas ao modelo | qual e o custo financeiro de coletar cada uma? |
+| Acuracia teste | taxa de acerto em pacientes novos | a remocao de colunas preservou a exatidao? |
+| F1-score | equilibrio diagnostico da patologia | o modelo manteve estabilidade sem os ruidos? |
+| Tempo de treino | duracao do ajuste das 100 arvores em ms | quanto tempo economizamos ao reduzir 30 colunas? |
+| Latencia | tempo medio de inferencia por paciente | o tempo atende sistemas de triagem em tempo real? |
+
+### Interpretacao clinica e de negocio
+
+- 40 colunas exigem que o hospital colete, transporte e armazene 40 exames por paciente, aumentando filas laboratoriais e custos operacionais.
+- No treinamento, o Random Forest precisa avaliar pontos de corte em subconjuntos maiores a cada no; por isso, 40 colunas demoram substancialmente mais para treinar do que 10.
+- O objetivo central da nossa pesquisa sera reproduzir ou superar o desempenho diagnostico do baseline usando XAI para identificar quais sao os atributos vitais e descartar os 20 ruidos e redundancias.
+
 ---
 
-### 4.6.1 Análise de Impacto Operacional e de Negócio Hospitalar
+## Subcamada 4.6: Checkpoint de Autonomia e Fixacao Ativa
 
-| Dimensão de Análise | Impacto com 40 Atributos (Baseline) | Meta com Redução XAI (8 a 10 Atributos) | Benefício Conquistado |
-| :--- | :--- | :--- | :--- |
-| **Custo Financeiro por Paciente** | $R\$\,1.200,00$ (40 exames laboratoriais completos) | $\approx R\$\,280,00$ (apenas os 8 biomarcadores vitais) | **Redução de mais de 75% nos custos do SUS / convênio.** |
-| **Tempo de Espera do Paciente** | 3 a 5 dias úteis para colher e processar 40 exames | Menos de 4 horas no pronto-socorro | **Diagnóstico rápido salva pacientes com infarto e sepse.** |
-| **Tempo de Treinamento de CPU** | $\approx 600\text{ ms}$ | $\approx 180\text{ ms}$ | **Retreinos até 3x mais rápidos** em servidores de produção. |
-| **Robustez contra Ruído** | Vulnerável a 20 colunas de puro ruído aleatório | Zero ruído metabólico no modelo final | **Eliminação de correlações espúrias e fechamento do gap de overfitting.** |
+Explique sem consultar o texto e depois confira sua resposta:
 
----
+1. Por que dizer que "mais dados sempre melhoram o modelo" e um equivoco quando nos referimos a colunas?
+2. O que afirma o Fenomeno de Hughes sobre a relacao entre dimensionalidade e acuracia de teste?
+3. Qual a diferenca entre um atributo informativo e um atributo redundante?
+4. Por que 2.000 pacientes em 40 dimensoes tornam o espaco matematico praticamente vazio?
+5. Como colunas de puro ruido afetam o tempo de processamento de um Random Forest?
+6. O que aconteceria no pronto-socorro se um sistema dependesse de 40 exames lentos para triar uma emergencia?
 
-## Subcamada 4.7: Checkpoint de Autonomia & Fixação Ativa
+### Mini-desafio pratico
 
-Responda com clareza para consolidar o Bloco 1:
+Execute o codigo da Subcamada 4.4 testando um cenario extremo com `quantidades_ruido = [0, 50, 150, 300]` e anote:
 
-1. **Por que dizer que *"quanto mais dados e colunas dermos para a IA, mais inteligente ela fica"* é um erro ingênuo segundo o Fenômeno de Hughes?**
-2. **Explique a diferença biológica e estatística entre um atributo informativo, um redundante e um ruído puro.**
-3. **Por que 2.000 pacientes em 40 dimensões tornam o espaço geométrico praticamente vazio?**
-4. **Desafio no Colab:** No código da Subcamada 4.5, adicione `quantidades_ruido = [0, 50, 150, 300]`. O que acontece com a Acurácia de Teste quando o número de ruídos passa de 150?
+```text
+ruidos_adicionados     acuracia_treino     acuracia_teste     gap_overfitting
+0                      ...                 ...                ...
+50                     ...                 ...                ...
+150                    ...                 ...                ...
+300                    ...                 ...                ...
+```
+
+Depois responda: **em que momento o gap de overfitting se torna clinicamente inaceitavel?**

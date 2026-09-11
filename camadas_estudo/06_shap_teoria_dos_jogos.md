@@ -1,152 +1,126 @@
-# Camada 06: SHAP — Explicabilidade Global e a Teoria dos Jogos Cooperativos
+# Camada 06: SHAP e a Teoria dos Jogos Cooperativos
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 6  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`executar_etapa_shap`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_etapa_shap`
 
----
+> **Objetivo da aula:** dominar o metodo SHAP (SHapley Additive exPlanations), entender como a Teoria dos Jogos Cooperativos de Lloyd Shapley garante a divisao justa de credito entre atributos, conhecer os quatro axiomas de equidade e interpretar o ranking |SHAP| e o grafico Beeswarm.
 
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender em profundidade a mais elegante e matematicamente rigorosa técnica de explicabilidade do mundo: o **SHAP (SHapley Additive exPlanations)**. Descobrir como a **Teoria dos Jogos Cooperativos** do Prêmio Nobel Lloyd Shapley resolve o enigma da "divisão justa do crédito", entender a aceleração monumental do **TreeExplainer** (de 1 trilhão de cálculos para 2 segundos), e dominar a interpretação do **Ranking Médio $|SHAP|$** e do famoso gráfico **Beeswarm**.
+## Mapa da aula
 
----
-
-## Sumário da Aula
-
-- [Subcamada 6.1: A Analogia do Trabalho em Grupo da Faculdade](#subcamada-61-a-analogia-do-trabalho-em-grupo-da-faculdade)
-- [Subcamada 6.2: A Equação da Justiça — Os 4 Axiomas de Lloyd Shapley](#subcamada-62-a-equação-da-justiça--os-4-axiomas-de-lloyd-shapley)
-- [Subcamada 6.3: A Anatomia do Cabo-de-Guerra Diagnóstico](#subcamada-63-a-anatomia-do-cabo-de-guerra-diagnóstico)
-- [Subcamada 6.4: O Milagre Computacional do TreeSHAP (De 1 Trilhão para 2 Segundos)](#subcamada-64-o-milagre-computacional-do-treeshap-de-1-trilhão-para-2-segundos)
-- [Subcamada 6.5: Como Decifrar o Gráfico Beeswarm (O Enxame de Abelhas)](#subcamada-65-como-decifrar-o-gráfico-beeswarm-o-enxame-de-abelhas)
-- [Subcamada 6.6: Laboratório Lúdico no Colab (Toy Example: Auditando Créditos com SHAP)](#subcamada-66-laboratório-lúdico-no-colab-toy-example-auditando-créditos-com-shap)
-- [Subcamada 6.7: O Momento Sério da Nossa Aplicação (Auditoria Completa no Dataset Clínico & KPIs)](#subcamada-67-o-momento-sério-da-nossa-aplicação-auditoria-completa-no-dataset-clínico--kpis)
-- [Subcamada 6.8: Checkpoint de Autonomia & Fixação Ativa](#subcamada-68-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 6.1: O conceito na vida real](#subcamada-61-o-conceito-na-vida-real)
+2. [Subcamada 6.2: Desenhando o conceito](#subcamada-62-desenhando-o-conceito)
+3. [Subcamada 6.3: Desmistificando a teoria e a notacao formal](#subcamada-63-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 6.4: Laboratorio ludico no Colab](#subcamada-64-laboratorio-ludico-no-colab)
+5. [Subcamada 6.5: O momento serio da nossa aplicacao](#subcamada-65-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 6.6: Checkpoint de autonomia e fixacao ativa](#subcamada-66-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 6.1: A Analogia do Trabalho em Grupo da Faculdade
+## Subcamada 6.1: O Conceito na Vida Real
 
-Você certamente já fez um trabalho em grupo na escola ou na faculdade com três colegas:
-- **Colega A (O Pesquisador Genial):** Leu 15 livros, fez os cálculos e escreveu toda a fundamentação teórica.
-- **Colega B (O Apresentador Carismático):** Criou slides impecáveis e apresentou o seminário com maestria.
-- **Colega C (O Carona Preguiçoso):** Não fez nada, faltou às reuniões e só colocou o nome na capa!
+### A historia do trabalho em grupo na faculdade
 
-No final, o professor dá **Nota 10** para o grupo.  
-Se o professor der nota 10 para os três igualmente, ele está sendo justo? **Não!** O Colega C pegou carona no esforço alheio.
+Imagine um trabalho academico em grupo com tres colegas:
 
-```
-       [ O TIME COOPERATIVO DE 40 JOGADORES ]               [ O VALOR FINAL GERADO ]
-       
-       🧪 10 Biomarcadores Vitais (Fizeram a pesquisa) ──┐
-       📋 10 Exames Redundantes   (Ajudaram na capa)   ──┼──► [ Diagnóstico: 85% Doente ]
-       🌪️ 20 Ruídos Metabólicos   (Dormiram no sofá)   ──┘
-```
+- O colega A leu todos os artigos e escreveu a fundamentacao teorica.
+- O colega B rodou os codigos e gerou os graficos.
+- O colega C apenas colocou o nome na capa e nao compareceu a nenhuma reuniao.
 
-Em **1953, o matemático Lloyd Shapley** (que ganhou o Prêmio Nobel de Economia em 2012) resolveu esse problema matematicamente:  
-*"Qual é a fatia justa de recompensa que cabe a cada jogador em uma equipe cooperativa?"*
+Se o professor atribuir a nota 10 igualmente aos tres, estara sendo injusto com o esforco de A e B. Mas como mensurar matematicamente a contribuicao individual de cada participante quando o resultado e coletivo?
 
-O **Valor Shapley ($\phi_i$)** calcula a **contribuição marginal** de cada membro testando como a equipe performaria em **todas as combinações possíveis** com e sem aquele membro:
-- Quanto o grupo pontua só com A?
-- Quanto o grupo pontua com A e B?
-- Quanto o grupo ganha se C entrar? Se C não agrega nada em nenhuma combinação, a fatia dele é **rigorosamente ZERO**!
+Em 1953, o matematico Lloyd Shapley (Nobel de Economia em 2012) resolveu essa questao: para medir o valor justo de um membro, avalia-se quanto a equipe ganharia em **todas as combinacoes possiveis** com e sem a participacao daquele membro. Se a presenca de C nao altera o resultado em nenhuma combinacao, a fatia dele e rigorosamente zero.
 
-Em Machine Learning (Scott Lundberg, 2017):
-- **Os Jogadores:** São as 40 colunas do nosso paciente.
-- **O Jogo:** É o modelo Random Forest.
-- **O Prêmio:** É a probabilidade de ter a doença.
-- **O Valor Shapley:** É quanto risco cada exame adicionou ou subtraiu do paciente!
+Em 2017, Scott Lundberg adaptou essa teoria para Machine Learning:
+- **Jogadores:** os 40 exames do paciente.
+- **Jogo:** o modelo Random Forest.
+- **Premio:** a probabilidade de patologia.
+- **Valor Shapley:** quanto cada exame puxou o risco para cima ou para baixo em relacao a media.
 
----
+**A grande sacada:** o SHAP e a unica tecnica de explicabilidade que garante matematicamente uma atribuicao de importancia justa, sem favorecer arbitrariamente nenhuma coluna.
 
-## Subcamada 6.2: A Equação da Justiça — Os 4 Axiomas de Lloyd Shapley
+### O vocabulario da Teoria dos Jogos em Machine Learning
 
-O SHAP é a única técnica de inteligência explicável do planeta que respeita **quatro leis matemáticas de equidade**:
-
-1. **Eficiência (A Soma Fecha Perfeitamente):**  
-   A soma das contribuições de todos os 40 exames é exatamente igual à diferença entre a previsão dada para aquele paciente e a média histórica do hospital:
-   $$\sum_{i=1}^{M} \phi_i = f(x) - \mathbb{E}[f(X)]$$
-2. **Simetria (Mesmo Trabalho, Mesmo Crédito):**  
-   Se dois biomarcadores trazem exatamente a mesma contribuição em todas as situações possíveis, seus valores Shapley serão rigorosamente idênticos.
-3. **Variável Nula / Dummy (O Carona Ganha Zero):**  
-   Se um exame não altera a previsão em nenhuma combinação de pacientes (como os nossos **20 ruídos metabólicos**), seu valor Shapley é **estritamente ZERO** ($\phi_i = 0$).
-4. **Aditividade:**  
-   Se você somar as decisões de várias árvores de decisão, o SHAP final da floresta é a média exata dos SHAPs de cada árvore.
+| Teoria dos Jogos | Machine Learning | No nosso projeto de saude |
+|---|---|---|
+| Jogador | Atributo / Feature | `biomarcador_1`, `ruido_metabolico_1`, etc. |
+| Coalizao | Subconjunto de variaveis presentes | Grupo de exames ativos no no da arvore |
+| Valor do jogo | Previsao emitida $f(x)$ | Probabilidade de o paciente ter a doenca |
+| Valor Shapley $\phi_i$ | Importancia aditiva da variavel | Impacto em pontos percentuais no laudo |
 
 ---
 
-## Subcamada 6.3: A Anatomia do Cabo-de-Guerra Diagnóstico
+## Subcamada 6.2: Desenhando o Conceito
 
-Pense na decisão médica de um paciente como um cabo-de-guerra em volta da média populacional:
+### O cabo de guerra diagnostico
 
-```
-    [ RISCO MÉDIO DO HOSPITAL: 40% ] ── (Ponto de Partida / Base Value)
-                    │
-                    ├──► 🧪 Biomarcador 1 muito alto : +25% de risco (Puxa para a DIREITA 🔴)
-                    ├──► 🧪 Biomarcador 3 muito alto : +18% de risco (Puxa para a DIREITA 🔴)
-                    ├──► 📋 Exame Redundante normal  :  -6% de risco (Puxa para a ESQUERDA 🔵)
-                    └──► 🌪️ Ruído Metabólico 7       :  +0.01%       (Praticamente NULO ⚪)
-                    │
-                    ▼
-     [ VEREDITO FINAL DO PACIENTE: 77% DE RISCO -> PATOLOGIA (1) ]
+```text
+    [ RISCO MEDIO DO HOSPITAL: 40% ]  (Base Value populacional)
+                   |
+                   +---> Troponina muito alta : +25% de risco (empurra p/ patologia 🔴)
+                   +---> Glicemia elevada     : +15% de risco (empurra p/ patologia 🔴)
+                   +---> Idade jovem          : -08% de risco (empurra p/ saudavel 🔵)
+                   +---> Ruido metabolico 14  : +0.01%        (neutro / nulo ⚪)
+                   |
+                   v
+    PREVISAO FINAL DO PACIENTE: 72.01%  (Soma exata das forcas!)
 ```
 
-Cada atributo atua como uma força física:
-- Forças positivas (empurram para Doente / Classe 1).
-- Forças negativas (empurram para Saudável / Classe 0).
-- A soma de todas as forças dá a probabilidade exata da tela do computador!
+### Como ler o grafico Beeswarm
 
----
+```text
+Biomarcador 1  ---🔵🔵🔵-------------|-------------🔴🔴🔴--->  (Alto valor = Alto risco)
+Biomarcador 2  ---🔴🔴🔴-------------|-------------🔵🔵🔵--->  (Baixo valor = Alto risco)
+Ruido 7        ---------------🔵🔴🔵🔴🔵🔴---------------->  (Sem efeito, tudo no zero)
+                                     |
+                             Valor SHAP (Impacto)
+                 <--- Empurra p/ Saudavel   Empurra p/ Patologia --->
 
-## Subcamada 6.4: O Milagre Computacional do TreeSHAP (De 1 Trilhão para 2 Segundos)
-
-Para calcular o Valor Shapley clássico de forma exata, é preciso testar todas as coalizões de variáveis possíveis. Com 40 atributos, o número de coalizões é:
-$$2^{40} = 1.099.511.627.776 \text{ combinações! (Mais de 1 trilhão)}$$
-Se o computador testasse 1 milhão de combinações por segundo, levaria **quase 13 dias ininterruptos** para explicar um único paciente!
-
-### O Algoritmo TreeExplainer (Lundberg et al., 2020):
-Scott Lundberg percebeu que, dentro de uma Árvore de Decisão, nós **não precisamos testar todas as combinações no escuro**: a própria topologia dos galhos já nos mostra quais variáveis dividem os dados.  
-Ele desenvolveu o **TreeSHAP**, um algoritmo que percorre recursivamente os galhos da floresta e reduz a complexidade de exponencial ($2^M$) para polinomial:
-$$\mathcal{O}(T \cdot L \cdot D^2)$$
-Onde $T$ é o número de árvores (100), $L$ é o número de folhas e $D$ é a profundidade máxima.  
-Resultado: **o cálculo de 1 trilhão de operações é feito em apenas 1 a 2 segundos no seu notebook!**
-
----
-
-## Subcamada 6.5: Como Decifrar o Gráfico Beeswarm (O Enxame de Abelhas)
-
-O gráfico *Beeswarm* do SHAP é considerado a "Monalisa" da Ciência de Dados moderna. Cada paciente é um pontinho flutuando em uma linha:
-
-```
-   Biomarcador 1 ───🔵🔵🔵───────────|────────────🔴🔴🔴──►  (Alto valor = Alto risco!)
-   Biomarcador 2 ───🔴🔴🔴───────────|────────────🔵🔵🔵──►  (Baixo valor = Alto risco!)
-   Ruído 14      ─────────────🔵🔴🔵🔴🔵🔴─────────────►  (Impacto zero, tudo no meio)
-                                     │
-                             Impacto SHAP no Modelo
-                    ◄── Empurra p/ Saudável  Empurra p/ Doente ──►
+Legenda de cores: 🔴 Ponto vermelho = valor alto do exame | 🔵 Ponto azul = valor baixo do exame
 ```
 
-### Como Ler as Cores e Posições:
-1. **Posição no Eixo X:**  
-   - Se o ponto está à **direita do zero**: empurra o paciente para o diagnóstico de Doente.
-   - Se está à **esquerda do zero**: empurra para Saudável.
-2. **Cor do Ponto:**  
-   - 🔴 **Vermelho:** O exame do paciente deu um valor numérico ALTO (ex: Glicemia 220 mg/dL).
-   - 🔵 **Azul:** O exame do paciente deu um valor numérico BAIXO (ex: Glicemia 75 mg/dL).
-3. **Leitura Clínica:**  
-   Se você vir pontos **vermelhos agrupados à direita**, significa: *"Quando este biomarcador sobe no sangue, o risco de patologia explode!"*.
+---
+
+## Subcamada 6.3: Desmistificando a Teoria e a Notacao Formal
+
+### A formula de Lloyd Shapley
+
+O valor Shapley da variavel $i$ e a media ponderada das suas contribuicoes marginais sobre todas as coalizoes possiveis $S$:
+
+$$
+\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!(|N| - |S| - 1)!}{|N|!} \big[ v(S \cup \{i\}) - v(S) \big]
+$$
+
+Traducao simbolo por simbolo:
+
+| Simbolo | Leitura simples |
+|---|---|
+| `N` | conjunto total de atributos (40 exames) |
+| `S` | uma coalizao qualquer de atributos sem a presenca de `i` |
+| `v(S U {i}) - v(S)` | contribuicao marginal: quanto a previsao muda quando adicionamos o atributo `i` |
+| `fator fatorial` | peso estatistico para equilibrar coalizoes de diferentes tamanhos |
+| `phi_i` | valor Shapley: credito liquido e justo da variavel `i` |
+
+### Os quatro axiomas de equidade
+
+1. **Eficiencia:** a soma de todos os valores $\phi_i$ e igual a diferenca entre a previsao do paciente e a media da base: $\sum \phi_i = f(x) - \mathbb{E}[f(X)]$.
+2. **Simetria:** duas variaveis com o mesmo efeito marginal em todas as coalizoes recebem o mesmo valor.
+3. **Variavel Nula (Dummy):** se uma variavel nao altera a previsao em nenhuma coalizao (como os 20 ruidos metabolicos), seu valor e rigorosamente zero ($\phi_i = 0$).
+4. **Aditividade:** a explicacao de um ensemble e a soma das explicacoes de cada arvore componente.
+
+### TreeSHAP: de 1 trilhao para 2 segundos
+
+Calcular a formula classica exigiria avaliar $2^{40} \approx 1,1$ trilhao de coalizoes. O algoritmo **TreeSHAP** (Lundberg et al., 2020) percorre os ramos das arvores de decisao recursivamente, reduzindo a complexidade para ordem polinomial $\mathcal{O}(T \cdot L \cdot D^2)$ e calculando a solucao exata em segundos.
 
 ---
 
-## Subcamada 6.6: Laboratório Lúdico no Colab (Toy Example: Auditando Créditos com SHAP)
+## Subcamada 6.4: Laboratorio Ludico no Colab
 
-Copie e rode no [Google Colab](https://colab.research.google.com) para ver o cálculo do SHAP em tempo real:
+### Toy example: medindo créditos justos com TreeSHAP
+
+O codigo treina uma floresta em 3 atributos (2 informativos e 1 ruido) e calcula os valores SHAP exatos.
 
 ```python
-# =============================================================================
-# LABORATÓRIO DIDÁTICO: AVALIANDO CRÉDITOS COM SHAP
-# Objetivo: Ver o TreeExplainer isolar o ruído com precisão matemática
-# =============================================================================
 !pip install shap -q
 import numpy as np
 import pandas as pd
@@ -154,143 +128,125 @@ import shap
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
-# 1. Geramos 300 pacientes com 3 variáveis
 np.random.seed(42)
-idade = np.random.uniform(20, 80, 300)
-pressao = np.random.uniform(90, 180, 300)
-ruido_puro = np.random.normal(0, 1, 300)
+n = 300
+idade = np.random.uniform(20, 80, n)
+pressao = np.random.uniform(90, 180, n)
+ruido = np.random.normal(0, 1, n)
 
-# Regra causal real: Doença depende apenas de Idade e Pressão!
-prob = 1 / (1 + np.exp(-(-6.0 + 0.05 * idade + 0.03 * pressao)))
-y_toy = (prob > 0.5).astype(int)
+prob = 1 / (1 + np.exp(-(-5.0 + 0.04 * idade + 0.02 * pressao)))
+y = (prob > 0.5).astype(int)
+df = pd.DataFrame({"Idade": idade, "Pressao": pressao, "Ruido_Sorte": ruido})
 
-df_toy = pd.DataFrame({"Idade": idade, "Pressao": pressao, "Ruido_Sorte": ruido_puro})
-
-# 2. Treinamos a Random Forest
-rf = RandomForestClassifier(n_estimators=50, random_state=42)
-rf.fit(df_toy, y_toy)
-
-# 3. Calculamos o SHAP com TreeExplainer
+rf = RandomForestClassifier(n_estimators=50, random_state=42).fit(df, y)
 explainer = shap.TreeExplainer(rf)
-shap_values = explainer.shap_values(df_toy)
+sv = explainer.shap_values(df)
+valores = sv[1] if isinstance(sv, list) else (sv[:, :, 1] if len(sv.shape) == 3 else sv)
 
-# 4. Gráfico de Barras Global do SHAP
-if isinstance(shap_values, list):
-    sv = shap_values[1]
-else:
-    sv = shap_values[:, :, 1] if len(shap_values.shape) == 3 else shap_values
+shap.summary_plot(valores, df, plot_type="bar", show=False)
+plt.title("Ranking Global SHAP (|Impacto Medio|)")
+plt.tight_layout(); plt.show()
 
-shap.summary_plot(sv, df_toy, plot_type="bar", show=False)
-plt.title("Ranking Global SHAP: A Justiça de Lloyd Shapley", fontsize=12, fontweight="bold")
-plt.tight_layout()
-plt.show()
-
-print("Média do Impacto Absoluto (|SHAP|):")
-for col, val in zip(df_toy.columns, np.abs(sv).mean(axis=0)):
-    print(f"  • {col.ljust(15)}: {val:.4f}")
+print(pd.Series(np.abs(valores).mean(axis=0), index=df.columns).round(4))
 ```
 
-### O Que Você Deve Observar:
-O `Ruido_Sorte` tem uma média $|SHAP|$ quase nula ($< 0.01$), enquanto `Pressao` e `Idade` acumulam mais de 95% de todo o crédito preditivo do modelo!
+> **O que voce deve notar no grafico gerado:** `Pressao` e `Idade` lideram o ranking absoluto. `Ruido_Sorte` recebe valor proximo de zero, respeitando o axioma da variavel nula.
+
+**Mini-experimento:** inverta o sinal da pressao na geracao do alvo (`- 0.02 * pressao`). Plote com `shap.summary_plot(valores, df)` e observe os pontos vermelhos migrarem para o lado esquerdo.
 
 ---
 
-## Subcamada 6.7: O Momento Sério da Nossa Aplicação (Auditoria Completa no Dataset Clínico & KPIs)
+## Subcamada 6.5: O Momento Serio da Nossa Aplicacao
 
-Vamos agora executar o protocolo de explicabilidade global oficial do projeto ([pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py)) sobre a coorte de **2.000 pacientes e 40 atributos médicos**.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+Vamos rodar a extracao completa de TreeSHAP sobre a matriz oficial de 40 atributos com 2.000 pacientes do [pipeline_completo.py](../pipeline_completo.py).
 
 ```python
-# =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Auditoria Global SHAP Completa nos 40 Atributos do Hospital
-# =============================================================================
+import time
 import numpy as np
 import pandas as pd
 import shap
-import time
-import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
-print("=" * 70)
-print("AUDITORIA OFICIAL DE XAI GLOBAL: SHAP NO MODELO BASELINE (40 ATRIBUTOS)")
-print("=" * 70)
+SEED = 42
+X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
+         [f"exame_redundante_{i+1}" for i in range(10)] +
+         [f"ruido_metabolico_{i+1}" for i in range(20)])
+X = pd.DataFrame(X_raw, columns=nomes)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-# 1. Base Hospitalar (2.000 Pacientes, 40 Variáveis)
-X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
-)
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
-X_train, X_test, y_train, y_test = train_test_split(df_clinico, y, test_size=0.25, stratify=y, random_state=42)
+rf = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1).fit(X_train, y_train)
 
-# 2. Treino do Baseline
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-rf.fit(X_train, y_train)
-
-# 3. Extração dos Valores Shapley com Medição de Latência
 t0 = time.perf_counter()
 explainer = shap.TreeExplainer(rf)
-# Calculamos para 250 pacientes de teste
-shap_vals = explainer.shap_values(X_test.iloc[:250])
-tempo_shap_total = (time.perf_counter() - t0) * 1000
+amostra = X_train.iloc[:250]
+sv = explainer.shap_values(amostra)
+tempo_total_ms = (time.perf_counter() - t0) * 1000
 
-if isinstance(shap_vals, list):
-    vals_classe_1 = shap_vals[1]
-else:
-    vals_classe_1 = shap_vals[:, :, 1] if len(shap_vals.shape) == 3 else shap_vals
+vals = sv[1] if isinstance(sv, list) else (sv[:, :, 1] if len(sv.shape) == 3 else sv)
+ranking = pd.DataFrame({
+    "atributo": nomes,
+    "impacto_shap": np.abs(vals).mean(axis=0),
+    "tipo": ["Informativo"]*10 + ["Redundante"]*10 + ["Ruido"]*20
+}).sort_values(by="impacto_shap", ascending=False).reset_index(drop=True)
 
-# 4. Consolidação do Ranking de Importância
-importancias_shap = np.abs(vals_classe_1).mean(axis=0)
-df_ranking = pd.DataFrame({
-    "Atributo": feature_names,
-    "Impacto_Medio_SHAP": importancias_shap,
-    "Tipo": ["Informativo"]*10 + ["Redundante"]*10 + ["Ruido"]*20
-}).sort_values(by="Impacto_Medio_SHAP", ascending=False).reset_index(drop=True)
+total = ranking["impacto_shap"].sum()
+top10 = ranking.head(10)["impacto_shap"].sum()
+ruidos = ranking[ranking["tipo"] == "Ruido"]["impacto_shap"].sum()
 
-# 5. Cálculo dos KPIs de Concentração de Informação
-impacto_total = df_ranking["Impacto_Medio_SHAP"].sum()
-impacto_top10 = df_ranking.head(10)["Impacto_Medio_SHAP"].sum()
-impacto_ruidos = df_ranking[df_ranking["Tipo"] == "Ruido"]["Impacto_Medio_SHAP"].sum()
-
-print("\n📊 TABELA DE KPIS DA AUDITORIA SHAP:")
-print("-" * 65)
-print(f"  • Tempo de Execução TreeSHAP (250 pac.) : {tempo_shap_total:.1f} ms")
-print(f"  • Latência Unitária por Laudo SHAP     : {tempo_shap_total / 250:.2f} ms")
-print(f"  • Concentração de Crédito no Top 10    : {(impacto_top10 / impacto_total)*100:.2f}%")
-print(f"  • Crédito Residual dos 20 Ruídos       : {(impacto_ruidos / impacto_total)*100:.2f}% (Quase nulo!)")
-print("-" * 65)
-
-print("\n🏆 OS 5 MAIORES VILÕES DIAGNÓSTICOS (MAIOR RISCO):")
-print(df_ranking.head(5).to_string(index=False))
-
-print("\n🗑️ OS 5 ATRIBUTOS MAIS INÚTEIS (CANDIDATOS À ELIMINAÇÃO):")
-print(df_ranking.tail(5).to_string(index=False))
+print(f"Tempo TreeSHAP para 250 pacientes: {tempo_total_ms:.2f} ms")
+print(f"Latencia por laudo individual: {tempo_total_ms / 250:.2f} ms")
+print(f"Proporcao de impacto retida no Top 10: {(top10/total)*100:.2f}%")
+print(f"Proporcao de impacto nos 20 ruidos: {(ruidos/total)*100:.2f}%")
+print("\nTop 5 atributos segundo o SHAP:")
+print(ranking.head(5).round(4).to_string(index=False))
 ```
 
+### Tabela oficial de KPIs
+
+Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Interpretacao | O que investigar |
+|---|---|---|
+| Latencia por laudo SHAP | tempo medio de calculo por paciente em ms | e viavel gerar explicacao durante a triagem? |
+| Concentracao Top 10 | porcentagem de forca acumulada nos 10 primeiros | o descarte de 30 atributos preservara a informacao? |
+| Impacto dos 20 ruidos | forca somada de todas as colunas aleatorias | o axioma da variavel nula foi confirmado numericamente? |
+| Base value | risco medio historico da populacao estudada | qual e o ponto de partida do cabo de guerra? |
+
+### Interpretacao clinica e de negocio
+
+- O axioma da variavel nula e confirmado empiricamente: os 20 ruidos somados representam fracao insignificante do impacto global.
+- O TreeSHAP permite auditar cada decisao em milissegundos, atendendo exigencias eticas e regulatorias de explicabilidade na saude.
+- O ranking SHAP orientara os proximos modulos: ablacao progressiva e selecao econometrica (`shap-select`).
+
 ---
 
-### 6.7.1 Decisão Estratégica Baseada nos Resultados do SHAP
+## Subcamada 6.6: Checkpoint de Autonomia e Fixacao Ativa
 
-| Descoberta da Auditoria SHAP | Evidência Numérica | Ação Prática no Projeto |
-| :--- | :--- | :--- |
-| **Poder dos Biomarcadores** | O Top 10 concentra **mais de 90%** de toda a decisão diagnóstica. | Temos o embasamento matemático para descartar 30 colunas sem medo. |
-| **Inutilidade dos Ruídos** | Todas as 20 variáveis de ruído ficaram confinadas no rodapé ($< 0.005$). | O axioma da variável nula de Shapley funcionou: a IA confessou que ruído não ajuda. |
-| **Velocidade de Geração de Laudo** | Apenas **~3 a 4 milissegundos** por paciente. | O hospital pode gerar o laudo explicativo no momento em que o paciente senta na maca. |
+Explique sem consultar o texto e depois confira sua resposta:
 
----
+1. O que e a contribuicao marginal de um jogador na Teoria dos Jogos?
+2. Explique o Axioma da Eficiencia do SHAP usando a metafora do cabo de guerra.
+3. O que afirma o Axioma da Variavel Nula sobre as 20 colunas de ruido metabolico?
+4. Como o TreeSHAP consegue escapar da barreira de 1 trilhao de combinacoes de variaveis?
+5. No grafico Beeswarm, o que indica um aglomerado de pontos vermelhos a direita do zero?
+6. Qual a diferenca entre o modulo |SHAP| e o valor SHAP original com sinal positivo ou negativo?
 
-## Subcamada 6.8: Checkpoint de Autonomia & Fixação Ativa
+### Mini-desafio pratico
 
-Responda usando suas próprias palavras antes de avançar para a Camada 07:
+Execute o calculo com uma amostra menor e anote:
 
-1. **Por que o método de Lloyd Shapley é considerado mais justo do que simplesmente olhar para as variáveis que o modelo usou no primeiro corte da árvore?**
-2. **O que diz o Axioma da Eficiência do SHAP? Se o risco médio do hospital é 30% e a predição final de um paciente foi 85%, qual deve ser a soma exata de todos os valores Shapley daquele paciente?**
-3. **No gráfico Beeswarm, o que significa quando um atributo tem pontos vermelhos no lado esquerdo do gráfico?**
-4. **Desafio no Colab:** Na Subcamada 6.7, gere o gráfico beeswarm com `shap.summary_plot(vals_classe_1, X_test.iloc[:250], show=True)`. Identifique qual é o biomarcador que possui a maior dispersão de impacto.
+```text
+amostra_pacientes     tempo_ms     latencia_unitaria_ms     top1_atributo
+50                    ...          ...                      ...
+100                   ...          ...                      ...
+250                   ...          ...                      ...
+```
+
+Depois responda: **a ordem de importancia dos atributos principais permaneceu estavel mesmo com menos pacientes avaliados?**

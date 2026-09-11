@@ -1,212 +1,347 @@
-# Camada 08: Seleção Tradicional de Atributos — O Algoritmo RFE como Adversário Justo
+# Camada 08: Selecao Tradicional de Atributos e o Algoritmo RFE
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 8  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`RFE` e `executar_etapa_ablacao`)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes com `RFE` e `executar_etapa_ablacao`
 
----
-
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender o universo da **Seleção de Atributos (*Feature Selection*)** e suas três grandes famílias (Filtro, Embutido e Envoltório). Dominar a mecânica do método tradicional **RFE (Recursive Feature Elimination)** e entender por que, na metodologia científica de alto impacto, é absolutamente obrigatório confrontar nossa proposta inovadora com XAI contra um **adversário clássico e consagrado** antes de reivindicar qualquer vitória.
+> **Objetivo da aula:** Analisar a taxonomia classica de selecao de atributos (filtros, embutidos e envoltorios/wrappers), dominando o mecanismo recursivo guloso do RFE (Recursive Feature Elimination), seu custo computacional quadratico em relacao ao numero de podas e sua funcao estrategica como linha de base classica e justa perante comites cientificos.
 
 ---
 
-## Sumário da Aula
+## Mapa da aula
 
-- [Subcamada 8.1: A Analogia do Paredão do Reality Show](#subcamada-81-a-analogia-do-paredão-do-reality-show)
-- [Subcamada 8.2: As 3 Grandes Famílias de Seleção de Atributos](#subcamada-82-as-3-grandes-famílias-de-seleção-de-atributos)
-- [Subcamada 8.3: A Mecânica Gulosa do RFE Passo a Passo](#subcamada-83-a-mecânica-gulosa-do-rfe-passo-a-passo)
-- [Subcamada 8.4: Por Que o RFE é o Adversário Justo no Nosso Artigo?](#subcamada-84-por-que-o-rfe-é-o-adversário-justo-no-nosso-artigo)
-- [Subcamada 8.5: Laboratório Lúdico no Colab (Toy Example: Poda Recursiva com RFE)](#subcamada-85-laboratório-lúdico-no-colab-toy-example-poda-recursiva-com-rfe)
-- [Subcamada 8.6: O Momento Sério da Nossa Aplicação (Execução do RFE no Dataset Clínico & KPIs)](#subcamada-86-o-momento-sério-da-nossa-aplicação-execução-do-rfe-no-dataset-clínico--kpis)
-- [Subcamada 8.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-87-checkpoint-de-autonomia--fixação-ativa)
-
----
-
-## Subcamada 8.1: A Analogia do Paredão do Reality Show
-
-Imagine um programa de televisão do tipo *Big Brother* ou *Survivor* com **40 participantes**:
-- A cada semana, os participantes competem em uma prova de resistência em grupo.
-- No domingo à noite, ocorre uma votação para identificar os **2 participantes com pior desempenho** daquela rodada (`step=2`).
-- Esses 2 participantes são sumariamente eliminados e saem da casa.
-- Na semana seguinte, a prova se repete apenas com os 38 sobreviventes... depois com 36... até que reste apenas o campeão final!
-
-```
-    RODADA 1 (40 Atributos) ──► Treina Modelo ──► Elimina os 2 Piores ──► Sobram 38
-    RODADA 2 (38 Atributos) ──► Treina Modelo ──► Elimina os 2 Piores ──► Sobram 36
-    ...
-    RODADA 20 (2 Atributos) ──► Treina Modelo ──► Elimina o 2º Colocado ──► SOBRA 1 (Campeão!)
-```
-
-O **RFE (Recursive Feature Elimination)** funciona exatamente assim: ele é um processo de eliminação por paredão sucessivo. Ele não pergunta "por que" uma variável é ruim; ele apenas olha para a nota momentânea, corta os últimos colocados e repete o treino!
+1. [Subcamada 08.1: O conceito na vida real](#subcamada-081-o-conceito-na-vida-real)
+2. [Subcamada 08.2: Desenhando o conceito](#subcamada-082-desenhando-o-conceito)
+3. [Subcamada 08.3: Desmistificando a teoria e a notacao formal](#subcamada-083-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 08.4: Laboratorio ludico no Colab](#subcamada-084-laboratorio-ludico-no-colab)
+5. [Subcamada 08.5: O momento serio da nossa aplicacao](#subcamada-085-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 08.6: Checkpoint de autonomia e fixacao ativa](#subcamada-086-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 8.2: As 3 Grandes Famílias de Seleção de Atributos
+## Subcamada 08.1: O conceito na vida real
 
-Antes de entender o RFE, você precisa conhecer o mapa completo de como a Ciência da Computação seleciona atributos:
+### A analogia das seletivas consecutivas de um time de elite
 
-| Família | Como Funciona | Analogia do Cotidiano | Prós & Contras |
+Imagine um comite olimpico selecionando os atletas para uma equipe de revezamento. O comite convoca inicialmente 40 candidatos para uma prova coletiva:
+- Ao final da primeira bateria, os dois atletas com menor rendimento registrado sao dispensados (`step=2`).
+- Na semana seguinte, os 38 sobreviventes disputam nova prova sob as novas dinamicas do grupo.
+- Novamente, os dois com menor desempenho sao cortados.
+- O processo repete-se de forma iterativa ate restarem exatamente os 10 titulares ideais.
+
+Esse e o principio de funcionamento do algoritmo RFE (Recursive Feature Elimination, introduzido por Isabelle Guyon et al. em 2002 na identificacao de biomarcadores geneticos em microarrays): ele nao avalia atributos de forma isolada e estatica; ele ajusta o modelo, identifica as variaveis que menos colaboraram na rodada atual, remove as piores e reajusta o modelo do zero para medir como as caracteristicas remanescentes se comportam sem as colunas eliminadas.
+
+### As tres grandes familias de selecao de atributos
+
+Para compreender o papel do RFE no panorama do aprendizado de maquina, e necessario categorizar as abordagens existentes em tres familias fundamentais:
+
+| Familia | Mecanismo Operacional | Analogia do Cotidiano | Vantagens e Limitacoes |
 | :--- | :--- | :--- | :--- |
-| **1. Métodos de Filtro (*Filter*)** | Avalia cada coluna isoladamente através de testes estatísticos (correlação, variância, Qui-Quadrado) sem usar nenhum modelo de Machine Learning. | **A balança da farmácia:** mede o peso da pessoa em 2 segundos de forma rápida e barata. | ⚡ Ultrarrápido.<br/>❌ Ignora interações complexas entre múltiplos exames. |
-| **2. Métodos Embutidos (*Embedded*)** | O próprio algoritmo penaliza variáveis durante o ajuste dos parâmetros (ex: Lasso L1 ou árvores). | **O filtro de linha elétrico:** já tem um fusível interno que desarma picos de energia sozinho. | ⚡ Integrado ao treino.<br/>❌ Amarrado a um tipo específico de modelo. |
-| **3. Métodos de Envoltório (*Wrapper*)** | Usa o modelo de ML como juiz externo em um laço repetitivo, testando combinações e medindo o erro a cada corte. | **O provador de roupas:** experimenta a calça com a camisa, troca a jaqueta, olha no espelho e avalia o conjunto. | 🎯 Encontra combinações excelentes.<br/>⏱️ Muito pesado e lento (retreina dezenas de vezes). |
+| **Metodos de Filtro (*Filter*)** | Testes estatisticos univariados independentes do modelo (ex: ANOVA, Correlacao, Qui-Quadrado). | **A balanca da farmacia:** avalia uma metrica individual em segundos de forma isolada. | Baixissimo custo computacional.<br>Ignora relacoes multivariadas e interacoes complexas. |
+| **Metodos Embutidos (*Embedded*)** | A selecao ocorre internamente durante a otimizacao dos parametros (ex: Lasso L1, arvores de decisao). | **O disjuntor eletrico:** possui mecanismo interno que corta sobrecargas de forma automatica. | Integrado ao treinamento.<br>Preso a arquitetura matematica especifica do estimador. |
+| **Metodos de Envoltorio (*Wrapper*)** | Usa o proprio algoritmo de aprendizado como juiz externo em um ciclo iterativo de selecao e re-treinamento. | **O provador de roupas:** experimenta pecas combinadas no espelho, ajustando o conjunto a cada troca. | Alta qualidade nas combinacoes capturadas.<br>Custo computacional elevado devido aos re-treinamentos. |
 
-O **RFE pertence à família dos Métodos de Envoltório (*Wrapper*)**.
-
----
-
-## Subcamada 8.3: A Mecânica Gulosa do RFE Passo a Passo
-
-O RFE foi inventado em **2002 pela cientista Isabelle Guyon** para identificar genes causadores de câncer em dados biológicos de DNA. Ele segue um algoritmo guloso (*greedy*):
-
-1. **Passo Inicial:** Alimenta o Random Forest com todos os 40 atributos do hospital.
-2. **Avaliação Interna:** Coleta a importância interna de cada exame (geralmente baseada na Impureza de Gini/MDI).
-3. **Poda (*Pruning*):** Pega os $k$ atributos com menores notas (no nosso projeto `step=2`) e remove permanentemente do dataset.
-4. **Recursão:** Re-treina a floresta inteira do zero com os atributos sobreviventes.
-5. **Critério de Parada:** Quando resta apenas a quantidade final desejada, ele encerra e gera o **Ranking RFE** (do 1º ao 40º colocado).
+**A grande sacada:** o RFE pertence a familia dos metodos de envoltorio (*wrapper*). Ele e computacionalmente guloso porque re-treina o modelo completo apos cada ciclo de poda, mas atinge combinacoes sinergicas de alta qualidade.
 
 ---
 
-## Subcamada 8.4: Por Que o RFE é o Adversário Justo no Nosso Artigo?
+## Subcamada 08.2: Desenhando o conceito
 
-Imagine que você inventou um novo motor elétrico para carros. Se você quiser provar que seu motor é revolucionário, você não pode colocá-lo para correr contra uma carroça puxada a cavalo! A comunidade científica daria risada.  
-Você precisa colocar seu motor elétrico para correr lado a lado contra o **motor tradicional mais consagrado do mercado** (como o motor V8 a gasolina da concorrência).
+O diagrama abaixo ilustra o ciclo recursivo do RFE do conjunto original ate o subconjunto alvo:
 
-No nosso artigo científico:
-- O **SHAP-Select** (nossa proposta de XAI) é o "motor inovador".
-- O **RFE** é o "motor consagrado tradicional da literatura".
-- Ambos treinam no mesmo dataset clínico, com os mesmos 2.000 pacientes e usando o mesmo classificador (Random Forest).
-- Se provarmos que nossa técnica com XAI seleciona atributos melhores e mais rápidos que o RFE, **a vitória científica é incontestável!**
+```text
+[ CONJUNTO INICIAL: p = 40 ATRIBUTOS ]
+                 │
+                 ▼
+      ┌─────────────────────┐
+      │  Ajusta o Modelo    │ <──────────────────────────────────────────┐
+      │  (Random Forest)    │                                            │
+      └──────────┬──────────┘                                            │
+                 │                                                       │
+                 ▼                                                       │
+      ┌─────────────────────┐                                            │
+      │ Calcula Importancia │ (MDI Gini ou magnitude dos coeficientes)   │
+      │ w_j para cada coluna│                                            │
+      └──────────┬──────────┘                                            │
+                 │                                                       │
+                 ▼                                                       │
+      ┌─────────────────────┐                                            │
+      │ Poda os s piores    │ (ex: step = 2 colunas descartadas)         │
+      │ atributos da rodada │                                            │
+      └──────────┬──────────┘                                            │
+                 │                                                       │
+                 ▼                                                       │
+         Restam apenas k                                                 │
+        atributos finais? ─────── NAO: Atualiza F^(t+1) = F^(t) \ S ─────┘
+                 │
+                SIM
+                 ▼
+[ RANKING FINAL RFE: 1º ao 40º ]
+```
+
+A estrutura de pontuacao do ranking gerado pelo RFE organiza os atributos em niveis hierarquicos de sobrevivencia:
+
+```text
+Ordem de Eliminacao no RFE:
+Primeiras Rodadas (Descarte Imediato)  ------------------------> Finais (Sobreviventes)
+Ranking: 16º, 15º, 14º ... 3º, 2º                                Ranking: 1º (Vencedores)
+[ Ruido puro e variaveis espurias ]                             [ Biomarcadores vitais ]
+```
+
+| Elemento do RFE | Papel no Pipeline | Efeito no Experimento se Desajustado |
+| :--- | :--- | :--- |
+| **Estimador base** | Modelo supervisionado utilizado para pontuar atributos | Estimador instavel gera podas erraticas a cada rodada |
+| **Tamanho do passo (`step`)** | Quantidade de colunas descartadas por iteracao | Passo muito grande acelera, mas pode descartar atributos uteis por engano |
+| **Alvo final (`n_features_to_select`)** | Quantidade desejada de variaveis retidas | Se definido como 1, gera o ranking completo de 1 a $p$ |
 
 ---
 
-## Subcamada 8.5: Laboratório Lúdico no Colab (Toy Example: Poda Recursiva com RFE)
+## Subcamada 08.3: Desmistificando a teoria e a notacao formal
 
-Copie e rode no [Google Colab](https://colab.research.google.com) para ver o RFE eliminando variáveis inúteis passo a passo:
+### A dinamica recursiva gulosa
+
+Formalmente, seja $\mathcal{F}^{(0)} = \{1, 2, \dots, p\}$ o conjunto inicial com todos os $p$ atributos disponiveis. Em cada iteracao recursiva $t \ge 0$:
+
+1. Ajusta-se o estimador supervisionado $\mathcal{M}$ utilizando apenas as colunas em $\mathcal{F}^{(t)}$:
+
+$$\mathcal{M}^{(t)} \leftarrow \text{Fit}\left(X_{[:, \mathcal{F}^{(t)}]}, y\right)$$
+
+2. Extrai-se o vetor de importancias relativas $w^{(t)} \in \mathbb{R}^{|\mathcal{F}^{(t)}|}$ fornecido pelo estimador (por exemplo, a reducao media de impureza de Gini na Random Forest):
+
+$$w_j^{(t)} = \text{Importance}\left(\mathcal{M}^{(t)}, j\right), \quad \forall j \in \mathcal{F}^{(t)}$$
+
+3. Ordena-se o vetor $w^{(t)}$ e identifica-se o subconjunto $\mathcal{S}^{(t)} \subset \mathcal{F}^{(t)}$ contendo os $s$ atributos com os menores valores de importancia:
+
+$$\mathcal{S}^{(t)} = \arg\min_{\substack{S \subset \mathcal{F}^{(t)} \\ |S| = s}} \sum_{j \in S} w_j^{(t)}$$
+
+4. Atualiza-se o conjunto de variaveis sobreviventes para a proxima iteracao:
+
+$$\mathcal{F}^{(t+1)} = \mathcal{F}^{(t)} \setminus \mathcal{S}^{(t)}$$
+
+O ciclo encerra quando $|\mathcal{F}^{(t+1)}| \le k_{\text{alvo}}$.
+
+### Complexidade computacional e escala
+
+Se o conjunto possui $p$ atributos e o algoritmo poda $s$ atributos a cada rodada ate atingir $k$ atributos finais, o numero total de re-treinamentos completos do estimador base e dado por:
+
+$$N_{\text{treinos}} = \left\lceil \frac{p - k}{s} \right\rceil$$
+
+Se o custo de treinar o estimador base com $m$ amostras e $j$ variaveis for denotado por $T_{\text{fit}}(m, j)$, o custo total do RFE e a somatoria de cada rodada:
+
+$$\text{Custo}_{\text{RFE}} = \sum_{t=0}^{N_{\text{treinos}}-1} T_{\text{fit}}\left(m, \, p - t \cdot s\right)$$
+
+Para bases com milhares de atributos (como sequenciamento genetico), o RFE com `step=1` torna-se computacionalmente proibitivo.
+
+| Simbolo | Significado Formal | Leitura no Projeto |
+| :--- | :--- | :--- |
+| $\mathcal{F}^{(t)}$ | Conjunto de indices dos atributos sobreviventes na iteracao $t$ | Exames que ainda nao foram eliminados pelo modelo |
+| $s$ (`step`) | Quantidade de atributos podados por iteracao | Cortamos 2 atributos por ciclo no experimento oficial |
+| $w_j^{(t)}$ | Importancia atribuida a variavel $j$ na rodada $t$ | Nota de Gini da coluna naquela configuracao de arvore |
+| $\mathcal{S}^{(t)}$ | Subconjunto dos piores atributos selecionados para descarte | Variaveis enviadas ao "paredao" de eliminacao |
+| $k$ | Numero final de atributos desejados | Limite inferior da busca recursiva |
+
+### A ordem correta evita vazamento
+
+A execucao do RFE envolve dezenas de ciclos de aprendizado supervisionado guiados pelas respostas reais $y$. Portanto:
+- O RFE deve ser executado **estritamente sobre a particao de treino**.
+- Aplicar o RFE sobre a base completa antes do `train_test_split` constitui violacao metodologica grave (*data leakage* de selecao), invalidando os testes de generalizacao.
+
+---
+
+## Subcamada 08.4: Laboratorio ludico no Colab
+
+Execute o codigo abaixo no Google Colab para inspecionar o funcionamento do RFE em uma base reduzida de 5 atributos:
 
 ```python
 # =============================================================================
-# LABORATÓRIO DIDÁTICO: O ALGORITMO RFE NA PRÁTICA
-# Objetivo: Ver o RFE podar recursivamente colunas de ruído até sobrar o Top 2
+# CAMADA 08: LABORATORIO LUDICO DE SELECAO TRADICIONAL (RFE)
+# Demonstracao: Poda Recursiva Gulosa e Inspecao de Rankings
 # =============================================================================
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.feature_selection import RFE
 from sklearn.ensemble import RandomForestClassifier
 
-# 1. Criamos um dataset brinquedo com 5 variáveis (2 vitais e 3 ruídos)
 np.random.seed(42)
-N = 300
-v1 = np.random.normal(0, 1, N)
-v2 = np.random.normal(0, 1, N)
-r1 = np.random.normal(0, 1, N)
-r2 = np.random.normal(0, 1, N)
-r3 = np.random.normal(0, 1, N)
 
-# Doença depende apenas de v1 e v2
-y_toy = ((v1 * 2.0 - v2 * 1.5 + np.random.normal(0, 0.3, N)) > 0).astype(int)
+# 1. Base sintetica com 2 variaveis informativas e 3 variaveis de ruido puro
+n_pacientes = 350
+v1 = np.random.normal(0, 1, n_pacientes)
+v2 = np.random.normal(0, 1, n_pacientes)
+r1 = np.random.normal(0, 1, n_pacientes)
+r2 = np.random.normal(0, 1, n_pacientes)
+r3 = np.random.normal(0, 1, n_pacientes)
 
-df_toy = pd.DataFrame({"Vital_1": v1, "Vital_2": v2, "Ruido_A": r1, "Ruido_B": r2, "Ruido_C": r3})
+# Diagnostico real depende exclusivamente de v1 e v2
+logit = 2.2 * v1 - 1.7 * v2 + np.random.normal(0, 0.4, n_pacientes)
+y = (logit > 0).astype(int)
 
-# 2. Configuramos o RFE para podar até sobrarem apenas 2 atributos
-modelo_base = RandomForestClassifier(n_estimators=30, random_state=42)
-seletor_rfe = RFE(estimator=modelo_base, n_features_to_select=2, step=1)
-seletor_rfe.fit(df_toy, y_toy)
+df_toy = pd.DataFrame({
+    "Vital_1": v1,
+    "Vital_2": v2,
+    "Ruido_Alpha": r1,
+    "Ruido_Beta": r2,
+    "Ruido_Gama": r3
+})
 
-# 3. Exibição do Ranking de Eliminação
-# Ranking 1 = Sobreviventes / Escolhidos. Números maiores = Eliminados primeiro!
-resultado = pd.DataFrame({
+# 2. Configuracao do RFE para podar ate restar 1 variavel (gerando ranking completo)
+estimador = RandomForestClassifier(n_estimators=40, max_depth=4, random_state=42)
+seletor_rfe = RFE(estimator=estimador, n_features_to_select=1, step=1)
+seletor_rfe.fit(df_toy, y)
+
+# 3. Organizacao dos resultados de classificacao do ranking
+# Posição 1 = O atributo mais resistente (ultimo a ser cortado)
+df_resultado = pd.DataFrame({
     "Atributo": df_toy.columns,
-    "Selecionado": seletor_rfe.support_,
-    "Posição_Ranking": seletor_rfe.ranking_
-}).sort_values(by="Posição_Ranking")
+    "Ranking_RFE": seletor_rfe.ranking_,
+    "Sobreviveu_Top2": seletor_rfe.ranking_ <= 2
+}).sort_values(by="Ranking_RFE").reset_index(drop=True)
 
-print("🏆 RESULTADO DO PAREDÃO RFE:")
-print(resultado.to_string(index=False))
+print("Tabela de Sobrevivencia do RFE (Ordenada do Melhor ao Pior):")
+print(df_resultado.to_string(index=False))
+
+# 4. Visualizacao grafica do ranking de descarte
+plt.figure(figsize=(8, 4))
+cores = ["#27ae60" if r <= 2 else "#e74c3c" for r in df_resultado["Ranking_RFE"]]
+barras = plt.barh(df_resultado["Atributo"][::-1], df_resultado["Ranking_RFE"][::-1], color=cores[::-1], edgecolor="black")
+plt.xlabel("Ordem de Eliminacao (1 = Melhor/Sobrevivente, Valores Maiores = Piores)", fontsize=10)
+plt.title("Mapeamento Hierarquico de Poda pelo RFE", fontsize=11, fontweight="bold")
+plt.grid(axis="x", linestyle=":", alpha=0.6)
+
+for barra in barras:
+    val = int(barra.get_width())
+    plt.text(val + 0.05, barra.get_y() + 0.25, f"Rank {val}", fontsize=9, fontweight="bold")
+
+plt.tight_layout()
+plt.show()
 ```
+
+> **O que voce deve notar no grafico gerado:**
+> 1. Os dois atributos informativos verdadeiros (`Vital_1` e `Vital_2`) ocupam o topo do ranking (`Rank 1` e `Rank 2`), sobrevivendo ate a rodada final.
+> 2. Todas as variaveis com ruído estocastico puro foram prontamente eliminadas nas primeiras etapas de poda (`Rank 3`, `Rank 4` e `Rank 5`).
+
+**Mini-experimento:** altere a configuracao de `step=1` para `step=3`. O que acontece com a capacidade do RFE de distinguir a ordem relativa de qualidade entre as variaveis de ruido?
 
 ---
 
-## Subcamada 8.6: O Momento Sério da Nossa Aplicação (Execução do RFE no Dataset Clínico & KPIs)
+## Subcamada 08.5: O momento serio da nossa aplicacao
 
-Agora executamos o **RFE oficial** no dataset hospitalar de **40 atributos** do [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py), cronometrando o tempo que ele gasta para podar 40 colunas e extraindo seu ranking.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+No protocolo experimental do projeto de reducao de dimensionalidade, o RFE atua como o **adversario de referencia (baseline consagrado)** contra o qual comparamos nossa metodologia proposta baseada em XAI (SHAP-Select).
 
 ```python
 # =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Eliminação Recursiva Tradicional (RFE) nos 40 Atributos Hospitalares
+# APLICACAO REAL: SELECAO RECURSIVA TRADICIONAL (RFE) NO CENARIO DE 40 ATRIBUTOS
+# Base oficial: 2.000 pacientes, 40 atributos clinicos
 # =============================================================================
+import time
 import numpy as np
 import pandas as pd
-import time
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import RFE
 
-print("=" * 70)
-print("INICIANDO PROTOCOLO EXPERIMENTAL: SELEÇÃO TRADICIONAL RFE (40 ATRIBUTOS)")
-print("=" * 70)
-
-# 1. Dataset Clínico Hospitalar (2.000 Pacientes, 40 Atributos)
+# 1. Dataset oficial de 2.000 pacientes e 40 atributos
 X_raw, y = make_classification(
-    n_samples=2000, n_features=40, n_informative=10, n_redundant=10,
-    n_classes=2, weights=[0.6, 0.4], flip_y=0.03, random_state=42
+    n_samples=2000,
+    n_features=40,
+    n_informative=10,
+    n_redundant=10,
+    n_classes=2,
+    weights=[0.6, 0.4],
+    flip_y=0.03,
+    random_state=42
 )
-feature_names = (
-    [f"biomarcador_{i+1}" for i in range(10)] +
-    [f"exame_redundante_{i+1}" for i in range(10)] +
-    [f"ruido_metabolico_{i+1}" for i in range(20)]
-)
-df_clinico = pd.DataFrame(X_raw, columns=feature_names)
-X_train, X_test, y_train, y_test = train_test_split(df_clinico, y, test_size=0.25, stratify=y, random_state=42)
 
-# 2. Configuração do RFE com Random Forest (Elimina de 2 em 2 colunas)
-estimador = RandomForestClassifier(n_estimators=100, random_state=42)
-seletor_rfe = RFE(estimator=estimador, n_features_to_select=1, step=2)
+feature_names = (
+    [f"biomarcador_{i+1:02d}" for i in range(10)] +
+    [f"redundante_{i+1:02d}" for i in range(10)] +
+    [f"ruido_{i+1:02d}" for i in range(20)]
+)
+
+df_clinico = pd.DataFrame(X_raw, columns=feature_names)
+X_train, X_test, y_train, y_test = train_test_split(
+    df_clinico, y, test_size=0.25, stratify=y, random_state=42
+)
+
+# 2. Execucao do RFE com cronometragem precisa
+estimador_base = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+seletor_rfe = RFE(estimator=estimador_base, n_features_to_select=1, step=2)
+
+print("=" * 72)
+print("INICIANDO PROTOCOLO EXPERIMENTAL: SELECAO TRADICIONAL RFE (STEP = 2)")
+print("=" * 72)
 
 t0_rfe = time.perf_counter()
 seletor_rfe.fit(X_train, y_train)
-tempo_total_rfe_s = time.perf_counter() - t0_rfe
+tempo_total_rfe = time.perf_counter() - t0_rfe
 
-# 3. Extração e Organização do Ranking RFE Completo
-df_rfe = pd.DataFrame({
+num_rodadas = (40 - 1) // 2 + 1
+
+# 3. Consolidacao e auditoria do ranking RFE
+df_ranking = pd.DataFrame({
     "Atributo": feature_names,
     "Ranking_RFE": seletor_rfe.ranking_,
-    "Tipo": ["Informativo"]*10 + ["Redundante"]*10 + ["Ruido"]*20
+    "Classe_Real": ["Informativo"]*10 + ["Redundante"]*10 + ["Ruido"]*20
 }).sort_values(by="Ranking_RFE").reset_index(drop=True)
 
-print(f"⏱️ Tempo Total de Execução do RFE: {tempo_total_rfe_s:.2f} segundos")
-print(f"🔄 Número de Re-treinamentos da Floresta Realizados: {(40 - 1) // 2 + 1} vezes!\n")
+print(f"Tempo total de execucao do RFE   : {tempo_total_rfe:.2f} segundos")
+print(f"Numero de retreinamentos completos: {num_rodadas} florestas ajustadas")
+print("-" * 72)
+print("TOP 10 ATRIBUTOS VENCEDORES SELECIONADOS PELO RFE:")
+print("-" * 72)
+print(df_ranking.head(10).to_string(index=False))
 
-print("🏆 TOP 10 ATRIBUTOS VENCEDORES DO RFE:")
-print("-" * 55)
-print(df_rfe.head(10).to_string(index=False))
-
-print("\n🗑️ BOTTOM 5 PRIMEIROS ELIMINADOS NO PAREDÃO DO RFE:")
-print("-" * 55)
-print(df_rfe.tail(5).to_string(index=False))
+print("-" * 72)
+print("PRIMEIROS 5 ATRIBUTOS DESCARTADOS PELO RFE (PIORES DA FILA):")
+print("-" * 72)
+print(df_ranking.tail(5).to_string(index=False))
+print("=" * 72)
 ```
 
+### Tabela oficial de KPIs
+
+> Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Como e calculado | Pergunta operacional |
+| :--- | :--- | :--- |
+| **Tempo de Execucao do RFE (s)** | Cronometrado via `time.perf_counter()` em todo o laco recursivo | Quantos segundos o metodo consome para convergir em relacao a solucao de XAI? |
+| **Iteracoes de Retreinamento** | $\lceil (p - k) / s \rceil$ | Quantas florestas completas precisaram ser instanciadas e ajustadas? |
+| **Pureza no Top-10 (%)** | Proporcao de atributos informativos verdadeiros retidos no Top 10 | O algoritmo conseguiu blindar a selecao contra variaveis de ruido estocastico? |
+| **Custo por Rodada (s)** | Tempo total dividido pelo numero de iteracoes | Qual e a latencia media incremental a cada ciclo de poda? |
+
+### Interpretacao clinica e de negocio
+
+A utilizacao do RFE como baseline no projeto cumpre tres objetivos estrategicos:
+
+1. **Rigor metodologico perante a comunidade cientifica:** nenhum artigo academico e aceito em periodicos de alto impacto se apresentar um novo metodo competindo apenas contra um modelo sem selecao alguma. O RFE e reconhecido globalmente como um dos metodos de selecao mais solidos da literatura, constituindo uma linha de base exigente e justa.
+2. **Avaliacao do custo computacional:** embora o RFE atinja boa pureza de selecao, seu custo de retreinamento recursivo e proibitivo em bases hospitalares com rotatividade continua de pacientes. Enquanto o RFE demanda retreinar dezenas de florestas, abordagens analiticas de explicabilidade conseguem extrair o ranking em um unico ciclo de inspecao.
+3. **Ausencia de explicabilidade clinica:** o RFE produz apenas um ranking ordinal de eliminacao. Ele nao informa ao medico a direcao biologica do exame (se valores altos aumentam ou reduzem o risco de patologia), limitando sua utilidade em auditorias diagnosticas diretas.
+
 ---
 
-### 8.6.1 Quadro de KPIs Operacionais da Seleção RFE
+## Subcamada 08.6: Checkpoint de autonomia e fixacao ativa
 
-| Métrica Operacional (KPI) | Valor no RFE | Significado Prático | Comparação com XAI |
+Explique sem consultar o texto e depois confira sua resposta:
+
+1. **Em qual das tres familias de selecao de atributos (filtro, embutido ou envoltorio) o RFE se enquadra e por que?**
+2. **Qual e a consequencia computacional e metodologica de configurar o parametro `step=1` versus `step=5` no RFE?**
+3. **Como a importancia relativa das variaveis remanescentes pode se alterar apos o descarte de atributos fortemente correlacionados?**
+4. **Por que e obrigatorio rodar o RFE estritamente dentro da particao de treino (`X_train`)?**
+5. **Se o RFE apresenta bom desempenho na selecao de features, por que pesquisadores buscam alternativas baseadas em XAI como o SHAP-Select?**
+6. **Qual e a diferenca entre o criterio de descarte do RFE (baseado na importancia interna de impureza do modelo) e o descarte estatistico univariado por teste de hipotese?**
+
+### Mini-desafio pratico
+
+Execute o RFE variando o parametro `step` e preencha a matriz comparativa abaixo:
+
+| Passo de Poda (`step`) | Retreinamentos Realizados | Tempo Total (s) | Quantidade de Ruidos no Top 10 |
 | :--- | :--- | :--- | :--- |
-| **Tempo de Execução** | **$\approx 8$ a 12 segundos** | Precisou re-treinar a Random Forest 20 vezes consecutivas! | O SHAP calculou o ranking em apenas $0.85\text{ s}$ (quase 10x mais rápido!). |
-| **Precisão de Eliminação**| **Eliminou os ruídos nas primeiras rodadas** | O RFE conseguiu descartar a maioria dos 20 ruídos metabólicos. | Demonstra que é um adversário clássico digno e de respeito. |
-| **Explicabilidade Causal** | **Zero.** | O RFE diz apenas que o atributo foi eliminado, mas não explica o porquê. | O SHAP fornece o impacto positivo/negativo e a direção biológica do laudo. |
+| `step = 1` (Poda Unitaria) | 39 | | |
+| `step = 2` (Padrao do Projeto)| 20 | | |
+| `step = 5` (Poda Acelerada) | 8 | | |
 
----
-
-## Subcamada 8.7: Checkpoint de Autonomia & Fixação Ativa
-
-Responda mentalmente para fixar a mecânica do RFE:
-
-1. **Por que o RFE pertence à família dos Métodos de Envoltório (*Wrapper*), e não à família dos Métodos de Filtro?**
-2. **Se você tivesse um conjunto de dados genômico com 50.000 genes humanos, por que o RFE tradicional com Random Forest seria quase inviável de rodar?**
-3. **Por que chamamos o RFE de "adversário justo" no nosso projeto científico?**
-4. **Desafio no Colab:** Na Subcamada 8.6, mude o parâmetro `step=2` para `step=5`. O que aconteceu com o tempo total de execução? A lista dos 10 melhores atributos mudou muito?
+**Pergunta reflexiva:** o ganho de velocidade obtido com passos de poda maiores comprometeu a pureza biologica do subconjunto final de atributos selecionados?

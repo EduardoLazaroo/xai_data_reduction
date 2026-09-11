@@ -1,228 +1,306 @@
-# Camada 14: Interpretação dos Resultados Numéricos e o Dashboard Executivo
+# Camada 14: Interpretacao de Resultados e Dashboard Executivo
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 14  
-**Contexto Técnico:** [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) (`gerar_dashboard_executivo` e tabela de saída)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
+**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes com dashboard e comparativo de KPIs
 
----
-
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Aprender a interpretar, analisar criticamente e defender com postura executiva e científica os resultados finais do projeto. Dominar a leitura dos **4 Quadrantes do Dashboard Executivo** (Redução de Atributos, Tempo de Treino, Latência de Inferência e Preservação do $F_1$-Score), e dominar o argumento decisivo sobre o **custo pontual de explicabilidade no desenvolvimento versus a economia permanente em produção**.
+> **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando os quatro quadrantes do dashboard comparativo (reducao dimensional, tempo de treinamento, latencia de inferencia e retencao de F1-score) e formalizando o argumento de retorno de investimento entre o custo analitico de P&D e os ganhos operacionais permanentes em producao.
 
 ---
 
-## Sumário da Aula
+## Mapa da aula
 
-- [Subcamada 14.1: A Analogia dos 4 Relógios no Painel do Avião](#subcamada-141-a-analogia-dos-4-relógios-no-painel-do-avião)
-- [Subcamada 14.2: Os 4 Quadrantes do Dashboard Executivo Decifrados](#subcamada-142-os-4-quadrantes-do-dashboard-executivo-decifrados)
-- [Subcamada 14.3: O Debate com a Banca: Custo de P&D vs. Economia em Produção](#subcamada-143-o-debate-com-a-banca-custo-de-pd-vs-economia-em-produção)
-- [Subcamada 14.4: O Cálculo do Impacto Econômico Hospitalar (Milhões em Economia)](#subcamada-144-o-cálculo-do-impacto-econômico-hospitalar-milhões-em-economia)
-- [Subcamada 14.5: Laboratório Lúdico no Colab (Toy Example: Desenhando o Dashboard de 4 Quadrantes)](#subcamada-145-laboratório-lúdico-no-colab-toy-example-desenhando-o-dashboard-de-4-quadrantes)
-- [Subcamada 14.6: O Momento Sério da Nossa Aplicação (O Quadro Final Oficial de KPIs do Projeto)](#subcamada-146-o-momento-sério-da-nossa-aplicação-o-quadro-final-oficial-de-kpis-do-projeto)
-- [Subcamada 14.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-147-checkpoint-de-autonomia--fixação-ativa)
+1. [Subcamada 14.1: O conceito na vida real](#subcamada-141-o-conceito-na-vida-real)
+2. [Subcamada 14.2: Desenhando o conceito](#subcamada-142-desenhando-o-conceito)
+3. [Subcamada 14.3: Desmistificando a teoria e a notacao formal](#subcamada-143-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 14.4: Laboratorio ludico no Colab](#subcamada-144-laboratorio-ludico-no-colab)
+5. [Subcamada 14.5: O momento serio da nossa aplicacao](#subcamada-145-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 14.6: Checkpoint de autonomia e fixacao ativa](#subcamada-146-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 14.1: A Analogia dos 4 Relógios no Painel do Avião
+## Subcamada 14.1: O conceito na vida real
 
-O piloto de um avião comercial não fica olhando para códigos de programação durante a aproximação de pouso. Ele precisa de um painel de instrumentos limpo com **4 relógios vitais**:
-1. **Peso da Carga:** Quanto mais leve o avião, menos combustível ele queima.
-2. **Consumo dos Motores:** Eficiência de combustível por hora.
-3. **Velocidade de Resposta do Manche:** Tempo que o avião leva para responder a um comando de emergência.
-4. **Altitude e Estabilidade de Voo:** Segurança absoluta dos passageiros a bordo.
+### A analogia dos quatro mostradores na cabine de voo
 
+Em uma aeronave comercial durante o procedimento de descida e pouso, o comandante nao analisa linhas de codigo dos computadores de bordo; ele monitora um painel com quatro instrumentos essenciais:
+1. **Peso total da aeronave:** aeronaves mais leves demandam pistas menores e consomem menos combustivel por milha nautica.
+2. **Temperatura e potencia dos motores:** reflete a sobrecarga termica do sistema durante o voo.
+3. **Tempo de resposta dos atuadores mecanicos:** a agilidade em milissegundos com que as asas respondem aos comandos do manche em situacoes de turbulencia severa.
+4. **Horizonte artificial e altitude:** a estabilidade de navegacao que garante a integridade fisica de passageiros e tripulacao.
+
+Na apresentacao de uma pesquisa em Inteligencia Artificial para comites medicos, gestores hospitalares ou bancas examinadoras, o raciocinio e idêntico: a complexidade matematica dos algoritmos deve convergir para quatro dimensoes executivas comparaveis:
+- Volume dimensional de entrada (quantos exames laboratoriais precisam ser coletados).
+- Custo computacional de re-treinamento (tempo de processamento em servidores).
+- Latencia de inferencia por paciente (tempo para emissao do diagnostico no ponto de atendimento).
+- Eficacia diagnostica ($F_1$-score e acuracia sobre pacientes do teste cego).
+
+### O debate metodologico: custo de P&D contra economia em producao
+
+Uma objecao frequente apresentada por avaliadores diz respeito ao esforco computacional dispendido nas fases de explicabilidade: *"O calculo analitico de valores SHAP, a avaliacao da curva de ablacao e a busca bayesiana com Optuna nao consomem tempo relevante de CPU?"*
+
+A resposta metodologica apoia-se na diferenciacao entre fases do ciclo de vida:
+- **Fase de Pesquisa e Desenvolvimento (P&D):** a extracao analitica e a busca bayesiana ocorrem em ambiente laboratorial controlado. Trata-se de um custo computacional pago uma unica vez para descobrir quais sao as variaveis causais verdadeiras e qual e a configuracao hiperparametrica otima.
+- **Fase de Producao Hospitalar:** uma vez consolidado, o modelo enxuto (10 atributos) e implantado na rotina clinica, onde processara milhares de pacientes ao longo de anos. A cada ciclo semanal de re-treinamento e a cada prontuario submetido a inferencia, a instituicao acumula ganhos permanentes de tempo e infraestrutura.
+
+**A grande sacada:** o custo pontual de compreensao analitica no desenvolvimento financia a reducao perene de despesas operacionais e laboratoriais em ambiente de producao.
+
+| Dimensao | Modelo Baseline (Forca Bruta) | Modelo Reduzido Campeao (XAI + Optuna) | Ganho Operacional |
+| :--- | :--- | :--- | :--- |
+| **Coleta de Atributos** | 40 exames laboratoriais completos | 10 biomarcadores de elite validados | Reducao de 75% na carga de coleta |
+| **Tempo de Treinamento** | ~600 ms por floresta | ~185 ms por floresta | Speedup de ~3.2x em retreinos periodicos |
+| **Latencia de Inferencia** | ~30.8 microssegundos por paciente | ~12.4 microssegundos por paciente | Reducao de ~60% na latencia individual |
+| **Qualidade ($F_1$-Score)** | 0.8373 no teste cego | 0.8610 no teste cego | Preservacao e leve incremento preditivo |
+
+---
+
+## Subcamada 14.2: Desenhando o conceito
+
+O diagrama abaixo sintetiza a disposicao dos quatro quadrantes do dashboard executivo gerado pelo pipeline:
+
+```text
+==================================================================================
+                 PAINEL EXECUTIVO: CONFRONTO BASELINE VS. MODELO XAI
+==================================================================================
+ QUADRANTE 1: DIMENSAO DOS DADOS           QUADRANTE 2: CUSTO DE SERVIDOR
+   40 | [==========] 40 exames               800 | [==========] 600 ms
+   30 |                                      600 | 
+   20 |                                      400 | 
+   10 | [===] 10 exames (-75.0%)             200 | [===] 185 ms (-69.2%)
+    0 +--------------------------              0 +--------------------------
+        Baseline     Campeao XAI                   Baseline     Campeao XAI
+----------------------------------------------------------------------------------
+ QUADRANTE 3: LATENCIA DE INFERENCIA       QUADRANTE 4: QUALIDADE DIAGNOSTICA
+   40 | [==========] 30.8 us                 1.0 | [=======] 0.8373  [=======] 0.8610
+   30 |                                      0.8 |
+   20 |                                      0.6 |
+   10 | [===] 12.4 us (-59.7%)               0.4 |
+    0 +--------------------------            0.0 +--------------------------
+        Baseline     Campeao XAI                   Baseline (40)  Campeao (10)
+==================================================================================
 ```
-                  ┌───────────────────────────────────────────────┐
-                  │       PAINEL DE CONTROLE EXECUTIVO (XAI)      │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                  ┌───────────────────────┴───────────────────────┐
-                  ▼                                               ▼
-     ┌────────────────────────┐                      ┌────────────────────────┐
-     │ 1. PESO DOS DADOS      │                      │ 2. TEMPO DE SERVIDOR   │
-     │ De 40 p/ 10 Atributos  │                      │ De 600ms p/ 180ms      │
-     │ [ 75.0% Menos Dados! ] │                      │ [ 70.0% Mais Rápido! ] │
-     └────────────────────────┘                      └────────────────────────┘
-                  ▲                                               ▲
-                  │                                               │
-     ┌────────────────────────┐                      ┌────────────────────────┐
-     │ 3. VELOCIDADE DE RESPOSTA                      │ 4. PRECISÃO DIAGNÓSTICA│
-     │ Latência: 30µs p/ 12µs │                      │ F1-Score: 0.837 p/ 0.86│
-     │ [ 2.5x Mais Rápido! ]  │                      │ [ QUALIDADE PRESERVADA]│
-     └────────────────────────┘                      └────────────────────────┘
+
+A dinamica temporal entre investimento computacional e retorno operacional e mapeada a seguir:
+
+```text
+[ FASE DE P&D (LABORATORIO) ]              [ FASE DE PRODUCAO (HOSPITAL) ]
+Custo unico:                               Economia continua:
+• Calculo SHAP TreeExplainer               • 75% menos reagentes de laboratorio
+• Filtragem shap-select                    • Retreinos 3x mais ageis no cluster
+• Optuna Bayesian Tuning                   • Inferencia ultra-rapida (12 us/paciente)
+      │                                          │
+      ▼                                          ▼
+[ INVESTIMENTO PONTUAL: ~15-20 s ]         [ ECONOMIA PERMANENTE ESCALAVEL ]
 ```
 
-Se os 4 ponteiros estiverem no verde, a missão está cumprida: provamos que a medicina diagnóstica pode ser mais barata, mais veloz e igualmente precisa!
+| Quadrante | Metrica Apresentada | Leitura Tecnica | Significado Institucional |
+| :--- | :--- | :--- | :--- |
+| **Q1 (Atributos)** | $M_{\text{inicial}} \to M_{\text{final}}$ | Descarte de 30 colunas de ruido e redundancia | Menos desconforto ao paciente e menor custo de coleta |
+| **Q2 (Treinamento)** | Latencia de ajuste da floresta (ms) | Menos amostras e menor profundidade de divisao | Menor consumo de energia e servidores na nuvem |
+| **Q3 (Inferencia)** | Tempo de execucao de `.predict()` ($\mu$s) | Menos comparacoes condicionais por arvore | Viabilidade para Edge AI e triagens de emergencia |
+| **Q4 (Desempenho)** | $F_1$-Score e Acuracia no teste | Ausencia de colapso preditivo; fechamento de gap | Seguranca clinica absoluta no diagnostico emitido |
 
 ---
 
-## Subcamada 14.2: Os 4 Quadrantes do Dashboard Executivo Decifrados
+## Subcamada 14.3: Desmistificando a teoria e a notacao formal
 
-Ao final da execução do pipeline, o sistema plota e salva o gráfico oficial em `assets/modulo6_executive_dashboard.png`. Vamos dissecar cada quadrante:
+### Metricas de eficiencia e reducao dimensional
 
-1. **Quadrante Superior Esquerdo — Coleta de Atributos:**  
-   - Mostra a queda dramática de **40 para 10 colunas**.
-   - *Impacto Prático:* O hospital para de pedir 30 exames desnecessários. Reduz filas em laboratórios e poupa o paciente de coletas invasivas.
-2. **Quadrante Superior Direito — Tempo de Treinamento:**  
-   - Queda de aproximadamente **60% a 70%** no tempo de CPU.
-   - *Impacto Prático:* Em servidores em nuvem (AWS/Azure), quando novos prontuários chegarem todo fim de semana e o modelo precisar ser retreinado, o custo de processamento cai pela metade.
-3. **Quadrante Inferior Esquerdo — Latência de Inferência:**  
-   - O tempo para emitir o laudo de um paciente novo cai de $30.8\,\mu\text{s}$ para cerca de $12\,\mu\text{s}$.
-   - *Impacto Prático:* Viabiliza **Edge AI** (Inteligência Artificial embarcada em aparelhos portáteis de triagem e relógios médicos inteligentes com bateria e memória limitadas).
-4. **Quadrante Inferior Direito — F1-Score e Acurácia Clínica:**  
-   - O $F_1$-Score salta de $\mathbf{0.8373}$ no Baseline para $\mathbf{0.8600}$ no Modelo Campeão!
-   - *Impacto Prático:* **A prova de ouro da pesquisa.** Mostra que o modelo não perdeu nenhuma inteligência; pelo contrário, ao remover os 20 ruídos aleatórios, ele parou de sofrer de overfitting e passou a generalizar melhor!
+A taxa de reducao volumetrica no espaco de entrada e expressa como:
 
----
+$$\Delta_p = \left( 1 - \frac{p_{\text{reduzido}}}{p_{\text{bruto}}} \right) \times 100\%$$
 
-## Subcamada 14.3: O Debate com a Banca: Custo de P&D vs. Economia em Produção
+Em nosso experimento oficial: $\Delta_p = (1 - 10/40) \times 100\% = 75.0\%$.
 
-Em uma apresentação executiva para diretores de hospital ou na defesa diante de uma banca de mestrado, um avaliador experiente pode fazer uma pergunta provocativa:
-> *"Mas rodar o cálculo do SHAP, testar a ablação e fazer 15 trials do Optuna não gastou tempo extra de computador durante o seu experimento?"*
+### Aceleracao computacional (*Speedup*)
 
-### A Sua Resposta Perfeita (Postura de Engenheiro Sênior):
-> *"Sim, com certeza! A etapa de descoberta científica — calcular os valores SHAP, rodar o pré-filtro e sintonizar com Optuna — exige processamento na fase de P&D (Pesquisa e Desenvolvimento).  
-> No entanto, esse custo computacional é pago **uma única vez no laboratório**!  
-> Uma vez que encontramos os 10 biomarcadores de elite e os hiperparâmetros campeões, esse modelo enxuto é empacotado e colocado em produção no hospital, onde atenderá **dezenas de milhares de pacientes por ano**.  
-> A cada paciente atendido e a cada retreino semanal, o sistema acumula uma economia permanente de 75% em exames e mais de 60% em tempo de servidor. O retorno sobre o investimento (ROI) é astronômico!"*
+A razao de ganho de velocidade (speedup) no treinamento e na inferencia e formalizada por:
 
----
+$$S_{\text{train}} = \frac{T_{\text{train}}(\text{Baseline})}{T_{\text{train}}(\text{Campeao})}, \quad S_{\text{infer}} = \frac{\tau_{\text{infer}}(\text{Baseline})}{\tau_{\text{infer}}(\text{Campeao})}$$
 
-## Subcamada 14.4: O Cálculo do Impacto Econômico Hospitalar (Milhões em Economia)
+Quando $S > 1.0$, o sistema apresenta ganho relativo de eficiencia proporcional ao inverso da complexidade dimensional restante.
 
-Vamos transformar a ciência da computação em dinheiro real para o sistema de saúde:
-- Suponha uma rede de hospitais que atenda **50.000 pacientes por ano** com suspeita da patologia.
-- No protocolo antigo (Baseline), cada paciente colhe **40 exames** a um custo médio de **R$ 30,00 por exame**:
-  $$\text{Custo Antigo} = 50.000 \times 40 \times R\$\,30 = \mathbf{R\$\,60.000.000,00}$$
-- No protocolo novo (XAI Reduzido com shap-select), o hospital coleta apenas os **10 biomarcadores vitais comprovados**:
-  $$\text{Custo Novo} = 50.000 \times 10 \times R\$\,30 = \mathbf{R\$\,15.000.000,00}$$
-- **ECONOMIA LÍQUIDA ANUAL:** **R$ 45.000.000,00 (Quarenta e cinco milhões de reais!)**
-- E tudo isso mantendo um $F_1$-Score até melhor do que o protocolo antigo!
+### Gap de generalizacao (Monitoramento de Overfitting)
+
+A reducao do gap entre o desempenho de treino e teste formaliza o combate ao sobreajuste:
+
+$$\text{Gap}_{\text{overfit}} = \text{Acuracia}_{\text{treino}} - \text{Acuracia}_{\text{teste}}$$
+
+No modelo com 40 atributos, $\text{Gap}_{\text{bruto}} \approx 12.2\%$; no modelo compacto de 10 atributos regularizado via Optuna, $\text{Gap}_{\text{enxuto}} \approx 6.1\%$. O estreitamento dessa diferenca comprova que o modelo deixou de memorizar combinacoes aleatorias presentes nas colunas de ruido.
+
+| Simbolo | Significado Formal | Leitura no Projeto |
+| :--- | :--- | :--- |
+| $\Delta_p$ | Taxa percentual de reducao de dimensionalidade | Eliminacao de 75% dos exames coletados |
+| $S_{\text{train}}$ | Fator de aceleracao no tempo de treinamento | Re-treino ~3.2 vezes mais rapido no servidor |
+| $S_{\text{infer}}$ | Fator de aceleracao na inferencia individual | Resposta ~2.5 vezes mais rapida por paciente |
+| $\text{Gap}_{\text{overfit}}$ | Diferenca entre acuracia de treino e teste cego | Queda de 12.2% para 6.1% (reducao pela metade) |
+| $F_1$ | Media harmonica entre precisao e sensibilidade | Preservado em patamar superior a 0.86 |
+
+### A ordem correta evita distorcoes
+
+Todas as metricas apresentadas nos quadrantes de treinamento e desempenho devem ser apuradas rigorosamente sob o mesmo particionamento inicial de dados. Modificar a divisao de treino/teste entre os modelos invalidaria as comparacoes de speedup e $F_1$.
 
 ---
 
-## Subcamada 14.5: Laboratório Lúdico no Colab (Toy Example: Desenhando o Dashboard de 4 Quadrantes)
+## Subcamada 14.4: Laboratorio ludico no Colab
 
-Copie e execute no [Google Colab](https://colab.research.google.com) para renderizar um painel executivo com 4 gráficos:
+Execute o bloco abaixo no Google Colab para renderizar os quatro quadrantes do dashboard executivo:
 
 ```python
 # =============================================================================
-# LABORATÓRIO DIDÁTICO: DASHBOARD EXECUTIVO COMPARATIVO
-# Objetivo: Plotar o painel de 4 quadrantes comparando Baseline vs. Modelo XAI
+# CAMADA 14: LABORATORIO LUDICO DO DASHBOARD EXECUTIVO
+# Demonstracao: Plotagem Comparativa dos 4 Quadrantes Estrategicos
 # =============================================================================
 import matplotlib.pyplot as plt
 
-cenarios = ["Baseline (40 Atrib.)", "XAI Campeão (10 Atrib.)"]
-cores = ["#7f7f7f", "#1f77b4"]
+modelos = ["Baseline (40 Atrib.)", "Campeao XAI (10 Atrib.)"]
+paleta = ["#7f8c8d", "#2980b9"]
 
-fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+fig, eixos = plt.subplots(2, 2, figsize=(11, 7.5))
 
-# 1. Dimensões
-axes[0, 0].bar(cenarios, [40, 10], color=cores, width=0.5)
-axes[0, 0].set_title("1. Quantidade de Exames Coletados", fontweight="bold")
-axes[0, 0].set_ylabel("Nº de Colunas")
-axes[0, 0].text(1, 12, "-75.0%", ha="center", fontweight="bold", color="red")
+# Quadrante 1: Dimensao de Atributos
+eixos[0, 0].bar(modelos, [40, 10], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 0].set_title("1. Atributos Coletados (Dimensionalidade)", fontsize=10, fontweight="bold")
+eixos[0, 0].set_ylabel("Quantidade de Exames", fontsize=9)
+eixos[0, 0].text(1, 12, "-75.0%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
+eixos[0, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
-# 2. Tempo de Treinamento
-axes[0, 1].bar(cenarios, [600, 185], color=cores, width=0.5)
-axes[0, 1].set_title("2. Tempo de Treinamento em Servidor", fontweight="bold")
-axes[0, 1].set_ylabel("Milissegundos (ms)")
-axes[0, 1].text(1, 210, "-69.2%", ha="center", fontweight="bold", color="red")
+# Quadrante 2: Tempo de Treinamento
+eixos[0, 1].bar(modelos, [600, 185], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 1].set_title("2. Tempo de Ajuste em Servidor (ms)", fontsize=10, fontweight="bold")
+eixos[0, 1].set_ylabel("Milissegundos", fontsize=9)
+eixos[0, 1].text(1, 210, "-69.2%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
+eixos[0, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
-# 3. Latência de Inferência
-axes[1, 0].bar(cenarios, [30.8, 12.4], color=cores, width=0.5)
-axes[1, 0].set_title("3. Latência Média por Paciente", fontweight="bold")
-axes[1, 0].set_ylabel("Microssegundos (µs)")
-axes[1, 0].text(1, 14, "-59.7%", ha="center", fontweight="bold", color="red")
+# Quadrante 3: Latencia por Paciente
+eixos[1, 0].bar(modelos, [30.8, 12.4], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 0].set_title("3. Latencia de Inferencia (Microssegundos)", fontsize=10, fontweight="bold")
+eixos[1, 0].set_ylabel("Microssegundos (us)", fontsize=9)
+eixos[1, 0].text(1, 14.5, "-59.7%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
+eixos[1, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
-# 4. Desempenho Clínico F1
-axes[1, 1].bar(cenarios, [0.8373, 0.8610], color=cores, width=0.5)
-axes[1, 1].set_title("4. Qualidade Diagnóstica (F1-Score)", fontweight="bold")
-axes[1, 1].set_ylabel("Score F1 (Harmônico)")
-axes[1, 1].set_ylim(0.70, 0.92)
-axes[1, 1].text(1, 0.87, "+2.37 pts!", ha="center", fontweight="bold", color="green")
+# Quadrante 4: Rendimento Clinico (F1-Score)
+eixos[1, 1].bar(modelos, [0.8373, 0.8610], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 1].set_title("4. Retencao Diagnostica (F1-Score)", fontsize=10, fontweight="bold")
+eixos[1, 1].set_ylabel("F1-Score no Teste Cego", fontsize=9)
+eixos[1, 1].set_ylim(0.70, 0.92)
+eixos[1, 1].text(1, 0.872, "+2.37 pts", ha="center", fontsize=10, fontweight="bold", color="#27ae60")
+eixos[1, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
-plt.suptitle("DASHBOARD EXECUTIVO OFICIAL: XAI APLICADA À REDUÇÃO DE DADOS", fontsize=14, fontweight="bold")
+plt.suptitle("DASHBOARD EXECUTIVO COMPARATIVO: XAI APLICADA A REDUCAO DE DADOS", fontsize=12, fontweight="bold")
 plt.tight_layout()
 plt.show()
 ```
 
+> **O que voce deve notar no grafico gerado:**
+> 1. Os graficos de recursos operacionais (atributos, tempo e latencia) exibem quedas expressivas superiores a 50%.
+> 2. O grafico de qualidade diagnostica mantem-se estavel com leve acrescimo, confirmando que a remocao de colunas nao degradou o poder resolutivo.
+
+**Mini-experimento:** altere os valores de latencia para simular um cenario onde o modelo enxuto operasse com tempo identico ao original. O projeto ainda assim justificaria sua adocao com base apenas na reducao dos 30 exames de laboratorio?
+
 ---
 
-## Subcamada 14.6: O Momento Sério da Nossa Aplicação (O Quadro Final Oficial de KPIs do Projeto)
+## Subcamada 14.5: O momento serio da nossa aplicacao
 
-Abaixo está o quadro consolidado oficial gerado pelo [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py), confrontando o Baseline contra o Modelo Campeão Reduzido com XAI e Optuna.
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+No fechamento do projeto de reducao de dimensionalidade, emitimos o quadro consolidado oficial de KPIs cruzando todas as dimensoes operacionais, estatisticas e clinicas.
 
 ```python
 # =============================================================================
-# O MOMENTO SÉRIO DA NOSSA APLICAÇÃO:
-# Emissão Oficial da Tabela Comparativa de KPIs Executivos
+# APLICACAO REAL: EMISSAO OFICIAL DO QUADRO COMPARATIVO DE RESULTADOS
+# Base oficial: 2.000 pacientes, avaliacao cega de teste
 # =============================================================================
 import pandas as pd
 
-tabela_executiva = pd.DataFrame({
-    "Dimensão de Avaliação": [
-        "Número de Atributos ($M$)",
-        "Acurácia no Teste Cego",
-        "F1-Score Clínico (Harmônico)",
-        "Sensibilidade (Recall)",
-        "Especificidade",
-        "Área sob a Curva ROC (AUC)",
+quadro_resultados = pd.DataFrame({
+    "Dimensao Avaliada": [
+        "Numero de Atributos de Entrada",
+        "Acuracia Global no Teste Cego",
+        "F1-Score Diagnostico (Harmonico)",
+        "Sensibilidade Clinica (Recall)",
+        "Especificidade do Modelo",
+        "Area sob a Curva ROC (AUC)",
         "Gap de Overfitting (Treino - Teste)",
-        "Tempo de Treinamento em Servidor",
-        "Latência por Paciente em Produção",
-        "Custo Financeiro Estimado (por pac.)"
+        "Tempo de Treinamento da Floresta",
+        "Latencia Media de Inferencia",
+        "Custo Estimado de Exames / Paciente"
     ],
-    "Baseline Bruto (40 Cols)": [
+    "Baseline Bruto (40 Vars)": [
         "40 atributos",
         "87.80%",
         "0.8373",
         "78.11%",
         "94.33%",
         "0.9475",
-        "12.20% (Alto Overfitting)",
+        "12.20% (Sobreajuste acentuado)",
         "~600 ms",
-        "~30.8 µs",
+        "~30.8 us",
         "R$ 1.200,00"
     ],
-    "XAI Reduzido + Optuna (10 Cols)": [
-        "10 atributos (-75%)",
-        "89.40% (+1.6%)",
-        "0.8610 (+2.4 pts!)",
-        "82.50% (+4.4 pts!)",
-        "94.00%",
-        "0.9510",
-        "6.10% (Gap Fechado pela Metade!)",
-        "~185 ms (-69% tempo)",
-        "~12.4 µs (-60% latência)",
-        "R$ 300,00 (-75% custo)"
+    "Modelo Campeao (10 Vars)": [
+        "10 atributos (-75.0%)",
+        "89.40% (+1.60%)",
+        "0.8610 (+2.37 pts)",
+        "82.50% (+4.39 pts)",
+        "94.00% (-0.33%)",
+        "0.9510 (+0.0035)",
+        "6.10% (Gap reduzido a metade)",
+        "~185 ms (-69.2%)",
+        "~12.4 us (-59.7%)",
+        "R$ 300,00 (-75.0%)"
     ]
 })
 
-print("=" * 80)
-print("QUADRO FINAL CONSOLIDADO DE KPIS: BASELINE VS. XAI REDUZIDO + OPTUNA")
-print("=" * 80)
-print(tabela_executiva.to_string(index=False))
-print("=" * 80)
+print("=" * 82)
+print("QUADRO OFICIAL CONSOLIDADO DE KPIS: BASELINE VS. MODELO REDUZIDO CAMPEAO")
+print("=" * 82)
+print(quadro_resultados.to_string(index=False))
+print("=" * 82)
 ```
 
+### Tabela oficial de KPIs
+
+> Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Como e calculado | Pergunta operacional |
+| :--- | :--- | :--- |
+| **Taxa de Poda Estrutural (%)** | $(1 - p_{\text{reduzido}} / p_{\text{bruto}}) \times 100$ | Quantas variaveis foram retiradas permanentemente do fluxo de coleta? |
+| **Sensibilidade Clinica (Recall)** | $\text{VP} / (\text{VP} + \text{FN})$ no teste cego | A remocao de exames evitou o aumento de Falsos Negativos? |
+| **Contencao de Overfitting ($\Delta \text{Gap}$)** | $\text{Gap}_{\text{bruto}} - \text{Gap}_{\text{enxuto}}$ | A reducao de dimensionalidade tornou as arvores menos dependentes de ruido? |
+| **Reducao de Custo Laboratorial (%)** | Proporcao direta do custo financeiro dos exames eliminados | Qual e o impacto economico direto da pesquisa na operacao hospitalar? |
+
+### Interpretacao clinica e de negocio
+
+A analise integrada dos KPIs fundamenta a viabilidade pratica da pesquisa:
+
+1. **Prevalencia da seguranca diagnostica:** o ganho de 4.39 pontos percentuais na Sensibilidade Clinica comprova que o modelo enxuto detecta pacientes doentes com maior eficacia do que a versao original de 40 atributos, reduzindo Falsos Negativos graves.
+2. **Estabilidade de custos laboratoriais:** ao concentrar o diagnostico em 10 biomarcadores consolidados, o servico de saude economiza insumos e padroniza processos de triagem sem incorrer em riscos regulatorios.
+3. **Escalabilidade em ambientes embarcados:** a latencia reduzida para 12 microssegundos viabiliza a integracao do modelo em equipamentos medicos portateis com capacidade limitada de processamento local.
+
 ---
 
-### 14.6.1 O Grande Veredito da Pesquisa
+## Subcamada 14.6: Checkpoint de autonomia e fixacao ativa
 
-1. **Eficiência de Dados:** Eliminamos **75% das colunas** sem causar nenhum colapso preditivo.
-2. **Combate ao Overfitting:** O gap entre treino e teste caiu de **$12.20\%$ para apenas $6.10\%$**, provando que eliminamos os graus de liberdade espúrios causados pelos ruídos metabólicos.
-3. **Ganho de Latência:** As inferências tornaram-se **2.5 vezes mais velozes**, viabilizando dispositivos de triagem em ambulâncias e prontos-socorros.
-4. **Economia Financeira:** Redução de mais de **R$ 900,00 por paciente** em custos diagnósticos para a saúde pública.
+Explique sem consultar o texto e depois confira sua resposta:
 
----
+1. **Como se explica tecnicamente o fato de um modelo com 10 variaveis atingir $F_1$-score superior ao modelo com 40 variaveis?**
+2. **Qual e a resposta metodologica para questionamentos sobre o custo computacional consumido nas fases de explicabilidade e busca bayesiana?**
+3. **Por que a reducao do gap de generalizacao de 12.2% para 6.1% e considerada uma vitoria cientifica relevante?**
+4. **Qual e o impacto clinico de observar que a sensibilidade (recall) aumentou de 78.1% para 82.5% apos a reducao de atributos?**
+5. **Em termos de infraestrutura de computacao, qual e o beneficio de reduzir a latencia media de inferencia de 30 para 12 microssegundos?**
+6. **Como os quatro quadrantes do dashboard executivo resumem o trade-off entre custo computacional, dimensionalidade e qualidade diagnostica?**
 
-## Subcamada 14.7: Checkpoint de Autonomia & Fixação Ativa
+### Mini-desafio pratico
 
-Responda para consolidar a visão executiva do projeto:
+Construa uma projecao de impacto orcamentario em diferentes escalas de atendimento hospitalar e complete a tabela comparativa:
 
-1. **Como você explica para um leigo em tecnologia que um modelo de inteligência artificial com 10 variáveis pode ter um desempenho diagnóstico superior a um modelo com 40 variáveis?**
-2. **Qual é o argumento definitivo para responder à crítica de que "calcular o SHAP e rodar o Optuna é computacionalmente caro"?**
-3. **Por que a redução da latência de inferência de 30 para 12 microssegundos é importante se ambos os tempos já parecem rápidos para um ser humano? (Pense em Edge AI e milhões de requisições em tempo real).**
-4. **Desafio no Colab:** Na Subcamada 14.5, altere as cores do gráfico para a paleta corporativa que você mais gostar e adicione uma linha tracejada horizontal no gráfico de F1 marcando a meta mínima de qualidade diagnóstica em `0.80`.
+| Volume Anual de Pacientes | Custo Baseline (40 Exames) | Custo Proposto (10 Exames) | Economia Financeira Liquida |
+| :--- | :--- | :--- | :--- |
+| 10.000 pacientes | | | |
+| 50.000 pacientes | | | |
+| 200.000 pacientes | | | |
+
+*Premissa de calculo:* custo medio estimado de R$ 30,00 por exame individual.
+
+**Pergunta reflexiva:** o ganho financeiro obtido e acompanhado de reducao ou de elevacao do risco diagnostico de negligencia medica?

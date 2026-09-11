@@ -1,189 +1,285 @@
-# Camada 15: A Estrutura de um Artigo Científico — Da Teoria ao Padrão Acadêmico
+# Camada 15: Estrutura de Artigo Cientifico e Formulacao de Hipoteses
 
-**Trilha de Estudo:** XAI Aplicada à Redução de Dados em Machine Learning  
-**Base Curricular:** Roteiro de Estudo — Etapa 15  
-**Contexto Técnico:** [gerar_artigo_word.py](file:///c:/Users/eduar/projetos/xai_data_reduction/gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](file:///c:/Users/eduar/projetos/xai_data_reduction/docs/artigo_xai_reduction.docx)
+**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
+**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
+**Codigo de referencia:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
 
----
-
-> [!NOTE]
-> 🎯 **Foco Central desta Camada:**  
-> Compreender a arquitetura canônica de um **Artigo Científico em Computação e Inteligência Artificial**. Dominar a estrutura internacional **IMRaD (*Introduction, Methods, Results, and Discussion*)**, aprender a diferença cirúrgica entre **"Resultados"** (a frieza dos fatos) e **"Discussão"** (o calor da interpretação causal), entender como formular e testar **Hipóteses Científicas Formais ($H_1$ e $H_2$)**, e descobrir como transformar linhas de código em um artigo acadêmico publicável em periódicos de alto impacto (Qualis A / Q1).
+> **Objetivo da aula:** Compreender a arquitetura de comunicacao cientifica baseada no formato canonico IMRaD (Introducao, Metodologia, Resultados e Discussao), estabelecendo a demarcacao metodologica estrita entre o relato objetivo de resultados e a interpretacao analitica da discussao, alem de formalizar o teste quantitativo das hipoteses de equivalencia diagnostica (H1) e eficiencia computacional (H2).
 
 ---
 
-## Sumário da Aula
+## Mapa da aula
 
-- [Subcamada 15.1: A Analogia da Catedral e a Investigação Policial](#subcamada-151-a-analogia-da-catedral-e-a-investigação-policial)
-- [Subcamada 15.2: O Formato Canônico IMRaD (O Funil Científico)](#subcamada-152-o-formato-canônico-imrad-o-funil-científico)
-- [Subcamada 15.3: A Fronteira Proibida: Resultados vs. Discussão](#subcamada-153-a-fronteira-proibida-resultados-vs-discussão)
-- [Subcamada 15.4: As Duas Hipóteses Científicas Formais do Nosso Projeto (H1 e H2)](#subcamada-154-as-duas-hipóteses-científicas-formais-do-nosso-projeto-h1-e-h2)
-- [Subcamada 15.5: Laboratório Lúdico no Colab (Toy Example: Validador Estatístico de Hipóteses)](#subcamada-155-laboratório-lúdico-no-colab-toy-example-validador-estatístico-de-hipóteses)
-- [Subcamada 15.6: O Momento Sério da Nossa Aplicação (Do Código Python ao Artigo Word Oficial)](#subcamada-156-o-momento-sério-da-nossa-aplicação-do-código-python-ao-artigo-word-oficial)
-- [Subcamada 15.7: Checkpoint de Autonomia & Fixação Ativa](#subcamada-157-checkpoint-de-autonomia--fixação-ativa)
-
----
-
-## Subcamada 15.1: A Analogia da Catedral e a Investigação Policial
-
-Você não consegue construir uma catedral gótica apenas empilhando pedras aleatoriamente no chão. Se não houver uma planta rigorosa, as paredes desabam:
-- A catedral precisa de **alicerces profundos** (Fundamentação Teórica).
-- **Pilares mestres de sustentação** (Metodologia Experimental).
-- Um **altar central visível** (Resultados Numéricos).
-- Uma **cúpula com vitrais coloridos** que dão sentido e beleza a toda a obra (Discussão e Conclusão).
-
-```
-                      O FUNIL CIENTÍFICO DO ARTIGO (IMRaD)
-                      
-          \   1. INTRODUÇÃO (AMPLA)   /       -> O problema do mundo real:
-           \                         /           hospitais gastam milhões em exames!
-            \  2. METODOLOGIA       /         -> O afunilamento: o que nós fizemos?
-             \  (PRECISA & RESTRITA)/            Dataset sintético, SHAP e Optuna.
-              | 3. RESULTADOS       |         -> O gargalo: os números frios!
-             /   (FATOS BRUTOS)      \           Tabelas de F1, latência e tempos.
-            /  4. DISCUSSÃO CRÍTICA   \       -> A reabertura: o que os números significam?
-           /   (CONECTA COM O MUNDO)   \         Eliminamos o ruído e fechamos o gap.
-          /    5. CONCLUSÃO (IMPACTO)   \     -> A nova verdade científica para o futuro!
-```
-
-Um artigo acadêmico funciona exatamente como o relatório de um detetive de elite apresentado ao juiz:
-1. Explica o crime investigado (Introdução).
-2. Apresenta os métodos periciais de coleta de DNA (Metodologia).
-3. Mostra o laudo laboratorial neutro (Resultados).
-4. Explica por que o laudo comprova a culpa do réu e refuta os álibis da defesa (Discussão).
-5. Solicita o veredito final (Conclusão).
+1. [Subcamada 15.1: O conceito na vida real](#subcamada-151-o-conceito-na-vida-real)
+2. [Subcamada 15.2: Desenhando o conceito](#subcamada-152-desenhando-o-conceito)
+3. [Subcamada 15.3: Desmistificando a teoria e a notacao formal](#subcamada-153-desmistificando-a-teoria-e-a-notacao-formal)
+4. [Subcamada 15.4: Laboratorio ludico no Colab](#subcamada-154-laboratorio-ludico-no-colab)
+5. [Subcamada 15.5: O momento serio da nossa aplicacao](#subcamada-155-o-momento-serio-da-nossa-aplicacao)
+6. [Subcamada 15.6: Checkpoint de autonomia e fixacao ativa](#subcamada-156-checkpoint-de-autonomia-e-fixacao-ativa)
 
 ---
 
-## Subcamada 15.2: O Formato Canônico IMRaD (O Funil Científico)
+## Subcamada 15.1: O conceito na vida real
 
-O acrônimo **IMRaD** rege mais de 90% de toda a literatura científica mundial nas áreas de Exatas, Saúde e Computação:
+### A analogia da catedral e o laudo pericial
 
-| Seção IMRaD | Pergunta que Responde | Tempo Verbal | O Que Fazer? |
+Uma catedral nao e construida pelo empilhamento desordenado de blocos de pedra. Sem uma planta arquitetonica estruturada, as forcas de tensao provocam rachaduras e o desabamento do teto:
+- Os **alicerces subterraneos** sustentam o peso da obra (Introducao e Fundamentacao Teorica).
+- Os **pilares de contraforte** suportam as cargas laterais com precisao geometrica (Metodologia Experimental).
+- O **altar central** exibe os fatos materiais em sua forma bruta e visivel (Resultados Numericos).
+- A **cupula iluminada pelos vitrais** conecta a obra com o ambiente e sintetiza o seu proposito (Discussao e Conclusao).
+
+No meio academico, um artigo cientifico funciona de forma analoga ao relatorio pericial que um detetive forense entrega ao juiz:
+1. Descreve a ocorrencia e o problema investigado (Introducao).
+2. Detalha os procedimentos tecnicos de coleta, reagentes e instrumentos adotados (Metodologia).
+3. Apresenta as medidas laboratoriais e laudos sem emitir juizo subjetivo (Resultados).
+4. Explica por que aqueles numeros confirmam ou refutam as teses alegadas pelas partes (Discussao).
+5. Formaliza a conclusao perante o tribunal (Conclusao).
+
+### A demarcacao fundamental: Resultados versus Discussao
+
+O motivo mais comum de rejeicao preliminar (*desk reject*) por revisores em periodicos indexados (como IEEE, Elsevier ou Springer) e a contaminacao da secao de Resultados com especulacoes ou adjetivos:
+- Na secao de **Resultados**, o texto deve ser frio, factual e objetivo: *"O modelo enxuto apresentou F1-score de 0.8610 no teste cego, enquanto o baseline atingiu 0.8373."*
+- Na secao de **Discussao**, o autor tem a obrigacao analitica de explicar o mecanismo causal: *"O ganho de 2.37 pontos percentuais corrobora a hipotese de que a eliminacao de colunas de ruido atenuou o sobreajuste estrutural das arvores, alinhando-se as predicoes do Fenomeno de Hughes."*
+
+**A grande sacada:** registrar e testar hipoteses formais ($H_1$ e $H_2$) impede o erro metodologico de HARKing (*Hypothesizing After Results are Known*), conferindo credibilidade inatacavel ao experimento perante a comunidade cientifica.
+
+| Secao IMRaD | Pergunta Central | Tempo Verbal Predominante | Conteudo Permitido |
 | :--- | :--- | :--- | :--- |
-| **I — Introdução (*Introduction*)** | *"Qual é o problema no mundo e por que ele ainda não foi resolvido?"* | Presente | Contextualiza a coleta massiva de dados e o mal da dimensionalidade. Apresenta o objetivo e as hipóteses. |
-| **M — Métodos (*Methods*)** | *"Como você executou o experimento para que qualquer cientista possa repetir?"* | Passado | Descreve as 40 variáveis, o Random Forest, o TreeSHAP, o Pré-Filtro, o shap-select e o Optuna. |
-| **R — Resultados (*Results*)** | *"O que os seus olhos e computadores viram e mediram?"* | Passado | Apresenta tabelas, gráficos de ablação, matriz de confusão e tempos de CPU sem dar opiniões. |
-| **D — Discussão (*Discussion*)** | *"O que esses números significam e por que eles confirmam suas hipóteses?"* | Presente/Passado | Explica o porquê dos ganhos, compara com o RFE tradicional, assume limitações e sugere o futuro. |
+| **Introducao** | *Qual e a lacuna e por que ela e relevante?* | Presente do indicativo | Contextualizacao, formulacao do problema e definicao de $H_1$ e $H_2$. |
+| **Metodologia** | *Como o protocolo foi desenhado para teste?* | Passado (voz passiva) | Descricao detalhada do dataset, particoes, algoritmos e formulas. |
+| **Resultados** | *Quais medidas numericas foram registradas?* | Passado simples | Tabelas, graficos e metricas brutas sem adjetivacao ou conjecturas. |
+| **Discussao** | *O que os numeros significam perante a teoria?* | Presente / Passado | Interpretacao causal, confronto com literatura, limitacoes e aplicacoes. |
 
 ---
 
-## Subcamada 15.3: A Fronteira Proibida: Resultados vs. Discussão
+## Subcamada 15.2: Desenhando o conceito
 
-O erro que mais reprova artigos em revistas internacionais é a **confusão entre fato e interpretação**:
+O diagrama abaixo ilustra o modelo conceitual do funil cientifico IMRaD, demonstrando como o texto comeca abrangente, afunila na coleta experimental e reabre para o contexto social e clinico:
 
+```text
+O FUNIL CIENTIFICO IMRaD
+==================================================================================
+ \   1. INTRODUCAO (AMPLA)          /  -> Panorama geral da saude e sobrecarga
+  \                                /      de exames laboratoriais desnecessarios.
+   \  2. METODOLOGIA              /    -> Protocolo estrito e reproduzivel:
+    \  (PRECISA E CONTROLADA)    /        2.000 amostras, TreeSHAP, shap-select, Optuna.
+     | 3. RESULTADOS            |      -> Gargalo do funil: relatorio factual frio.
+     |   (DADOS BRUTOS NEUTROS) |         Tabelas de KPIs, graficos e latencias apuradas.
+    / 4. DISCUSSAO ANALITICA     \     -> Reabertura: interpretacao do ganho de F1,
+   /   (CONFRONTO COM A TEORIA)   \       confronto com RFE e fechamento do overfitting.
+  /   5. CONCLUSAO (IMPACTO)       \   -> Veredito final: viabilidade de implantacao
+ /                                  \     e direcionamento para futuras pesquisas.
+==================================================================================
 ```
-    ❌ ERRADO (MISTURADO NA SEÇÃO DE RESULTADOS):
-    "O modelo atingiu F1 de 0.86 porque a eliminação dos ruídos foi maravilhosa para o hospital."
-    (O revisor vai te repreender: "Porque foi maravilhosa" é uma opinião! Não cabe em Resultados!)
-    
-    ✅ CORRETO NA SEÇÃO DE RESULTADOS:
-    "O modelo reduzido alcançou F1-Score de 0.8610 no conjunto de teste, ante 0.8373 do Baseline."
-    (Fato neutro, frio e inquestionável.)
-    
-    ✅ CORRETO NA SEÇÃO DE DISCUSSÃO:
-    "O incremento de 2.37 pontos percentuais no F1-Score do modelo reduzido corrobora a tese de
-    que os 20 atributos de ruído induziam ramificações espúrias no Baseline, conforme alertado
-    pelo Fenômeno de Hughes (1968)."
-    (Aqui sim cabe a teoria, o porquê e a conexão com a literatura!)
+
+A organizacao modular do gerador automatizado de artigos ([gerar_artigo_word.py](../gerar_artigo_word.py)) estabelece a conversao programatica de metricas em documento formal:
+
+```text
+[ pipeline_completo.py ]
+(Executa os experimentos numericos e salva tabelas e figuras em assets/)
+             │
+             ▼
+[ gerar_artigo_word.py ]
+(Carrega templates, insere metadados, formata tabelas ABNT/APA e insere graficos)
+             │
+             ▼
+[ docs/artigo_xai_reduction.docx ]
+- Artigo cientifico completo com 14 secoes estruturadas
+- Conformidade tipografica para submissao a periodicos Qualis A
 ```
 
----
-
-## Subcamada 15.4: As Duas Hipóteses Científicas Formais do Nosso Projeto (H1 e H2)
-
-Toda a nossa pesquisa foi desenhada para testar e validar duas **Hipóteses Formais**:
-
-1. **Hipótese 1 ($H_1$ — Preservação da Qualidade Diagnóstica):**  
-   *"É viável eliminar pelo menos 50% dos atributos de um dataset clínico com alta dimensionalidade utilizando Inteligência Artificial Explicável (XAI), mantendo o $F_1$-Score clínico dentro de uma margem de equivalência de $\pm 0.05$ em relação ao Baseline."*
-2. **Hipótese 2 ($H_2$ — Eficiência Operacional e Computacional):**  
-   *"O modelo enxuto treinado no subconjunto selecionado apresentará uma redução de pelo menos 40% no tempo de treinamento e na latência de inferência em comparação ao modelo de força bruta."*
-
-Se ao final do experimento os números confirmarem $H_1$ e $H_2$, **o artigo está validado cientificamente!**
+| Elemento do Artigo | Papel Metodologico | Risco de Inconformidade |
+| :--- | :--- | :--- |
+| **Hipotese $H_1$** | Define a meta de preservacao diagnostica ($\Delta F_1 \ge -0.05$) | Sem ela, a reducao dimensional pode ser taxada de prejudicial |
+| **Hipotese $H_2$** | Define a meta de eficiencia operacional ($\Delta T \ge 40\%$) | Sem ela, o ganho de tempo carece de criterio de sucesso a priori |
+| **Tabelas de Resultados** | Apresentacao concisa de dados do teste cego | Inclusao de interpretacoes gera censura dos revisores |
+| **Limitacoes do Estudo** | Reconhecimento de fronteiras experimentais | Omissao de limitacoes e interpretada como fragilidade cientifica |
 
 ---
 
-## Subcamada 15.5: Laboratório Lúdico no Colab (Toy Example: Validador Estatístico de Hipóteses)
+## Subcamada 15.3: Desmistificando a teoria e a notacao formal
 
-Copie e execute no [Google Colab](https://colab.research.google.com) para rodar o testador automático de hipóteses:
+### A formalizacao das hipoteses de pesquisa
+
+Para conferir rigor cientifico a investigacao, a metodologia do projeto fundamenta-se no teste formal de duas hipoteses direcionais:
+
+#### Hipotese 1 ($H_1$): Equivalencia diagnostica sob reducao dimensional
+
+Define-se a diferenca de desempenho diagnostico entre o modelo compacto ($\mathcal{M}_{\text{enxuto}}$) e o modelo baseline de forca bruta ($\mathcal{M}_{\text{base}}$) sobre a particao de teste:
+
+$$\Delta F_1 = F_1\left(\mathcal{M}_{\text{enxuto}}\right) - F_1\left(\mathcal{M}_{\text{base}}\right)$$
+
+Sob o teste de nao-inferioridade com margem de equivalencia clinica tolerada de $\epsilon = 0.05$ e corte de pelo menos 50% dos atributos:
+
+$$H_{1,0}: \Delta F_1 < -0.05 \quad \text{contra} \quad H_{1,1}: \Delta F_1 \ge -0.05, \quad \text{com } \left(1 - \frac{p_{\text{enxuto}}}{p_{\text{base}}}\right) \ge 0.50$$
+
+A rejeicao da hipotese nula $H_{1,0}$ comprova que a reducao dimensional preservou a capacidade diagnostica do modelo dentro do limiar de seguranca clinica.
+
+#### Hipotese 2 ($H_2$): Superioridade em eficiencia operacional e latencia
+
+Sejam $T_{\text{train}}$ o tempo de ajuste do modelo e $\tau_{\text{infer}}$ a latencia media de inferencia individual. Define-se a hipotese de reducao simultanea de pelo menos 40% nos custos computacionais:
+
+$$H_{2,1}: \left( 1 - \frac{T_{\text{train}}(\text{enxuto})}{T_{\text{train}}(\text{base})} \ge 0.40 \right) \;\wedge\; \left( 1 - \frac{\tau_{\text{infer}}(\text{enxuto})}{\tau_{\text{infer}}(\text{base})} \ge 0.40 \right)$$
+
+| Simbolo | Significado Formal | Leitura no Projeto |
+| :--- | :--- | :--- |
+| $\Delta F_1$ | Variacao do $F_1$-score no teste cego | Observado: $+0.0237$ (ganho de 2.37 pts) |
+| $\epsilon$ | Margem maxima tolerada de degradacao | Fixado *a priori* em $0.05$ |
+| $p_{\text{base}}, p_{\text{enxuto}}$ | Dimensionalidade inicial e final | 40 atributos reduzidos para 10 atributos (corte de 75.0%) |
+| $T_{\text{train}}$ | Tempo de treinamento da floresta (ms) | Queda de 600 ms para 185 ms (reducao de 69.2%) |
+| $\tau_{\text{infer}}$ | Latencia de inferencia por paciente ($\mu$s) | Queda de 30.8 $\mu$s para 12.4 $\mu$s (reducao de 59.7%) |
+
+### A ordem correta evita o vicio de HARKing
+
+As metas quantitativas das hipoteses $H_1$ ($\ge 50\%$ de corte, tolerância de $\pm 0.05$ em $F_1$) e $H_2$ ($\ge 40\%$ de ganho computacional) devem ser formalizadas no projeto de pesquisa antes da execucao dos experimentos. Ajustar as metas apos a observacao dos numeros descaracteriza a metodologia hipotetico-dedutiva.
+
+---
+
+## Subcamada 15.4: Laboratorio ludico no Colab
+
+Execute o bloco abaixo no Google Colab para simular o motor de avaliacao logica das hipoteses cientificas:
 
 ```python
 # =============================================================================
-# LABORATÓRIO DIDÁTICO: VALIDADOR AUTOMÁTICO DE HIPÓTESES CIENTÍFICAS
-# Objetivo: Testar programaticamente se H1 e H2 foram confirmadas
+# CAMADA 15: LABORATORIO LUDICO DE VALIDACAO DE HIPOTESES CIENTIFICAS
+# Demonstracao: Testador Logico-Estatistico das Hipoteses H1 e H2
+# =============================================================================
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Resultados consolidados do experimento oficial
+dados_baseline = {"atributos": 40, "f1": 0.8373, "tempo_treino_ms": 601.7, "latencia_us": 30.8}
+dados_campeao  = {"atributos": 10, "f1": 0.8610, "tempo_treino_ms": 185.2, "latencia_us": 12.4}
+
+# 2. Avaliacao formal da Hipotese H1 (Preservacao Diagnostica)
+taxa_corte = (1.0 - (dados_campeao["atributos"] / dados_baseline["atributos"])) * 100.0
+delta_f1 = dados_campeao["f1"] - dados_baseline["f1"]
+h1_valida = (taxa_corte >= 50.0) and (delta_f1 >= -0.05)
+
+# 3. Avaliacao formal da Hipotese H2 (Eficiencia Computacional)
+ganho_treino = (1.0 - (dados_campeao["tempo_treino_ms"] / dados_baseline["tempo_treino_ms"])) * 100.0
+ganho_latencia = (1.0 - (dados_campeao["latencia_us"] / dados_baseline["latencia_us"])) * 100.0
+h2_valida = (ganho_treino >= 40.0) and (ganho_latencia >= 40.0)
+
+print("PARECER CIENTIFICO DE CONFORMIDADE EXPERIMENTAL:")
+print("=" * 68)
+print(f"Hipotese H1 (Preservacao Clinica sob Reducao de Dados):")
+print(f"  - Taxa de Reducao de Atributos : {taxa_corte:.1f}% (Meta minima: >= 50.0%)")
+print(f"  - Variacao de F1-Score (Delta) : {delta_f1:+.4f} (Margem de tolerancia: >= -0.0500)")
+print(f"  - Conclusao de H1              : {'CONFIRMADA COM SUCESSO' if h1_valida else 'REJEITADA'}")
+print("-" * 68)
+print(f"Hipotese H2 (Eficiencia Computacional e Inferencia):")
+print(f"  - Reducao no Tempo de Treino   : {ganho_treino:.1f}% (Meta minima: >= 40.0%)")
+print(f"  - Reducao na Latencia          : {ganho_latencia:.1f}% (Meta minima: >= 40.0%)")
+print(f"  - Conclusao de H2              : {'CONFIRMADA COM SUCESSO' if h2_valida else 'REJEITADA'}")
+print("=" * 68)
+
+# 4. Visualizacao grafica do teste de margem
+fig, ax = plt.subplots(figsize=(8, 3.5))
+ax.barh(["H1: Delta F1"], [delta_f1], color="#27ae60", edgecolor="black", height=0.4)
+ax.axvline(0, color="black", linestyle="-", linewidth=1.0)
+ax.axvline(-0.05, color="#c0392b", linestyle="--", linewidth=1.2, label="Margem Critica de Tolerancia (-0.05)")
+ax.set_xlim(-0.08, 0.05)
+ax.set_title("Validacao Geometrica da Hipotese H1 no Teste Cego", fontsize=11, fontweight="bold")
+ax.set_xlabel("Variacao no F1-Score (Delta F1)", fontsize=10)
+ax.grid(axis="x", linestyle=":", alpha=0.6)
+ax.legend(loc="lower right")
+plt.tight_layout()
+plt.show()
+```
+
+> **O que voce deve notar no grafico gerado:**
+> 1. O delta observado de $F_1$ posiciona-se no campo positivo ($+0.0237$), superando confortavelmente a margem de equivalencia tolerada de $-0.05$.
+> 2. Ambas as hipoteses foram validadas com folga estatistica sobre os dados independentes.
+
+**Mini-experimento:** altere os dados do modelo campeao para simular um cenario onde o $F_1$ tivesse caido para `0.7500`. Como o testador responderia? Qual argumento da secao de Discussao precisaria ser reformulado?
+
+---
+
+## Subcamada 15.5: O momento serio da nossa aplicacao
+
+> **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
+
+No fluxo de publicacao academica do projeto, o script [gerar_artigo_word.py](../gerar_artigo_word.py) compila automaticamente o documento formal [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx) consolidando as hipoteses e os quadros de evidencias.
+
+```python
+# =============================================================================
+# APLICACAO REAL: AUDITORIA DAS HIPOTESES SOBRE OS RESULTADOS DO PROJETO
+# Base oficial: 2.000 pacientes, dados sincronizados com artigo_xai_reduction.docx
 # =============================================================================
 import pandas as pd
 
-# Resultados do Experimento
-dados_baseline = {"atributos": 40, "f1": 0.8373, "tempo_treino": 601.7, "latencia": 30.8}
-dados_campeao  = {"atributos": 10, "f1": 0.8610, "tempo_treino": 185.2, "latencia": 12.4}
+quadro_hipoteses = pd.DataFrame({
+    "Hipotese de Pesquisa": [
+        "H1: Equivalencia Diagnostica",
+        "H2: Eficiencia Computacional (Treino)",
+        "H2: Eficiencia de Inferencia (Latencia)"
+    ],
+    "Meta Pre-Estabelecida": [
+        "Corte >= 50% de atributos com Delta F1 >= -0.05",
+        "Reducao no tempo de ajuste de pelo menos 40%",
+        "Reducao na latencia por paciente de pelo menos 40%"
+    ],
+    "Resultado Numerico Obtido": [
+        "75.0% de corte (40 -> 10) com Delta F1 = +0.0237",
+        "Tempo caiu de 601.7 ms para 185.2 ms (queda de 69.2%)",
+        "Latencia caiu de 30.8 us para 12.4 us (queda de 59.7%)"
+    ],
+    "Veredito Formal": [
+        "CONFIRMADA E SUPERADA",
+        "CONFIRMADA E SUPERADA",
+        "CONFIRMADA E SUPERADA"
+    ]
+})
 
-# 1. Teste da Hipótese H1 (Manutenção Preditiva com Poda >= 50%)
-reducao_atributos = (1 - dados_campeao["atributos"] / dados_baseline["atributos"]) * 100
-delta_f1 = dados_campeao["f1"] - dados_baseline["f1"]
-h1_confirmada = (reducao_atributos >= 50.0) and (abs(delta_f1) <= 0.05 or delta_f1 > 0)
-
-# 2. Teste da Hipótese H2 (Eficiência Operacional >= 40%)
-reducao_treino = (1 - dados_campeao["tempo_treino"] / dados_baseline["tempo_treino"]) * 100
-reducao_latencia = (1 - dados_campeao["latencia"] / dados_baseline["latencia"]) * 100
-h2_confirmada = (reducao_treino >= 40.0) and (reducao_latencia >= 40.0)
-
-# 3. Emissão do Relatório Acadêmico
-print("=" * 65)
-print("PARECER CIENTÍFICO FORMAL DO COMITÊ EXPERIMENTAL:")
-print("=" * 65)
-print(f"HIPÓTESE 1 (Manutenção Diagnóstica):")
-print(f"  • Redução de Atributos : {reducao_atributos:.1f}% (Meta: >= 50%)")
-print(f"  • Delta F1-Score       : {delta_f1:+.4f} (Meta: tolerância +/- 0.05)")
-print(f"  • Veredito             : {'✅ CONFIRMADA COM SUCESSO!' if h1_confirmada else '❌ REJEITADA'}")
-print("-" * 65)
-print(f"HIPÓTESE 2 (Eficiência Computacional):")
-print(f"  • Redução Tempo Treino : {reducao_treino:.1f}% (Meta: >= 40%)")
-print(f"  • Redução Latência     : {reducao_latencia:.1f}% (Meta: >= 40%)")
-print(f"  • Veredito             : {'✅ CONFIRMADA COM SUCESSO!' if h2_confirmada else '❌ REJEITADA'}")
-print("=" * 65)
+print("=" * 82)
+print("AUDITORIA ACADEMICA DE HIPOTESES CIENTIFICAS (PROJETO XAI REDUCTION)")
+print("=" * 82)
+print(quadro_hipoteses.to_string(index=False))
+print("=" * 82)
 ```
+
+### Tabela oficial de KPIs
+
+> Os valores abaixo sao produzidos pelo codigo, nao devem ser decorados como constantes. Tempo, latencia e ate pequenas variacoes de desempenho dependem do ambiente e da versao das bibliotecas.
+
+| KPI | Como e calculado | Pergunta operacional |
+| :--- | :--- | :--- |
+| **Taxa de Confirmacao de Hipoteses** | Proporcao de hipoteses cientificas formalmente validadas | As metas teoricas estabelecidas *a priori* foram corroboradas pelos dados? |
+| **Margem de Seguranca de $H_1$** | $\Delta F_1 - (-\epsilon)$ em relacao ao limiar critico | Qual foi a folga estatistica acima da margem de perda clinica tolerada? |
+| **Margem de Eficiencia de $H_2$** | Reducao percentual observada subtraida da meta minima de 40% | Quanto a otimizacao excedeu a expectativa minima de aceleracao computacional? |
+| **Conformidade Estrutural IMRaD** | Checagem de presenca de todas as 14 secoes no `.docx` gerado | O artigo cumpre os padroes internacionais exigidos para submissao a revistas Qualis A? |
+
+### Interpretacao clinica e de negocio
+
+A comprovacao das hipoteses $H_1$ e $H_2$ produz consequencias diretas para a sustentabilidade da pesquisa:
+
+1. **Aprovacao por comites de etica e revisao clinica:** demonstrar que a Hipotese 1 foi superada (com sensibilidade superior no modelo enxuto) garante que a simplificacao de exames nao expoe pacientes ao risco de Falsos Negativos camuflados.
+2. **Robustez metodologica perante revisores de alto impacto:** a separacao estrita entre a secao neutra de Resultados e a secao causal de Discussao atende rigorosamente as diretrizes editoriais internacionais, reduzindo o tempo de tramitacao e revisao por pares.
+3. **Escalabilidade industrial:** a validacao da Hipotese 2 certifica que a infraestrutura hospitalar existente e plenamente compativel com a solucao proposta, dispensando investimentos vultosos em clusters de processamento.
 
 ---
 
-## Subcamada 15.6: O Momento Sério da Nossa Aplicação (Do Código Python ao Artigo Word Oficial)
+## Subcamada 15.6: Checkpoint de autonomia e fixacao ativa
 
-No nosso ecossistema técnico, nós criamos uma ponte automatizada espetacular: o script [gerar_artigo_word.py](file:///c:/Users/eduar/projetos/xai_data_reduction/gerar_artigo_word.py).  
-Ele pega todos os dados calculados pelo [pipeline_completo.py](file:///c:/Users/eduar/projetos/xai_data_reduction/pipeline_completo.py) e compila automaticamente o artigo científico completo no formato `.docx` ([artigo_xai_reduction.docx](file:///c:/Users/eduar/projetos/xai_data_reduction/docs/artigo_xai_reduction.docx)), formatado no padrão acadêmico internacional!
+Explique sem consultar o texto e depois confira sua resposta:
 
-```
-    [ pipeline_completo.py ]
-               │
-               ▼
-    Gera tabelas de KPIs e gráficos em assets/
-               │
-               ▼
-    [ gerar_artigo_word.py ]
-               │
-               ▼
-    [ docs/artigo_xai_reduction.docx ]
-    • 14 Seções estruturadas no padrão IMRaD
-    • Tabelas formatadas em padrão APA
-    • Inserção automática de figuras de alta resolução
-    • Formatação ABNT/IEEE pronta para submissão!
-```
+1. **Qual e a diferenca fundamental de proposito, conteudo e tempo verbal entre a secao de Resultados e a secao de Discussao no formato IMRaD?**
+2. **Por que a formulacao *a priori* de hipoteses cientificas como $H_1$ e $H_2$ e essencial para a integridade de uma pesquisa em computacao?**
+3. **O que e o vicio metodologico de HARKing e como o pipeline do projeto se protege contra ele?**
+4. **Como o conceito de teste de nao-inferioridade foi aplicado na definicao da Hipotese 1?**
+5. **Se os dados tivessem indicado um corte de 80% dos atributos com queda de 0.15 no $F_1$-score, qual seria o procedimento cientifico correto a ser relatado no artigo?**
+6. **Qual e a funcao do script `gerar_artigo_word.py` na esteira de publicacao da pesquisa?**
 
----
+### Mini-desafio pratico
 
-### 15.6.1 Quadro de Validação Científica das Hipóteses
+Analise a sensibilidade das conclusoes simulando diferentes niveis de tolerancia para a margem clinica $\epsilon$ e preencha a tabela:
 
-| Hipótese Formal | Meta Quantitativa | Resultado Alcançado no Projeto | Veredito Acadêmico |
+| Margem de Tolerancia ($\epsilon$) | $\Delta F_1$ Observado ($+0.0237$) | Veredito de $H_1$ | Comportamento Clinico |
 | :--- | :--- | :--- | :--- |
-| **Hipótese $H_1$ (Qualidade)** | Cortar $\ge 50\%$ das variáveis mantendo o $F_1$ em $\pm 0.05$. | **Cortou 75.0% dos atributos** e o $F_1$ **aumentou em $+0.0237$** ($0.8610$). | **CONFIRMADA E SUPERADA!** |
-| **Hipótese $H_2$ (Eficiência)** | Acelerar o treinamento e a latência em $\ge 40\%$. | **Tempo caiu 69.2%** e **Latência caiu 59.7%**. | **CONFIRMADA E SUPERADA!** |
+| $\epsilon = 0.01$ (Margem Estrita) | $+0.0237$ | | |
+| $\epsilon = 0.05$ (Padrao do Projeto) | $+0.0237$ | | |
+| $\epsilon = 0.10$ (Margem Ampla) | $+0.0237$ | | |
 
----
-
-## Subcamada 15.7: Checkpoint de Autonomia & Fixação Ativa
-
-Responda para fixar a estrutura acadêmica:
-
-1. **Por que um revisor de artigo científico rejeitaria um manuscrito se você escrevesse especulações e hipóteses na seção de "Resultados"?**
-2. **Explique a metáfora do funil para o formato IMRaD: por que a Introdução e a Discussão são largas, enquanto a Metodologia e os Resultados são estreitos?**
-3. **Qual é o papel das hipóteses científicas ($H_1$ e $H_2$) em uma pesquisa de computação? Como elas impedem que o pesquisador "mude o alvo depois que a flecha foi disparada"?**
-4. **Desafio no Colab:** Na Subcamada 15.5, altere os dados do campeão para simular um cenário onde o modelo enxuto cortou 80% das variáveis, mas o F1 caiu para `0.70`. A Hipótese $H_1$ continuou aprovada ou o testador acusou rejeição?
+**Pergunta reflexiva:** o fato de o $\Delta F_1$ observado ser estritamente positivo dispensaria inclusive a necessidade de recorrer a margem de tolerancia para validar a equivalencia diagnostica?
