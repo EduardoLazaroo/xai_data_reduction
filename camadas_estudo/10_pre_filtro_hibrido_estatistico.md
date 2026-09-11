@@ -1,12 +1,12 @@
 # Camada 10: Pre-filtro Hibrido Estatistico (BOLIMES)
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `pre_filtro_hibrido`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `pre_filtro_hibrido`
 
 > **Objetivo da aula:** aprender a retirar, antes da XAI, duas formas de desperdicio que a estatistica detecta rapidamente: colunas quase paradas e colunas que repetem a mesma informacao. A ideia nao e substituir SHAP ou LIME. E preparar um palco menor para que essas ferramentas trabalhem com mais foco.
 
-## Campo Didatico: A Faxina em Duas Perguntas
+## Campo Didático: A Faxina em Duas Perguntas
 
 Execute o pre-filtro como uma triagem visual: **a coluna varia, ha um clone, quais colunas sobreviveram e o modelo manteve seus KPIs?** Primeiro rode o toy example; depois repita no `X_train` oficial, sem tocar no teste.
 
@@ -58,7 +58,7 @@ Depois de cada etapa, imprima: colunas iniciais, colunas removidas, colunas fina
 
 O pre-filtro responde “o que e parado ou repetido?”. A Camada 11 faz uma pergunta mais exigente: entre as colunas sobreviventes, quais contribuicoes explicativas apresentam direcao e evidencia estatistica?
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 Pearson ajudou a consolidar a linguagem moderna da correlacao e da estatistica aplicada, mas a cultura estatistica madura tambem ensina seus limites: correlacao linear nao e causalidade, nem detecta toda relacao relevante. Consulte a historia do [coeficiente de correlacao de Pearson](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) e a documentacao de [VarianceThreshold](https://scikit-learn.org/stable/modules/feature_selection.html#variance-threshold) para relacionar a ideia classica a implementacao moderna.
 
@@ -68,20 +68,21 @@ O pre-filtro e uma tradicao de engenharia pragmatica: usar uma ferramenta barata
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** matriz de correlacao do toy example e tabela de colunas antes/depois.
+- **Visual local:** matriz de correlação do toy example e tabela de colunas antes/depois.
+- **Imagem de apoio:** a matriz de correlação produzida pelo laboratório, com a diagonal e o triângulo superior destacados.
 - **Referencia:** [VarianceThreshold](https://scikit-learn.org/stable/modules/feature_selection.html#variance-threshold) e documentacao de correlacao.
-- **Audio de abertura:** contar a faxina da sala antes da visita do especialista.
+- **Áudio sugerido:** a faxina da sala antes da visita do especialista.
 - **Imagem mental:** estatua parada, clone em outra unidade e biomarcador que ainda precisa de SHAP.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Faxina auditada` quando o aluno justificar cada coluna removida sem chamar isso de causalidade.
+- **Status:** `Faxina auditada` quando cada coluna removida puder ser justificada sem confundir associação com causalidade.
 - **Debate:** “Quem autoriza descartar um exame: a estatistica, o modelo ou o especialista?”
 - **Papel rotativo:** estatistico, engenheiro, medico e auditor de vazamento.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** alterar `0,90` para `0,75` e `0,99`, comparar colunas e desempenho.
+- **Atividade:** alterar `0,90` para `0,75` e `0,99`, comparando colunas e desempenho.
 - **Produto da aula:** relatorio antes/depois com variancia, correlacao, colunas removidas e impacto.
 - **Conexao profissional:** explicar por que o filtro aprende em `X_train` e apenas transforma `X_test`.
 

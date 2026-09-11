@@ -1,12 +1,12 @@
 # Camada 15: Estrutura de Artigo Cientifico e Formulacao de Hipoteses
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
 
 > **Objetivo da aula:** Compreender a arquitetura de comunicacao cientifica baseada no formato canonico IMRaD (Introducao, Metodologia, Resultados e Discussao), estabelecendo a demarcacao metodologica estrita entre o relato objetivo de resultados e a interpretacao analitica da discussao, alem de formalizar o teste quantitativo das hipoteses de equivalencia diagnostica (H1) e eficiencia computacional (H2).
 
-## Campo Didatico: Separar Fato, Metodo e Interpretacao
+## Campo Didático: Separar Fato, Método e Interpretação
 
 Use tres cores mentais ao escrever: **Metodologia diz o que foi feito; Resultados dizem o que foi observado; Discussao explica por que isso importa**. Antes de redigir, transforme cada KPI em uma frase objetiva e cada frase objetiva em uma interpretacao com limite declarado.
 
@@ -72,7 +72,7 @@ As frases nao sao repeticao. Cada uma responde a uma pergunta diferente: como fo
 
 Um artigo bem separado facilita responder perguntas: o que foi feito, que numero apareceu, como foi interpretado e o que ainda nao se sabe. A Camada 16 transforma essa cadeia em respostas de banca.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 O formato IMRaD se consolidou porque a comunidade cientifica precisava separar pergunta, procedimento, evidencia e interpretacao de modo que outros pesquisadores pudessem conferir o trabalho. A recomendacao editorial [Reporting standards and availability of data, materials, code and protocols da Nature](https://www.nature.com/nature-portfolio/editorial-policies/reporting-standards) mostra como essa cultura evoluiu para incluir codigo, dados e transparencia.
 
@@ -82,20 +82,21 @@ Use o documento gerado por [gerar_artigo_word.py](../gerar_artigo_word.py) como 
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** documento Word gerado e tabelas do pipeline, comparando Resultado com Discussao.
+- **Visual local:** documento Word gerado e tabelas do pipeline, comparando Resultado com Discussão.
+- **Imagem de apoio:** [Dashboard final comparativo](../assets/dashboard_final_comparativo.png), como figura de resultados.
 - **Referencia:** [Reporting standards da Nature](https://www.nature.com/nature-portfolio/editorial-policies/reporting-standards).
-- **Audio de abertura:** ler duas frases, uma factual e outra interpretativa, e pedir que a turma identifique a diferenca.
+- **Áudio sugerido:** duas frases, uma factual e outra interpretativa, em contraste.
 - **Imagem mental:** funil IMRaD: abre na Introducao, estreita na Metodologia e reabre na Discussao.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Manuscrito auditavel` quando outro leitor consegue reconstruir metodo, resultado e limite.
+- **Status:** `Manuscrito auditável` quando outro leitor consegue reconstruir método, resultado e limite.
 - **Debate:** “Onde termina o resultado e começa a interpretacao?”
 - **Papel rotativo:** autor, revisor, estatistico e leitor leigo.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** reescrever uma frase exagerada em Resultado, Discussao e Limitacao.
+- **Atividade:** reescrever uma frase exagerada em Resultado, Discussão e Limitação.
 - **Produto da aula:** um paragrafo IMRaD com KPI, interpretacao e alcance declarado.
 - **Conexao profissional:** revisar o proprio artigo procurando promessas que os dados nao sustentam.
 

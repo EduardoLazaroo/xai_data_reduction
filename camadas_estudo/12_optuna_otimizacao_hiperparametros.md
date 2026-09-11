@@ -1,12 +1,12 @@
 # Camada 12: Otimizacao Bayesiana de Hiperparametros com Optuna
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `otimizar_optuna`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `otimizar_optuna`
 
 > **Objetivo da aula:** Compreender a formulacao teorica da otimizacao bayesiana via Tree-structured Parzen Estimator (TPE), diferenciando parametros aprendidos internamente de hiperparametros arquiteturais, estruturando rotinas de validacao cruzada estratificada em k-folds e demonstrando a necessidade metodologica de reajustar o modelo sobre o espaco dimensional reduzido antes da avaliacao de generalizacao final.
 
-## Campo Didatico: Uma Busca Com Memoria
+## Campo Didático: Uma Busca Com Memória
 
 Compare uma busca cega com a Optuna: **defina o objetivo, escolha os hiperparametros, avalie por validacao cruzada, registre o resultado, deixe o estudo priorizar regioes promissoras e reavalie o campeao em teste intocado**.
 
@@ -66,7 +66,7 @@ Leia `best_value` junto de `best_params`, numero de trials e variabilidade entre
 
 Optimizacao isolada nao e o objetivo. A Camada 13 mostra a ordem completa e quais artefatos devem ser registrados para tornar o experimento reproduzivel.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 A busca de hiperparametros tem uma historia que vai de tentativa manual a busca aleatoria e otimizacao bayesiana. O artigo de Bergstra e Bengio, [Random Search for Hyper-Parameter Optimization](https://jmlr.org/papers/v13/bergstra12a.html), mostrou que busca aleatoria pode ser mais eficiente que uma grade rigida; o artigo de Akiba et al., [Optuna](https://arxiv.org/abs/1907.10902), trouxe uma API moderna de estudos e trials.
 
@@ -76,20 +76,21 @@ A [documentacao oficial do Optuna](https://optuna.readthedocs.io/en/stable/) e c
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** historico de trials e importancia de hiperparametros do Optuna Dashboard.
+- **Visual local:** histórico de trials e importância de hiperparâmetros no Optuna Dashboard.
+- **Imagem de apoio:** histórico de trials com regiões de exploração e aproveitamento.
 - **Referencia oficial:** [Optuna: define-by-run, trials e visualizacao](https://optuna.readthedocs.io/en/stable/).
-- **Audio de abertura:** narrar o garimpeiro que aprende com cada sondagem.
+- **Áudio sugerido:** o garimpeiro que aprende com cada sondagem.
 - **Imagem mental:** pontos ruins abandonados, regioes promissoras ampliadas e teste final trancado.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Busca reproduzivel` quando o aluno declarar objetivo, espaco, CV, trials e criterio de parada.
+- **Status:** `Busca reproduzível` quando objetivo, espaço, CV, trials e critério de parada estiverem declarados.
 - **Debate:** “Se o algoritmo escolhe o hiperparametro, quem escolheu o objetivo?”
 - **Papel rotativo:** pesquisador, engenheiro de custo, auditor de validacao e dono do produto.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** comparar busca em grade, aleatoria e TPE com o mesmo numero de tentativas.
+- **Atividade:** comparar busca em grade, aleatória e TPE com o mesmo número de tentativas.
 - **Produto da aula:** diario de trials com melhor valor, parametros, variacao e custo.
 - **Conexao profissional:** justificar por que o teste final nao pode participar da escolha.
 

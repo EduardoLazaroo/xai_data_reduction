@@ -1,12 +1,12 @@
 # Camada 08: Selecao Tradicional de Atributos e o Algoritmo RFE
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes com `RFE` e `executar_etapa_ablacao`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções com `RFE` e `executar_etapa_ablacao`
 
 > **Objetivo da aula:** Analisar a taxonomia classica de selecao de atributos (filtros, embutidos e envoltorios/wrappers), dominando o mecanismo recursivo guloso do RFE (Recursive Feature Elimination), seu custo computacional quadratico em relacao ao numero de podas e sua funcao estrategica como linha de base classica e justa perante comites cientificos.
 
-## Campo Didatico: O Detetive Que Vai Eliminando Pistas
+## Campo Didático: O Detetive Que Vai Eliminando Pistas
 
 Execute o RFE em ciclos: **treine com todas as colunas, leia a importancia, remova a menos importante, repita e compare o desempenho a cada tamanho**. Desenhe uma tabela com `k`, atributos restantes, F1 e tempo para tornar visivel o custo da estrategia.
 
@@ -63,7 +63,7 @@ Registre o F1 de teste ou validacao a cada `k` atributos e o tempo acumulado. Um
 
 RFE oferece uma ordem gulosa de eliminacao. A Camada 09 amplia a pergunta e desenha a curva completa de desempenho conforme o numero de atributos diminui, procurando um ponto de equilibrio.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 Selecao de atributos nasceu do encontro entre estatistica, reconhecimento de padroes e engenharia de sinais. O artigo de Guyon e Elisseeff, [An Introduction to Variable and Feature Selection](https://doi.org/10.1073/pnas.2011085003), e uma referencia panoramica; a documentacao do [RFE no scikit-learn](https://scikit-learn.org/stable/modules/feature_selection.html#rfe) mostra como a ideia foi transformada em API.
 
@@ -74,19 +74,22 @@ Historicamente, RFE representa a confianca em um modelo iterativo: o algoritmo a
 ## Recursos de Mídia (Visual e Áudio)
 
 - **Visual local:** curva de ablação [modulo4_ablation_curves.png](../assets/modulo4_ablation_curves.png).
+- **Imagem incorporada:**
+
+![Curvas de ablação](../assets/modulo4_ablation_curves.png)
 - **Referencia:** [Feature selection no scikit-learn](https://scikit-learn.org/stable/modules/feature_selection.html).
-- **Audio de abertura:** narrar a eliminacao de candidatos de uma equipe, sempre reavaliando quem ficou.
+- **Áudio sugerido:** a eliminação de candidatos de uma equipe, sempre reavaliando quem ficou.
 - **Imagem mental:** ranking que muda a cada poda, como uma classificacao esportiva sob novas rodadas.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Baseline comparativo` quando o aluno souber explicar custo, ranking e desempenho do RFE.
+- **Status:** `Baseline comparativo` quando custo, ranking e desempenho do RFE estiverem claros.
 - **Debate:** “Um metodo antigo pode vencer uma tecnica nova? Como comparar honestamente?”
 - **Papel rotativo:** defensor do RFE, defensor de XAI e juiz do protocolo.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Desafio:** prever qual atributo sera removido, executar e explicar qualquer surpresa.
+- **Desafio:** prever qual atributo será removido, executar e explicar qualquer surpresa.
 - **Produto da aula:** tabela de cada rodada com atributos, F1, tempo e justificativa.
 - **Conexao profissional:** documentar por que o RFE foi escolhido como adversario de referencia.
 

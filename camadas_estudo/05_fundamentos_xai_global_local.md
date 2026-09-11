@@ -1,12 +1,12 @@
 # Camada 05: Fundamentos de XAI (Global e Local)
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes `executar_etapa_shap` e `executar_etapa_lime`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções `executar_etapa_shap` e `executar_etapa_lime`
 
 > **Objetivo da aula:** compreender por que a precisao isolada de uma caixa-preta e insuficiente em areas criticas, conhecer o caso historico em que uma IA aprendeu regras perigosas e diferenciar a explicabilidade global (o mapa da populacao com SHAP) da explicabilidade local (a auditoria individual com LIME).
 
-## Campo Didatico: Explicar Nao e Decorar um Grafico
+## Campo Didático: Explicar Não é Decorar um Gráfico
 
 Use o roteiro **prever, perguntar, explicar, confrontar**. Primeiro registre a previsao do modelo; depois pergunte quais atributos parecem importantes; em seguida compare uma explicacao global com uma explicacao de um paciente; por fim confronte a explicacao com metricas e conhecimento do dominio.
 
@@ -17,7 +17,7 @@ modelo caixa-preta -> previsao -> explicacao global/local -> pergunta de auditor
    como aprende?     qual classe?       quem importa?        faz sentido clinico?
 ```
 
-O estudante deve separar importancia de atributo de causalidade. O erro comum e dizer “SHAP provou que a variavel causa a doenca”; explicabilidade descreve o comportamento do modelo. A ponte para a Camada 06 e a justificativa matematica do credito distribuido pelo SHAP.
+Importância de atributo não é causalidade. “SHAP provou que a variável causa a doença” é uma conclusão indevida; explicabilidade descreve o comportamento do modelo. A ponte para a Camada 06 é a justificativa matemática do crédito distribuído pelo SHAP.
 
 ### Roteiro de dominio
 
@@ -68,7 +68,7 @@ O exemplo mostra por que uma variavel importante na media pode nao ser a razao p
 
 Uma explicacao forte precisa ser fiel ao modelo, compreensivel para a audiencia e plausivel para o dominio. A Camada 06 formaliza essa ideia de atribuicao de credito com SHAP; a Camada 07 mostra uma aproximacao local agnostica ao modelo com LIME.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 “Explainable AI” nao surgiu apenas porque pesquisadores gostavam de graficos. A agenda ganhou forca quando modelos passaram a decidir em dominios onde justificativa, contestacao e responsabilidade importam. O programa [DARPA Explainable AI (XAI)](https://www.darpa.mil/program/explainable-artificial-intelligence) popularizou a pergunta sobre explicacoes uteis para humanos. O caso de pneumonia discutido nesta aula dialoga com o artigo de Caruana et al., [Intelligible Models for Healthcare](https://doi.org/10.1145/2939672.2939778).
 
@@ -79,19 +79,22 @@ Compare os artefatos [modulo2_shap_summary.png](../assets/modulo2_shap_summary.p
 ## Recursos de Mídia (Visual e Áudio)
 
 - **Visual local:** compare [SHAP global](../assets/modulo2_shap_summary.png) e [LIME local](../assets/modulo3_lime_local.png).
+- **Imagem incorporada:**
+
+![Resumo global de SHAP](../assets/modulo2_shap_summary.png)
 - **Referencia historica:** [DARPA Explainable AI](https://www.darpa.mil/program/explainable-artificial-intelligence).
-- **Audio de abertura:** narrar o caso da pneumonia e perguntar “o modelo acertou pelo motivo certo?”.
+- **Áudio sugerido:** o caso da pneumonia, seguido da pergunta “o modelo acertou pelo motivo certo?”.
 - **Imagem mental:** mapa de uma cidade contra a lupa em uma unica rua.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `XAI diferenciada` quando o estudante explicar escopo, fidelidade e causalidade sem mistura-los.
+- **Status:** `XAI diferenciada` quando escopo, fidelidade e causalidade estiverem separados.
 - **Debate:** “Uma explicacao convincente pode acompanhar um modelo errado?”
 - **Papel rotativo:** modelo, paciente, auditor e especialista do dominio interpretam a mesma previsao.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Oficina:** cada grupo escreve uma explicacao global e outra local para o mesmo caso.
+- **Oficina:** uma explicação global e outra local são escritas para o mesmo caso.
 - **Produto da aula:** ficha com previsao, referencia, atributos, direcao e limite da explicacao.
 - **Conexao profissional:** decidir quando uma explicacao deve bloquear implantacao ou apenas gerar investigacao.
 

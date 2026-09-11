@@ -1,12 +1,12 @@
 # Camada 11: shap-select e Regressao com P-Valor
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_shap_select`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_shap_select`
 
 > **Objetivo da aula:** Compreender a formulacao econometrica do algoritmo shap-select, explorando a regressao multivariada do desfecho real sobre a matriz de explicabilidade aditiva, a interpretacao dos coeficientes direcionais (beta > 0) e a rejeicao da hipotese nula via p-valor (p < 0.05) para blindagem contra ruido estocastico.
 
-## Campo Didatico: Da Explicacao ao Teste de Evidencia
+## Campo Didático: Da Explicação ao Teste de Evidência
 
 A sequencia didatica e: **produzir SHAP, tratar cada coluna SHAP como evidencia, ajustar a regressao conjunta, ler beta e p-valor, filtrar e comparar o modelo enxuto com o baseline**. A pergunta-guia e: o atributo aparece porque ajuda de modo consistente ou porque uma amostra especifica o favoreceu?
 
@@ -73,7 +73,7 @@ O conjunto final contem apenas `phi_glicemia`. O atributo com beta negativo nao 
 
 Depois que o conjunto foi filtrado por evidencia, ainda resta escolher a melhor configuracao do modelo. A Camada 12 usa Optuna para buscar hiperparametros sem transformar o teste em gabarito.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 Esta camada junta duas culturas que nem sempre conversam: a explicabilidade de modelos e a inferencia estatistica. Fisher popularizou o uso do p-valor como medida de evidencia contra uma hipotese nula, mas o debate historico mostra que p-valor nao e probabilidade de uma hipotese ser verdadeira. A [documentacao do Logit no statsmodels](https://www.statsmodels.org/stable/generated/statsmodels.discrete.discrete_model.Logit.html) e a [de OLS](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html) ajudam a ligar formula, ajuste e saida computacional.
 
@@ -83,14 +83,17 @@ O artefato [modulo5_shap_select_analysis.png](../assets/modulo5_shap_select_anal
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [Analise shap-select](../assets/modulo5_shap_select_analysis.png), lendo beta, p-valor e aprovacao.
+- **Visual local:** [Análise shap-select](../assets/modulo5_shap_select_analysis.png), lendo beta, p-valor e aprovação.
+- **Imagem incorporada:**
+
+![Análise shap-select](../assets/modulo5_shap_select_analysis.png)
 - **Referencia:** [Logit no statsmodels](https://www.statsmodels.org/stable/generated/statsmodels.discrete.discrete_model.Logit.html) e [OLS](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html).
-- **Audio de abertura:** narrar o tribunal: volume da testemunha nao substitui evidencia.
+- **Áudio sugerido:** o tribunal em que volume da testemunha não substitui evidência.
 - **Imagem mental:** duas portas: direcao correta e evidencia estatistica.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Evidencia estatistica lida` quando o aluno nao confundir p-valor com tamanho ou causalidade.
+- **Status:** `Evidência estatística lida` quando p-valor não for confundido com tamanho de efeito ou causalidade.
 - **Debate:** “Um resultado com `p<0,05` deve entrar automaticamente no modelo?”
 - **Papel rotativo:** juiz, testemunha, estatistico e especialista do dominio.
 

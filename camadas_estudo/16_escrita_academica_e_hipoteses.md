@@ -1,12 +1,12 @@
 # Camada 16: Escrita Academica e Defesa de Hipoteses
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
 
 > **Objetivo da aula:** Consolidar a articulacao entre fundamentacao teorica, modelagem computacional e redacao academica de alto impacto, estruturando a defesa formal das hipoteses H1 e H2, a documentacao metodologica de limitacoes tecnicas e a formulacao de respostas tecnicas padronizadas perante bancas examinadoras e comites de revisao por pares.
 
-## Campo Didatico: Defender Sem Exagerar
+## Campo Didático: Defender Sem Exagerar
 
 Treine a defesa em quatro movimentos: **afirme a hipotese, mostre a evidencia, reconheca a limitacao e explique a proxima verificacao**. Uma resposta forte nao e a mais confiante; e a que distingue claramente dado observado, inferencia estatistica e implicacao pratica.
 
@@ -61,7 +61,7 @@ Troque “prova que” por “sustenta, neste protocolo, a hipotese de”. Troqu
 
 O especialista nao e quem memoriza nomes de algoritmos. E quem consegue ligar pergunta, dados, metodo, evidencia, limite e decisao sem saltos escondidos. Essa e a competencia que as 16 camadas constroem em conjunto.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 A escrita cientifica tambem tem memoria de erros. O termo HARKing, “Hypothesizing After the Results are Known”, foi discutido por Kerr no artigo [HARKing: Hypothesizing After the Results are Known](https://doi.org/10.1207/S15327965PLI1103_04). A ideia e simples: transformar uma descoberta pos-hoc em hipotese pre-registrada distorce a historia da evidencia. Recursos como o [OSF Registries](https://osf.io/registries/) ajudam a registrar perguntas e criterios antes da analise.
 
@@ -72,19 +72,20 @@ Leia ainda os principios [FAIR para dados cientificos](https://www.go-fair.org/f
 ## Recursos de Mídia (Visual e Áudio)
 
 - **Visual local:** tabelas, figuras e documento do artigo em `docs/` e `assets/`.
+- **Imagem de apoio:** [Dashboard final comparativo](../assets/dashboard_final_comparativo.png), como síntese visual da defesa.
 - **Referencia:** [OSF Registries](https://osf.io/registries/) e [Principios FAIR](https://www.go-fair.org/fair-principles/).
-- **Audio de abertura:** simular uma banca com uma pergunta simples: “o que exatamente seus dados provam?”.
+- **Áudio sugerido:** uma banca perguntando “o que exatamente seus dados provam?”.
 - **Imagem mental:** ponte com placas de peso: cada afirmacao precisa suportar a evidencia.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Defesa preparada` quando a resposta apresentar hipotese, evidencia, limite e proximo teste.
+- **Status:** `Defesa preparada` quando a resposta apresentar hipótese, evidência, limite e próximo teste.
 - **Debate:** “Reconhecer uma limitacao enfraquece ou fortalece uma tese?”
 - **Papel rotativo:** banca, pesquisador, gestor e leitor critico.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** realizar uma mini-banca de 5 minutos por grupo, com direito a replica baseada em KPI.
+- **Atividade:** realizar uma mini-banca de 5 minutos, com réplica baseada em KPI.
 - **Produto da aula:** ficha de defesa com H1, H2, evidencia, ressalva e experimento futuro.
 - **Conexao profissional:** trocar “prova que” por uma afirmacao proporcional ao desenho experimental.
 

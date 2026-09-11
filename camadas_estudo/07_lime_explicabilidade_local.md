@@ -1,12 +1,12 @@
 # Camada 07: LIME e Explicabilidade Local
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_etapa_lime`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_etapa_lime`
 
 > **Objetivo da aula:** Compreender a formulacao teorica e a dinamica pratica do LIME (Local Interpretable Model-agnostic Explanations), analisando a geracao de perturbacoes estocasticas no espaco amostral, a ponderacao por kernel gaussiano de distancia e a motivacao clinica de auditar instancias proximas ao limiar de decisao de 50%.
 
-## Campo Didatico: Uma Lupa Para Um Paciente
+## Campo Didático: Uma Lupa Para Um Paciente
 
 O LIME deve ser estudado como uma investigacao local: **escolha um paciente, crie vizinhos artificiais, pese os vizinhos pela distancia, ajuste um modelo simples e compare a explicacao com a previsao original**. Repita com outra semente para perceber a sensibilidade.
 
@@ -79,7 +79,7 @@ Mesmo que ambos recebam previsoes da floresta, `z1` influencia muito mais a reta
 
 Depois do laudo, a equipe deve perguntar se os atributos destacados fazem sentido clinico e se a previsao original e confiavel. A Camada 08 contrasta essa auditoria local com uma selecao global e recursiva: RFE.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 O LIME foi apresentado por Ribeiro, Singh e Guestrin no artigo [Why Should I Trust You?](https://doi.org/10.1145/2939672.2939778), uma pergunta culturalmente poderosa: confiar em uma previsao nao e o mesmo que aceitar uma caixa-preta sem questionamento. O trabalho tornou popular a ideia de uma explicacao local simples para um modelo complexo, mas tambem abriu debates sobre instabilidade e fidelidade.
 
@@ -89,20 +89,23 @@ Veja o artefato [modulo3_lime_local.png](../assets/modulo3_lime_local.png) e per
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [Laudo LIME](../assets/modulo3_lime_local.png), destacando paciente proximo de `P=0,50`.
+- **Visual local:** [Laudo LIME](../assets/modulo3_lime_local.png), destacando paciente próximo de `P=0,50`.
+- **Imagem incorporada:**
+
+![Laudo LIME](../assets/modulo3_lime_local.png)
 - **Referencia:** [Repositorio oficial do LIME](https://github.com/marcotcr/lime) e artigo [Why Should I Trust You?](https://doi.org/10.1145/2939672.2939778).
-- **Audio de abertura:** narrar a palpacao medica como metafora de perturbacao local.
+- **Áudio sugerido:** a palpação médica como metáfora de perturbação local.
 - **Imagem mental:** mapa global complexo e reta desenhada apenas no quarteirao do paciente.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Auditoria local realizada` quando o aluno comparar previsao original, vizinhanca e fidelidade.
+- **Status:** `Auditoria local realizada` quando previsão original, vizinhança e fidelidade estiverem comparadas.
 - **Debate:** “Se a explicacao muda com a semente, o que exatamente podemos afirmar?”
 - **Papel rotativo:** paciente, modelo caixa-preta, explicador e auditor de estabilidade.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Laboratorio social:** cada grupo usa um `sigma` diferente e compara coeficientes locais.
+- **Laboratório comparativo:** configurações de `sigma` diferentes são confrontadas pelos coeficientes locais.
 - **Produto da aula:** laudo com impacto, proximidade, estabilidade e possivel combinacao clinicamente impossivel.
 - **Conexao profissional:** criar uma regra de quando uma explicacao instavel deve ser recusada.
 

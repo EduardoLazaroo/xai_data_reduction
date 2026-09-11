@@ -1,12 +1,12 @@
 # Camada 06: SHAP e a Teoria dos Jogos Cooperativos
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_etapa_shap`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_etapa_shap`
 
 > **Objetivo da aula:** dominar o metodo SHAP (SHapley Additive exPlanations), entender como a Teoria dos Jogos Cooperativos de Lloyd Shapley garante a divisao justa de credito entre atributos, conhecer os quatro axiomas de equidade e interpretar o ranking |SHAP| e o grafico Beeswarm.
 
-## Campo Didatico: Pensar em Coalizoes
+## Campo Didático: Pensar em Coalizões
 
 Antes da notacao, imagine uma equipe: o resultado pertence ao grupo, mas queremos repartir o credito de cada participante. O roteiro pratico e **treinar, escolher uma observacao, calcular valores SHAP, ordenar impactos, ler direcao e comparar com o comportamento real do modelo**.
 
@@ -62,7 +62,7 @@ Cada ponto representa uma observacao. A distancia horizontal mostra impacto: par
 
 O toy example torna visivel o credito; o momento serio aplica TreeSHAP ao Random Forest oficial. A etapa seguinte usa essas explicacoes para uma auditoria individual com LIME, sem confundir explicacao global com justificativa de um unico paciente.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 O nome SHAP conecta aprendizado de maquina a uma ideia de economia e cooperacao: Lloyd Shapley recebeu o Nobel de Economia de 2012 por trabalhos sobre alocacao e matching. O artigo moderno de Lundberg e Lee, [A Unified Approach to Interpreting Model Predictions](https://arxiv.org/abs/1705.07874), transformou valores de Shapley em uma familia pratica de explicacoes. A [documentacao do SHAP](https://shap.readthedocs.io/en/latest/) e util para comparar explainers, mas nao substitui a leitura dos pressupostos.
 
@@ -73,19 +73,22 @@ Observe o [modulo2_shap_summary.png](../assets/modulo2_shap_summary.png) como um
 ## Recursos de Mídia (Visual e Áudio)
 
 - **Visual local:** [SHAP summary](../assets/modulo2_shap_summary.png), beeswarm e ranking global.
+- **Imagem incorporada:**
+
+![Resumo SHAP](../assets/modulo2_shap_summary.png)
 - **Referencia:** [Documentacao oficial do SHAP](https://shap.readthedocs.io/en/latest/) e [artigo de Lundberg e Lee](https://arxiv.org/abs/1705.07874).
-- **Audio de abertura:** contar uma coalizao de jogadores repartindo um premio de 10 pontos.
+- **Áudio sugerido:** uma coalizão de jogadores repartindo um prêmio de 10 pontos.
 - **Imagem mental:** cada atributo entra em ordens diferentes e recebe credito marginal medio.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Credito explicado` quando o aluno traduz valor base, sinal, magnitude e soma aditiva.
+- **Status:** `Crédito explicado` quando valor base, sinal, magnitude e soma aditiva estiverem claros.
 - **Debate:** “O que e justo quando dois atributos sao quase clones?”
 - **Papel rotativo:** atributo, coalizao, auditor matematico e especialista clinico.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Jogo de cartas:** embaralhar atributos e calcular contribuicoes marginais em ordens diferentes.
+- **Jogo de cartas:** embaralhar atributos e calcular contribuições marginais em ordens diferentes.
 - **Produto da aula:** interpretar cinco pontos do beeswarm sem usar a palavra “causa”.
 - **Conexao profissional:** propor um criterio para transformar ranking SHAP em selecao de atributos.
 
@@ -110,7 +113,7 @@ Imagine um trabalho academico em grupo com tres colegas:
 - O colega B rodou os codigos e gerou os graficos.
 - O colega C apenas colocou o nome na capa e nao compareceu a nenhuma reuniao.
 
-Se o professor atribuir a nota 10 igualmente aos tres, estara sendo injusto com o esforco de A e B. Mas como mensurar matematicamente a contribuicao individual de cada participante quando o resultado e coletivo?
+Se o resultado coletivo receber a mesma nota para todos, o esforço desigual desaparece. A pergunta matemática é: como mensurar a contribuição individual de cada participante quando o resultado é coletivo?
 
 Em 1953, o matematico Lloyd Shapley (Nobel de Economia em 2012) resolveu essa questao: para medir o valor justo de um membro, avalia-se quanto a equipe ganharia em **todas as combinacoes possiveis** com e sem a participacao daquele membro. Se a presenca de C nao altera o resultado em nenhuma combinacao, a fatia dele e rigorosamente zero.
 

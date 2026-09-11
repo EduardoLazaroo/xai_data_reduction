@@ -1,12 +1,12 @@
 # Camada 14: Interpretacao de Resultados e Dashboard Executivo
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes com dashboard e comparativo de KPIs
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções com dashboard e comparativo de KPIs
 
 > **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando os quatro quadrantes do dashboard comparativo (reducao dimensional, tempo de treinamento, latencia de inferencia e retencao de F1-score) e formalizando o argumento de retorno de investimento entre o custo analitico de P&D e os ganhos operacionais permanentes em producao.
 
-## Campo Didatico: Um Dashboard e um Argumento
+## Campo Didático: Um Dashboard e um Argumento
 
 Leia cada painel em duas camadas: primeiro descreva literalmente o que o grafico mostra; depois explique o que isso significa para a operacao. O roteiro e **dimensao, treino, latencia, qualidade, erro clinico e custo**. Nunca pule diretamente do grafico para a recomendacao.
 
@@ -61,7 +61,7 @@ Observacao: “o campeao usou 10 atributos e teve F1 de 0,86”. Interpretacao: 
 
 O painel resume a evidencia; a Camada 15 ensina como relatar essa evidencia em IMRaD, separando resultado observado de discussao.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 Dashboard executivo tem uma historia propria: a visualizacao estatistica busca reduzir carga cognitiva sem reduzir a verdade. Edward Tufte popularizou principios de clareza, comparacao e economia visual em [The Visual Display of Quantitative Information](https://www.edwardtufte.com/book/the-visual-display-of-quantitative-information/). O [dashboard_final_comparativo.png](../assets/dashboard_final_comparativo.png) deve ser usado para perguntar se a forma da imagem ajuda a conferir os numeros.
 
@@ -71,20 +71,23 @@ Uma boa visualizacao nao “vende” o modelo; ela torna diferencas visiveis e c
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [Dashboard final comparativo](../assets/dashboard_final_comparativo.png), com dimensao, treino, latencia e F1.
+- **Visual local:** [Dashboard final comparativo](../assets/dashboard_final_comparativo.png), com dimensão, treino, latência e F1.
+- **Imagem incorporada:**
+
+![Dashboard executivo comparativo](../assets/dashboard_final_comparativo.png)
 - **Referencia visual:** principios de [The Visual Display of Quantitative Information](https://www.edwardtufte.com/book/the-visual-display-of-quantitative-information/).
-- **Audio de abertura:** descrever um painel para pesquisador, gestor e equipe clinica, mostrando que cada publico pergunta algo diferente.
+- **Áudio sugerido:** um painel para pesquisador, gestor e equipe clínica, mostrando que cada público pergunta algo diferente.
 - **Imagem mental:** quatro paineis formando uma decisao, nao quatro graficos isolados.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Resultado comunicado` quando observacao, interpretacao e recomendacao estiverem separadas.
+- **Status:** `Resultado comunicado` quando observação, interpretação e recomendação estiverem separadas.
 - **Debate:** “Qual painel mudaria sua decisao de implantacao e por que?”
 - **Papel rotativo:** designer, estatistico, gestor e profissional de saude.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** cada grupo faz uma leitura de 60 segundos do dashboard sem adjetivos.
+- **Atividade:** uma leitura de 60 segundos do dashboard é feita sem adjetivos.
 - **Produto da aula:** legenda executiva com baseline, unidade, denominador, ganho e limite.
 - **Conexao profissional:** transformar numeros em decisao sem esconder FN, custo ou variacao.
 

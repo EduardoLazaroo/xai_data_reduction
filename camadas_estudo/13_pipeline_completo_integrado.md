@@ -1,12 +1,12 @@
 # Camada 13: Pipeline Completo e Integrado
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_pipeline_completo`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_pipeline_completo`
 
 > **Objetivo da aula:** Analisar a arquitetura de orquestracao de ponta a ponta em MLOps, examinando o encadeamento deterministico entre geracao controlada de dados, avaliacao de linha de base, explicabilidade analitica, reducao estatistica de dimensionalidade e calibracao bayesiana, assegurando reprodutibilidade cientifica integral e ausencia de vazamento de dados.
 
-## Campo Didatico: Ler o Pipeline Como Uma Historia Causal
+## Campo Didático: Ler o Pipeline Como Uma História Causal
 
 Nao execute o script como uma caixa-preta. Siga o rastro de cada artefato: **dados gerados, split, baseline, SHAP/LIME, filtros, shap-select, Optuna, campeao e dashboard**. Para cada etapa, anote entrada, transformacao, saida, custo e risco de vazamento.
 
@@ -23,7 +23,7 @@ O que voce deve observar e a rastreabilidade: cada ganho precisa ser comparado a
 
 ### Roteiro de dominio
 
-Para cada etapa, preencha uma ficha: **entrada, saida, metodo, semente, tempo, metricas e risco**. Se uma saida nao puder ser reproduzida ou ligada a uma entrada, o pipeline tem uma lacuna de auditoria. O estudante deve conseguir narrar o caminho completo sem esconder etapas intermediarias.
+Cada etapa deixa uma ficha com **entrada, saída, método, semente, tempo, métricas e risco**. Se uma saída não puder ser reproduzida ou ligada a uma entrada, o pipeline tem uma lacuna de auditoria. O caminho completo precisa permanecer narrável, sem esconder etapas intermediárias.
 
 ### Duvidas que esta aula responde
 
@@ -75,7 +75,7 @@ Essa linha nao autoriza atribuir o ganho inteiro ao Optuna. Para investigar, com
 
 Com os artefatos preservados, a Camada 14 pode transformar numeros em dashboard sem esconder o caminho que os produziu.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 Pipeline nao e apenas “rodar tudo”. A cultura de engenharia de dados aprendeu, depois de muitos experimentos irreproduziveis, que um resultado precisa carregar sua origem: versao, semente, dados, codigo, parametros e artefatos. O modelo de referencia [CRISP-DM](https://www.ibm.com/docs/en/spss-modeler/saas?topic=projects-crisp-dm) e a pratica atual de [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/) ajudam a compreender essa mentalidade de ciclo e rastreabilidade.
 
@@ -85,14 +85,17 @@ O pipeline deste projeto deve ser lido como uma cadeia de custodia. Cada grafico
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [Dashboard final](../assets/dashboard_final_comparativo.png) e os cinco graficos intermediarios em `assets/`.
+- **Visual local:** [Dashboard final](../assets/dashboard_final_comparativo.png) e os cinco gráficos intermediários em `assets/`.
+- **Imagem incorporada:**
+
+![Dashboard final comparativo](../assets/dashboard_final_comparativo.png)
 - **Referencia:** [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/) e modelo [CRISP-DM](https://www.ibm.com/docs/en/spss-modeler/saas?topic=projects-crisp-dm).
-- **Audio de abertura:** narrar a linha de montagem: nenhuma caixa pode perder sua etiqueta.
+- **Áudio sugerido:** a linha de montagem em que nenhuma caixa pode perder sua etiqueta.
 - **Imagem mental:** cada etapa recebe entrada, produz saida e deixa um recibo.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Pipeline rastreavel` quando cada KPI puder ser ligado a codigo, split, seed e artefato.
+- **Status:** `Pipeline rastreável` quando cada KPI puder ser ligado a código, split, seed e artefato.
 - **Debate:** “Se o resultado melhorou, qual etapa merece o credito?”
 - **Papel rotativo:** dono dos dados, MLOps, cientista, auditor e relator.
 

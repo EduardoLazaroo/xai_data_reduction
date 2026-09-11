@@ -1,8 +1,8 @@
 # Camada 09: Estudo de Ablacao Progressiva
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude ('0 = Saudavel', '1 = Patologia')  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `executar_etapa_ablacao`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_etapa_ablacao`
 
 > **Objetivo da aula:** Compreender a formulacao metodologica de um estudo de ablacao (ablation study), analisando a resposta empirica de modelos de aprendizado sob remocao progressiva de atributos, a interpretacao das curvas de retencao de F1-score e a determinacao matematica do ponto de inflexao (knee point).
 
@@ -78,7 +78,7 @@ De 40 para 10, removemos 75% das colunas e perdemos apenas `0,003` de F1. De 10 
 
 Depois de observar o custo da poda progressiva, a Camada 10 introduz uma faxina estatistica barata para remover estatuas e clones antes de gastar computacao com XAI.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 “Ablation study” veio de uma metafora cirurgica: remover uma parte para descobrir sua contribuicao no sistema. Em Machine Learning, a pratica ganhou importancia porque resultados agregados escondem dependencias entre componentes. O artigo de Sara Hooker, [The Generalization of Ablation Results](https://arxiv.org/abs/1904.08755), discute por que retirar uma parte e medir a queda nao e uma prova simples de importancia universal.
 
@@ -89,19 +89,22 @@ Use o [modulo4_ablation_curves.png](../assets/modulo4_ablation_curves.png) como 
 ## Recursos de Mídia (Visual e Áudio)
 
 - **Visual local:** [Curvas de ablação](../assets/modulo4_ablation_curves.png), com F1 e custo lado a lado.
+- **Imagem incorporada:**
+
+![Curvas de ablação](../assets/modulo4_ablation_curves.png)
 - **Referencia:** [The Generalization of Ablation Results](https://arxiv.org/abs/1904.08755), de Sara Hooker.
-- **Audio de abertura:** explicar ablação como retirar uma peca de uma maquina e observar o que muda.
+- **Áudio sugerido:** ablação como a retirada de uma peça de uma máquina, observando o que muda.
 - **Imagem mental:** curva que desce devagar e depois despenca: o joelho do experimento.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Curva interpretada` quando o aluno diferenciar pico, plateau, joelho e queda.
+- **Status:** `Curva interpretada` quando pico, plateau, joelho e queda estiverem diferenciados.
 - **Debate:** “O menor conjunto de atributos e automaticamente o melhor?”
 - **Papel rotativo:** cientista experimental, engenheiro de custo e auditor de FN/recall.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Atividade:** cada grupo escolhe um ponto de operacao e defende sua escolha com duas metricas.
+- **Atividade:** um ponto de operação é escolhido e defendido com duas métricas.
 - **Produto da aula:** curva anotada com ponto recomendado, margem de incerteza e limite.
 - **Conexao profissional:** transformar a ablacao em evidencia para a decisao do pipeline.
 

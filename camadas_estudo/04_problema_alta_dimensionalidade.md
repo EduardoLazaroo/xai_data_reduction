@@ -1,18 +1,18 @@
 # Camada 04: Alta Dimensionalidade e o Fenomeno de Hughes
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcao `gerar_dataset_sintetico_saude`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `gerar_dataset_sintetico_saude`
 
 > **Objetivo da aula:** compreender a dinamica geometrica do mal da dimensionalidade, distinguir formalmente atributos informativos, redundantes e ruidos puros, e entender o Fenomeno de Hughes, onde adicionar variaveis alem de um ponto otimo comeca a prejudicar a generalizacao.
 
-## Campo Didatico: Por Que Mais Colunas Podem Piorar o Modelo
+## Campo Didático: Por Que Mais Colunas Podem Piorar o Modelo
 
 ### Comece com uma situacao que qualquer pessoa consegue enxergar
 
 Imagine uma sala com 10 alunos e 2 perguntas na prova. E relativamente facil perceber quais respostas caminham juntas. Agora mantenha os mesmos 10 alunos e crie 40 perguntas, sendo que apenas 10 realmente medem o conteudo da prova; outras repetem perguntas antigas e 20 sao sorteios sem relacao com a materia.
 
-O professor nao ganhou 30 novas pistas confiaveis. Ganhou 30 oportunidades para encontrar coincidencias. Um aluno que decorou a prova consegue parecer brilhante ao explorar essas coincidencias, mas fracassa diante de uma questao nova. O mesmo acontece com um modelo de Machine Learning: o problema nao e apenas ter muitas colunas; e ter poucas observacoes para ocupar um espaco cada vez maior.
+Não surgiram 30 novas pistas confiáveis. Surgiram 30 oportunidades para encontrar coincidências. Quem decora a prova parece brilhante ao explorar essas coincidências, mas fracassa diante de uma questão nova. O mesmo acontece com um modelo de Machine Learning: o problema não é apenas ter muitas colunas; é ter poucas observações para ocupar um espaço cada vez maior.
 
 ### Quatro colunas podem parecer iguais, mas nao sao
 
@@ -74,30 +74,33 @@ ruido adicionado | treino       | teste        | gap
 
 Os valores exatos dependem da semente e da implementacao. O padrao importante e a separacao entre memorizar a amostra e generalizar para dados novos. Se uma execucao nao mostrar queda, isso nao autoriza afirmar que ruido e bom: pode indicar que a amostra e grande, a arvore esta regularizada ou o efeito ainda nao atingiu o ponto de saturacao. A ponte para a Camada 05 e inevitavel: depois de observar que nem toda coluna merece permanecer, precisamos explicar quais atributos o modelo realmente usou.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 O nome “maldicao da dimensionalidade” ficou associado a Richard Bellman, que estudou como a complexidade explode em problemas de decisao; o artigo classico de Hughes, [On the mean accuracy of statistical pattern recognizers](https://doi.org/10.1109/TIT.1968.1054102), formalizou o fenomeno de melhora seguida de queda quando atributos sao adicionados. A camada nao esta ensinando uma supersticao: esta ensinando uma consequencia geometrica e estatistica de ocupar um espaco maior com a mesma quantidade de observacoes.
 
-Para visualizar a intuição, compare o grafico produzido pelo laboratorio com a ideia de [curse of dimensionality na Wikipedia](https://en.wikipedia.org/wiki/Curse_of_dimensionality) e depois retorne aos numeros do projeto. O estudante deve sair sabendo que “mais colunas” e “mais informacao” nao sao sinonimos.
+Para ampliar a intuição, a [visualização de curse of dimensionality na Wikipedia](https://en.wikipedia.org/wiki/Curse_of_dimensionality) pode ser comparada ao gráfico do laboratório. O ponto central permanece: “mais colunas” e “mais informação” não são sinônimos.
 
 **Pergunta cultural:** por que a computacao moderna ainda fala dessa maldicao? Porque sensores, prontuarios e sistemas de log produzem atributos mais rapido do que conseguimos obter exemplos independentes de qualidade.
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** curva de Hughes do laboratorio e grafico comparativo dos atributos do projeto.
+- **Visual local:** curva de Hughes do laboratório e gráfico comparativo dos atributos do projeto.
+- **Imagem incorporada:**
+
+![Curvas de ablação e redução de atributos](../assets/modulo4_ablation_curves.png)
 - **Animacao sugerida:** [Curva de aprendizado e validacao](https://scikit-learn.org/stable/modules/learning_curve.html), observando o efeito de amostras.
-- **Audio de abertura:** “mais pacientes” versus “mais colunas” explicado com a mochila do montanhista.
+- **Áudio sugerido:** “mais pacientes” versus “mais colunas”, explicado com a mochila do montanhista.
 - **Imagem mental:** 2D como uma sala ocupada; 40D como um galpao enorme com 2.000 pessoas.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Dimensionalidade compreendida` quando o aluno distinguir sinal, redundancia, ruido e vazamento.
+- **Status:** `Dimensionalidade compreendida` quando sinal, redundância, ruído e vazamento estiverem diferenciados.
 - **Debate:** “Se o modelo aceita 40 colunas, por que o hospital deveria pagar por todas?”
 - **Papel rotativo:** defensor da coleta, engenheiro de custo e auditor de generalizacao.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Experimento em grupos:** cada grupo adiciona uma familia de colunas e preenche treino, teste e gap.
+- **Experimento:** uma família de colunas é adicionada por vez, registrando treino, teste e gap.
 - **Produto da aula:** um grafico anotado com o ponto em que o ruido passa a custar desempenho.
 - **Conexao profissional:** propor quais atributos seriam candidatos a SHAP, filtro e selecao.
 

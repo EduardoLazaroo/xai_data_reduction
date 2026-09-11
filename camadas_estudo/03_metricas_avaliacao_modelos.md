@@ -1,12 +1,12 @@
 # Camada 03: Metricas de Avaliacao e Rigor Diagnostico
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), funcoes `treinar_e_avaliar_modelo` e `plotar_graficos_baseline`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning  
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)  
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções `treinar_e_avaliar_modelo` e `plotar_graficos_baseline`
 
 > **Objetivo da aula:** compreender por que a acuracia isolada pode mascarar erros graves em dados de saude, dominar a anatomia da matriz de confusao e entender como o equilibrio entre precision, recall, F1-score e ROC-AUC fundamenta a validacao clinica de modelos de aprendizado de maquina.
 
-## Campo Didatico: Uma Metrica e uma Pergunta
+## Campo Didático: Uma Métrica e uma Pergunta
 
 Nao comece pela formula. Comece por um caso: um paciente doente que recebe resultado saudavel e um paciente saudavel que recebe um alarme. Depois execute a avaliacao em quatro passagens: **matriz de confusao, precision, recall, F1 e ROC-AUC**. Para cada numero, escreva a pergunta operacional que ele responde e o erro que ele pode esconder.
 
@@ -32,7 +32,7 @@ Use o alarme de incendio: `FP` e alarme sem fogo, `FN` e fogo sem alarme, `TP` e
 
 ### Um caso numerico antes das formulas
 
-Considere 100 pacientes: 80 saudaveis e 20 com patologia. Um modelo previu corretamente 76 saudaveis (`TN`), encontrou 15 doentes (`TP`), alarmou 4 saudaveis (`FP`) e deixou passar 5 doentes (`FN`).
+Considere 100 pacientes: 80 saudáveis e 20 com patologia. Um modelo previu corretamente 76 saudáveis (`TN`), encontrou 15 doentes (`TP`), alarmou 4 saudáveis (`FP`) e deixou passar 5 doentes (`FN`).
 
 ```text
                 REAL
@@ -41,24 +41,24 @@ previsto saudavel     76              5
 previsto patologia     4             15
 ```
 
-A acuracia e `(76 + 15) / 100 = 91%`. A precision e `15 / (15 + 4) = 78,9%`: entre os alertas, essa e a parcela correta. O recall e `15 / (15 + 5) = 75%`: um quarto das patologias escapou. O mesmo modelo pode parecer excelente pela acuracia e insuficiente pela lente clinica.
+A acurácia é `(76 + 15) / 100 = 91%`. A precision é `15 / (15 + 4) = 78,9%`: entre os alertas, essa é a parcela correta. O recall é `15 / (15 + 5) = 75%`: um quarto das patologias escapou. O mesmo modelo pode parecer excelente pela acurácia e insuficiente pela lente clínica.
 
-### Como ler o laboratorio
+### Como ler o laboratório
 
-Altere o limiar de classificacao somente depois de compreender o padrao: reduzir o limiar chama mais pacientes para investigacao, aumentando recall e possivelmente `FP`; elevar o limiar exige mais evidencia, aumentando precision e possivelmente `FN`. A ROC mostra essa troca em muitos limiares; F1 resume uma troca especifica, nao substitui a escolha clinica.
+O limiar de classificação transforma probabilidade em ação: reduzi-lo chama mais pacientes para investigação, aumentando recall e possivelmente `FP`; elevá-lo exige mais evidência, aumentando precision e possivelmente `FN`. A ROC mostra essa troca em muitos limiares; F1 resume uma troca específica, não substitui a escolha clínica.
 
-### Duvidas frequentes
+### Dúvidas frequentes
 
-- **Acuracia alta prova que o modelo e bom?** Nao quando as classes sao desbalanceadas ou os erros tem custos diferentes.
-- **Recall alto e suficiente?** Nao; um modelo que alerta todos tem recall alto, mas pode produzir uma quantidade impraticavel de falsos positivos.
-- **ROC-AUC e uma probabilidade de acerto?** Nao. E uma medida de capacidade de ordenacao entre positivos e negativos em varios limiares.
-- **F1 deve sempre ser maximizado?** Nao necessariamente; em triagem, recall pode receber prioridade explicita.
+- **Acurácia alta prova que o modelo é bom?** Não quando as classes são desbalanceadas ou os erros têm custos diferentes.
+- **Recall alto é suficiente?** Não; um modelo que alerta todos tem recall alto, mas pode produzir uma quantidade impraticável de falsos positivos.
+- **ROC-AUC é uma probabilidade de acerto?** Não. É uma medida de capacidade de ordenação entre positivos e negativos em vários limiares.
+- **F1 deve sempre ser maximizado?** Não necessariamente; em triagem, recall pode receber prioridade explícita.
 
-### Decisao responsavel
+### Decisão responsável
 
-O resultado deve ser escrito como uma tabela de erros e consequencias, nao como um unico numero vencedor. Antes de comparar modelos, fixe a classe positiva, o limiar, a particao e a metrica principal. A Camada 04 usa esse rigor para observar como o excesso de atributos altera a generalizacao.
+O resultado deve ser escrito como uma tabela de erros e consequências, não como um único número vencedor. Antes de comparar modelos, ficam definidos a classe positiva, o limiar, a partição e a métrica principal. A Camada 04 usa esse rigor para observar como o excesso de atributos altera a generalização.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 A curva ROC nasceu no contexto de deteccao de sinais e radares, nao de competicoes de Python. O texto de Tom Fawcett, [An introduction to ROC analysis](https://www.sciencedirect.com/science/article/pii/S016786550500303X), ajuda a entender que o limiar de decisao transforma probabilidades em acoes. Para problemas desbalanceados, leia [The Relationship Between Precision-Recall and ROC Curves](https://doi.org/10.1145/1143844.1143874), de Davis e Goadrich.
 
@@ -68,20 +68,20 @@ O grafico [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png)
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png), com matriz de confusao e ROC.
+- **Visual local:** [modulo1_baseline_metrics.png](../assets/modulo1_baseline_metrics.png), com matriz de confusão e ROC.
 - **Referencia interativa:** [Metricas de avaliacao do scikit-learn](https://scikit-learn.org/stable/modules/model_evaluation.html).
-- **Audio de abertura:** narrar o caso do alarme de fumaca: alarme falso incomoda; silencio diante do fogo e perigoso.
-- **Imagem mental:** quatro quadrantes da matriz como quatro destinos clinicos diferentes.
+- **Áudio sugerido:** o caso do alarme de fumaça: alarme falso incomoda; silêncio diante do fogo é perigoso.
+- **Imagem mental:** quatro quadrantes da matriz como quatro destinos clínicos diferentes.
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Metricas defendidas` quando o aluno justificar uma metrica pela consequencia de negocio ou clinica.
+- **Status:** `Métricas defendidas` quando uma métrica puder ser justificada pela consequência de negócio ou clínica.
 - **Debate:** “Qual erro deve ser priorizado no pronto-socorro: `FP` ou `FN`?”
 - **Papel rotativo:** medico, gestor de custo, paciente e cientista de dados escolhem limiares diferentes.
 
 ## 💡 Engajamento e Conhecimento
 
-- **Jogo de limiar:** grupos recebem probabilidades e simulam cortes em `0,30`, `0,50` e `0,70`.
+- **Jogo de limiar:** probabilidades são avaliadas com cortes em `0,30`, `0,50` e `0,70`.
 - **Produto da aula:** tabela com `TN`, `FP`, `FN`, `TP`, F1, recall e justificativa do limiar.
 - **Conexao profissional:** consultar a documentacao antes de escolher `scoring` em uma busca de hiperparametros.
 

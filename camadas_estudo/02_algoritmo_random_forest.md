@@ -1,14 +1,14 @@
 # Camada 02: O Algoritmo Random Forest
 
-**Trilha:** XAI Aplicada a Reducao de Dados em Machine Learning  
-**Aplicacao:** classificacao binaria de saude (`0 = Saudavel`, `1 = Patologia`)  
-**Codigo de referencia:** [pipeline_completo.py](../pipeline_completo.py), classe `RandomForestClassifier`
+**Trilha:** XAI Aplicada à Redução de Dados em Machine Learning  
+**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)  
+**Código de referência:** [pipeline_completo.py](../pipeline_completo.py), classe `RandomForestClassifier`
 
 > **Objetivo da aula:** entender como uma arvore de decisao faz perguntas aos dados, por que uma arvore isolada e instavel e como o comite de arvores do Random Forest, apoiado em bagging e selecao aleatoria de atributos, reduz a variancia e prepara o terreno para a explicabilidade com TreeSHAP.
 
-## Campo Didatico: Da Arvore ao Comite
+## Campo Didático: Da Árvore ao Comitê
 
-Siga o experimento em seis passos: **crie uma arvore, observe sua regra, crie varias amostras bootstrap, treine arvores diversas, agregue os votos e compare com o baseline**. A pergunta-guia e: uma floresta melhora porque cada arvore e perfeita ou porque seus erros deixam de coincidir?
+O experimento percorre seis movimentos: **criar uma árvore, observar sua regra, formar amostras bootstrap, treinar árvores diversas, agregar as previsões e comparar com o baseline**. A pergunta central é: a floresta melhora porque cada árvore é perfeita ou porque seus erros deixam de coincidir?
 
 ```text
 amostra sorteada -> arvore 1 --\
@@ -16,21 +16,21 @@ amostra sorteada -> arvore 2 ----> votacao/medias -> previsao
 atributos sorteados -> arvore N -/
 ```
 
-No grafico, procure diversidade entre arvores e estabilidade no resultado final. No codigo, altere `n_estimators` e `max_features`, mas mude uma coisa por vez. O erro mais comum e interpretar a probabilidade da floresta como certeza clinica; ela e uma agregacao estatistica e ainda precisa de calibracao e avaliacao. A ponte seguinte e a Camada 03: uma previsao da floresta so pode ser julgada com metricas que distinguem tipos de erro.
+O gráfico deve revelar diversidade entre árvores e estabilidade no resultado final. A probabilidade da floresta não é certeza clínica: é uma agregação estatística que ainda precisa de calibração e avaliação. A ponte seguinte é a Camada 03, na qual a previsão será julgada por métricas que distinguem tipos de erro.
 
-### Roteiro de dominio
+### Roteiro de domínio
 
-Reconstrua a floresta no papel: uma arvore faz cortes, bootstrap muda os pacientes de cada arvore, `max_features` muda as colunas candidatas e a votacao combina as saidas. Depois responda: **por que diversidade ajuda, por que arvores profundas variam e por que 100 arvores nao significam 100 certezas?**
+Uma árvore faz cortes, bootstrap muda os pacientes de cada árvore, `max_features` muda as colunas candidatas e a votação combina as saídas. A diversidade reduz a chance de todos os membros cometerem o mesmo erro; 100 árvores não significam 100 certezas independentes.
 
 ### Duvidas que esta aula responde
 
-- **Bagging e a mesma coisa que treinar 100 vezes a mesma arvore?** Nao. As amostras e os atributos candidatos variam.
-- **Mais arvores sempre melhoram?** Normalmente estabilizam ate um ponto; aumentam custo e nao corrigem dados ruins ou vazamento.
-- **Importancia Gini e explicacao causal?** Nao. E uma medida de uso nos cortes; TreeSHAP sera estudado para atribuir impacto nas previsoes.
+- **Bagging é a mesma coisa que treinar 100 vezes a mesma árvore?** Não. As amostras e os atributos candidatos variam.
+- **Mais árvores sempre melhoram?** Normalmente estabilizam até um ponto; aumentam custo e não corrigem dados ruins ou vazamento.
+- **Importância Gini é explicação causal?** Não. É uma medida de uso nos cortes; TreeSHAP será estudado para atribuir impacto nas previsões.
 
 ### Regra de explicacao Feynman
 
-Diga que uma arvore e uma opiniao e a floresta e um conselho com membros que viram amostras diferentes. O conselho fica mais confiavel quando os membros sao bons e nao cometem exatamente o mesmo erro.
+Uma árvore é uma opinião; a floresta é um conselho cujos membros viram amostras diferentes. O conselho fica mais confiável quando os membros são bons e não cometem exatamente o mesmo erro.
 
 ### Uma previsao acompanhada de perto
 
@@ -43,9 +43,9 @@ bootstrap C -> arvore 3 -> 0 (0.48) ----/
 bootstrap D -> arvore 4 -> 1 (0.83) --/
 ```
 
-### O que o laboratorio precisa ensinar
+### O que o laboratório revela
 
-Ao comparar arvore e floresta, leia quatro coisas: acuracia de treino, acuracia de teste, gap e desenho da fronteira. Uma arvore pode atingir treino perfeito e criar bolsões minúsculos; a floresta pode continuar complexa, mas reduzir a instabilidade porque seus erros nao sao identicos. Alterar `n_estimators` mostra estabilidade; alterar `max_depth` mostra controle de complexidade. Nao confunda mais arvores com arvores mais profundas: sao controles diferentes.
+Ao comparar árvore e floresta, leia quatro coisas: acurácia de treino, acurácia de teste, gap e desenho da fronteira. Uma árvore pode atingir treino perfeito e criar bolsões minúsculos; a floresta pode continuar complexa, mas reduzir a instabilidade porque seus erros não são idênticos. `n_estimators` controla a quantidade de árvores; `max_depth` controla a complexidade de cada uma.
 
 ### Um exemplo numerico de votacao
 
@@ -68,7 +68,7 @@ Com limiar de `0,50`, a classe final e `1`. Se o limiar subir para `0,70`, a mes
 
 A floresta entrega uma previsao e uma probabilidade agregada. A Camada 03 ensina por que essa previsao precisa ser examinada por `TP`, `TN`, `FP`, `FN`, F1, recall e ROC-AUC, e nao apenas por uma porcentagem de acertos.
 
-## Cultura, Historia e Referencias
+## Cultura, História e Referências
 
 O Random Forest foi formalizado por Leo Breiman no artigo [Random Forests (2001)](https://doi.org/10.1023/A:1010933404324). A ideia culturalmente importante e que uma boa solucao nem sempre e um especialista perfeito: um conjunto diverso de modelos imperfeitos pode generalizar melhor. A [documentacao oficial de florestas do scikit-learn](https://scikit-learn.org/stable/modules/ensemble.html#random-forests) tambem alerta que importancia por impureza pode enganar e recomenda comparar com importancia por permutacao.
 
@@ -78,22 +78,24 @@ Observe essa diferenca no artefato [modulo1_baseline_metrics.png](../assets/modu
 
 ## Recursos de Mídia (Visual e Áudio)
 
-- **Visual local:** fronteira do toy example da arvore contra a floresta; desenhe votos de 5 arvores para um paciente.
-- **Referencia visual:** [Random forests no scikit-learn](https://scikit-learn.org/stable/modules/ensemble.html#random-forests).
-- **Audio de abertura:** conte a origem do “comite” e leia em voz alta o exemplo `[1, 1, 0, 1]` antes da formula.
-- **Imagem mental:** varias arvores diferentes compartilhando uma urna de votos.
+- **Visual local:** a comparação entre árvore e floresta no laboratório, acompanhada do artefato [baseline do projeto](../assets/modulo1_baseline_metrics.png).
+- **Referência visual:** [Random forests no scikit-learn](https://scikit-learn.org/stable/modules/ensemble.html#random-forests).
+- **Áudio sugerido:** a história do comitê e o exemplo `[1, 1, 0, 1]`, seguido da média `0,66`.
+- **Imagem mental:** várias árvores diferentes compartilhando uma urna de previsões.
+
+![Matriz de confusão e curva ROC do baseline](../assets/modulo1_baseline_metrics.png)
 
 ## 📊 Elementos de Comunidade e Status
 
-- **Status:** `Floresta entendida` quando o estudante diferenciar bootstrap, `max_features`, profundidade e votacao.
-- **Debate:** “Uma floresta com muitas arvores e sempre melhor que uma arvore bem regulada?”
-- **Papel rotativo:** arquiteto da arvore, auditor de diversidade e relator da decisao agregada.
+- **Status:** `Floresta entendida` quando bootstrap, `max_features`, profundidade e votação puderem ser diferenciados.
+- **Debate:** “Uma floresta com muitas árvores é sempre melhor que uma árvore bem regulada?”
+- **Questão de comunidade:** como reconhecer consenso que nasce de diversidade e consenso que nasce de cópias?
 
 ## 💡 Engajamento e Conhecimento
 
-- **Experimento coletivo:** cada grupo altera apenas `n_estimators` ou `max_features` e compara fronteira, F1 e tempo.
-- **Produto da aula:** desenhar uma arvore e depois explicar por que 100 copias nao sao uma floresta se forem identicas.
-- **Conexao profissional:** registrar por que a floresta foi escolhida como baseline antes de usar SHAP.
+- **Experimento:** alterar apenas `n_estimators` ou `max_features` e comparar fronteira, F1 e tempo.
+- **Produto da aula:** desenhar uma árvore e explicar por que 100 cópias idênticas não formam uma floresta diversa.
+- **Conexão profissional:** registrar por que a floresta foi escolhida como baseline antes do SHAP.
 
 ## Mapa da aula
 
