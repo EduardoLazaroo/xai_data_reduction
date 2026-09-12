@@ -17,7 +17,7 @@ NOTA DE ORGANIZAÇÃO DO PROJETO:
   - Aula 01: Baseline e Alta Dimensionalidade
   - Aula 02: SHAP e Teoria dos Jogos Cooperativos
   - Aula 03: LIME e Auditoria no Limiar de Decisão
-  - Aula 04: Ablação Progressiva (SHAP vs. RFE)
+  - Aula 04: Ablação Progressiva (SHAP, filter, wrapper e embedded)
   - Aula 05: Pré-Filtro Híbrido e shap-select
   - Aula 06: Pipeline Integrado, Optuna e Dashboard Executivo
   (E o caderno unificado em `notebooks_colab/XAI_Data_Reduction_Masterclass_Colab.md`).
@@ -205,25 +205,27 @@ Checkpoint:
   de 50% de probabilidade, e não uma instância "óbvia"?
 
 ------------------------------------------------------------
-ETAPA 8 — SELEÇÃO DE ATRIBUTOS: MÉTODO TRADICIONAL (RFE)
+ETAPA 8 — SELEÇÃO DE ATRIBUTOS: FILTER, WRAPPER E EMBEDDED
 ------------------------------------------------------------
 O que estudar:
 - O que é seleção de atributos (feature selection) de forma geral.
-- RFE (Recursive Feature Elimination): treina o modelo, remove o atributo
-  menos importante, repete o processo até sobrar a quantidade desejada.
-- Por que o RFE é considerado um método "tradicional" (não usa
-  explicabilidade, usa importância interna do próprio modelo).
+- Filter: calcula uma evidência por atributo, como mutual information, sem
+  treinar o modelo final a cada remoção.
+- Wrapper: usa o desempenho/estimador em ciclos; o RFE é o representante
+  wrapper desta pesquisa.
+- Embedded: seleciona durante o ajuste; aqui usamos regressão logística L1.
 
 Por que importa:
-- É o "adversário justo" usado para comparar com a seleção via SHAP.
-  Sem um baseline de comparação, não dá pra afirmar que XAI é melhor
-  ou pior.
+- A comparação entre famílias evita concluir que SHAP é melhor apenas por
+  enfrentar um único baseline. O experimento compara custo, desempenho e
+  interpretabilidade operacional.
 
 Onde aparece:
-- modulo4_ablation_comparison.py -> obter_ranking_rfe()
+- pipeline_completo.py -> executar_etapa_ablacao()
 
 Checkpoint:
-- Qual é a diferença conceitual entre "ranking por SHAP" e "ranking por RFE"?
+- Qual é a diferença entre filter, wrapper e embedded?
+- Em que sentido SHAP acrescenta uma leitura explicativa ao comparativo?
 
 ------------------------------------------------------------
 ETAPA 9 — ABLAÇÃO: TESTANDO A REDUÇÃO PROGRESSIVA
@@ -347,6 +349,8 @@ O que estudar:
 - Por que às vezes o tempo de treino do pipeline reduzido pode ser MAIOR
   que o do baseline (custo de explicabilidade + otimização), mesmo com
   menos atributos — isso é um ponto importante de discussão crítica.
+- Como ler concentração Top-10 do SHAP e esparsidade da explicação LIME
+  como proxies de interpretabilidade, sem confundi-las com causalidade.
 
 Por que importa:
 - É exatamente o material que vira a seção de "Resultados" e "Discussão"
@@ -415,8 +419,8 @@ RESUMO DA ORDEM (COLE ISSO NUM QUADRO BRANCO)
 5. O que é XAI (global x local)
 6. SHAP
 7. LIME
-8. RFE (seleção tradicional)
-9. Ablação progressiva
+8. Filter, wrapper e embedded (RFE, mutual information e logística L1)
+9. Ablação progressiva e comparação entre famílias
 10. Pré-filtro híbrido (variância e correlação)
 11. shap-select (regressão + p-valor)
 12. Optuna (otimização de hiperparâmetros)

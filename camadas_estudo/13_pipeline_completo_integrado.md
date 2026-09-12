@@ -4,14 +4,14 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_pipeline_completo`
 
-> **Objetivo da aula:** Analisar a arquitetura de orquestracao de ponta a ponta em MLOps, examinando o encadeamento deterministico entre geracao controlada de dados, avaliacao de linha de base, explicabilidade analitica, reducao estatistica de dimensionalidade e calibracao bayesiana, assegurando reprodutibilidade cientifica integral e ausencia de vazamento de dados.
+> **Objetivo da aula:** Analisar a arquitetura de orquestracao de ponta a ponta em MLOps, examinando o encadeamento entre dados, baseline, rankings filter/wrapper/embedded/SHAP, auditoria local LIME, redução estatística, calibracao bayesiana e métricas de interpretabilidade, assegurando reprodutibilidade e ausencia de vazamento de dados.
 
 ## Campo Didático: Ler o Pipeline Como Uma História Causal
 
 Nao execute o script como uma caixa-preta. Siga o rastro de cada artefato: **dados gerados, split, baseline, SHAP/LIME, filtros, shap-select, Optuna, campeao e dashboard**. Para cada etapa, anote entrada, transformacao, saida, custo e risco de vazamento.
 
 ```text
-entrada -> baseline -> explicacao -> reducao -> otimizacao -> avaliacao final
+entrada -> baseline -> rankings/auditoria -> reducao -> otimizacao -> avaliacao final
     |          |           |           |           |                |
     v          v           v           v           v                v
 dados     ponto zero   por que?   menos cols  melhores params   evidencia

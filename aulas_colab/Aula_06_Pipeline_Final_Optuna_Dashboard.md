@@ -8,7 +8,7 @@
 
 > [!NOTE]
 > 🔙 **De onde viemos:** Ao longo das cinco aulas anteriores, construímos e validamos isoladamente cada peça do quebra-cabeça: mensuramos o Mal da Dimensionalidade no Baseline (Aula 01), decodificamos a mente da floresta com SHAP (Aula 02), auditamos pacientes individuais no limiar do risco com LIME (Aula 03), comprovamos a viabilidade da poda em curvas de ablação (Aula 04) e desenvolvemos o Pré-Filtro Híbrido e o `shap-select` com rigor estatístico (Aula 05).
-> 🎯 **Objetivo Principal da Aula:** Consolidar todas as etapas em um **Pipeline Industrial Fim-a-Fim**, recalibrar os hiperparâmetros do classificador no espaço de dados reduzido através de **Otimização Bayesiana (Optuna / TPE)**, treinar o modelo de produção final e construir o **Dashboard Executivo Comparativo de 4 Quadrantes** comprovando a superioridade computacional e a integridade clínica da solução.
+> 🎯 **Objetivo Principal da Aula:** Consolidar todas as etapas em um pipeline reprodutível, comparar filter, wrapper, embedded e SHAP, recalibrar os hiperparâmetros no espaço reduzido através de **Otimização Bayesiana (Optuna / TPE)** e avaliar desempenho, custo, redução dimensional e proxies de interpretabilidade. O resultado deve sustentar uma conclusão proporcional ao dataset sintético, sem declarar superioridade clínica.
 > 🚀 **Para onde vamos:** Conclusão do curso! Agora você domina uma metodologia completa de ponta a ponta, pronta para ser aplicada em projetos reais da indústria de tecnologia, medicina diagnóstica, sistemas embarcados (Edge AI) e pesquisas científicas de alto impacto.
 
 ---
@@ -18,7 +18,7 @@
 | Módulo | Atividade | Foco Pedagógico |
 | :--- | :--- | :--- |
 | **Módulo 1** | **Fundamentação Teórica & A Necessidade de Re-otimização** | Por que um modelo com 75% menos colunas exige hiperparâmetros diferentes e o funcionamento da Otimização Bayesiana via TPE. |
-| **Módulo 2** | **O Mecanismo por Dentro & Arquitetura do Pipeline Integrado** | Fluxo de dados entre Baseline $\to$ Pré-Filtro $\to$ shap-select $\to$ Optuna $\to$ Avaliação Cega. |
+| **Módulo 2** | **O Mecanismo por Dentro & Arquitetura do Pipeline Integrado** | Fluxo de dados entre Baseline $\to$ rankings filter/wrapper/embedded/SHAP $\to$ pré-filtro $\to$ shap-select $\to$ Optuna $\to$ avaliação cega. |
 | **Módulo 3** | **Prática Guiada no Google Colab** | 6 blocos de código em Python minuciosamente comentados linha por linha, com o Dashboard de 4 gráficos e tabela executiva. |
 | **Módulo 4** | **Prática Orientada & Experimentação Fácil** | Experimentação com aumento do número de ensaios do Optuna (*trials*) e inclusão de novos hiperparâmetros de busca. |
 | **Módulo 5** | **Checklist de Autonomia & Bibliografia Final** | Autoavaliação de competências de encerramento do curso e referências acadêmicas. |

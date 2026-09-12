@@ -8,8 +8,8 @@
 
 > [!NOTE]
 > 🔙 **De onde viemos:** No aprendizado de máquina supervisionado convencional, frequentemente somos levados a crer que *"quanto mais variáveis e colunas alimentarmos no modelo, melhor ele aprenderá"*. No entanto, na prática de ciência de dados de alta complexidade (como bioinformática, saúde e finanças), o excesso de variáveis irrelevantes causa o **Mal da Dimensionalidade**, inflaciona o risco de **Overfitting**, retarda a inferência em tempo real e encarece a coleta de exames.
-> 🎯 **Objetivo Principal do Curso / Notebook:** Percorrer uma jornada científica completa em 6 etapas: estabelecer um classificador de referência (**Baseline**) sobre 40 variáveis clínicas heterogêneas; auditar a tomada de decisão com **SHAP** (global) e **LIME** (local); executar um **Estudo de Ablação Progressiva** confrontando SHAP vs. RFE; implementar uma engenharia de seleção em duas fases (**Pré-Filtro Híbrido** e **shap-select** com rigor econométrico de $p$-valor); e consolidar um **Pipeline Industrial Fim-a-Fim** com reotimização bayesiana via **Optuna** e geração de um **Dashboard Executivo de 4 Quadrantes**.
-> 🚀 **Para onde vamos:** Ao concluir este caderno, você dominará um método robusto, reprodutível e academicamente validado para comprimir bases de dados em até 75% preservando (ou até melhorando) a precisão preditiva, habilitando a implantação de modelos ultrarrápidos em servidores de nuvem ou em dispositivos embarcados (*Edge AI*).
+> 🎯 **Objetivo Principal do Curso / Notebook:** Percorrer uma jornada científica completa em 6 etapas: estabelecer um classificador de referência (**Baseline**) sobre 40 variáveis; auditar a tomada de decisão com **SHAP** (global) e **LIME** (local); executar ablação comparando SHAP com métodos **filter, wrapper e embedded**; implementar **Pré-Filtro Híbrido** e **shap-select**; e consolidar um pipeline com Optuna e dashboard. O LIME não seleciona atributos: ele audita decisões individuais.
+> 🚀 **Para onde vamos:** Ao concluir este caderno, você saberá comparar redução dimensional, desempenho, custo e proxies de interpretabilidade. Os resultados são evidências do dataset sintético e do split executado, não validação clínica externa.
 
 ---
 
@@ -20,7 +20,7 @@
 | **01** | **O Baseline e o Mal da Dimensionalidade** | Simulação de 2.000 pacientes com 40 atributos (10 biomarcadores reais, 10 redundantes, 20 ruídos puros); treino do Random Forest; medição de latências; Matriz de Confusão e Curva ROC. |
 | **02** | **Explicabilidade Global via SHAP** | Fundamentos da Teoria dos Jogos Cooperativos de Lloyd Shapley (Nobel 2012); algoritmo TreeSHAP; cálculo do ranking de importância média $\|SHAP\|$; Bar Plot e Beeswarm Plot. |
 | **03** | **Explicabilidade Local via LIME** | Amostragem por perturbação local de vizinhança; identificação algorítmica de paciente no limiar crítico ($P \approx 50\%$); modelo linear substituto (*surrogate*) e gráfico bicolor de regras locais. |
-| **04** | **Poda Guiada por XAI vs. RFE (Ablação)** | Experimento iterativo de ablação progressiva (40 a 2 atributos); comparação entre ranking SHAP e RFE tradicional; análise do Ponto de Inflexão (Knee Point); curvas de F1 e tempo. |
+| **04** | **Ablação entre Famílias de Seleção** | Experimento de 40 a 2 atributos comparando SHAP, filter (mutual information), wrapper (RFE) e embedded (logística L1); curvas de F1 e tempo. |
 | **05** | **Engenharia Avançada: Pré-Filtro & shap-select** | Fase 1 (Pré-Filtro Híbrido: Variância e Pearson $> 0.90$ estilo BOLIMES); Fase 2 (`shap-select`: Regressão Logística de $y \sim \Phi$, admitindo apenas coeficientes $\beta > 0$ e $p\text{-valor} < 0.05$). |
 | **06** | **Pipeline Industrial, Optuna & Dashboard** | Integração do fluxo completo; Otimização Bayesiana via TPE com Optuna (CV em 3 dobras); treino do modelo campeão; Dashboard Executivo de 4 Painéis e Sanity Check Final. |
 
@@ -330,7 +330,7 @@ print(f"[*] Paciente #{idx_limiar} explicado com sucesso pelo LIME!")
 > ⚔️ **Analogia Geek — O Alívio de Carga Espacial:**
 > Se uma nave espacial precisa cortar peso de 40 kg para 10 kg, o método tradicional RFE corta itens por tentativa e erro a cada parada. O método SHAP avalia a utilidade exata de cada suprimento de uma só vez. Vamos provar que com 10 kg certos a missão cumpre seus objetivos perfeitamente!
 
-### Bloco 4.1 — Comparação Sistemática de Poda Progressiva (SHAP vs. RFE)
+### Bloco 4.1 — Comparação Sistemática de Poda Progressiva entre Famílias
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
@@ -338,8 +338,10 @@ print(f"[*] Paciente #{idx_limiar} explicado com sucesso pelo LIME!")
 > É o ponto na curva onde a quantidade de atributos diminui muito, mas o F1-Score se mantém no topo. Abaixo dele, o modelo perde variáveis informativas e despenca.
 
 ```python
-# 1. Importamos o RFE do Scikit-Learn
-from sklearn.feature_selection import RFE
+# 1. Importamos representantes das três famílias e o SHAP
+from sklearn.feature_selection import RFE, mutual_info_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 # 2. Obtemos a lista ordenada de colunas pelo ranking SHAP
 ranking_shap = df_importancia_shap["atributo"].tolist()
@@ -351,7 +353,16 @@ rfe.fit(X_train, y_train)
 df_rfe = pd.DataFrame({"atributo": X_train.columns, "ranking": rfe.ranking_}).sort_values(by="ranking").reset_index(drop=True)
 ranking_rfe = df_rfe["atributo"].tolist()
 
-# 4. Funcao para executar a curva de ablacao
+# 4. Filter: ranking univariado por mutual information.
+scores_filter = mutual_info_classif(X_train, y_train, random_state=42)
+ranking_filter = X_train.columns[np.argsort(scores_filter)[::-1]].tolist()
+
+# 5. Embedded: seleção induzida por coeficientes L1.
+modelo_l1 = LogisticRegression(penalty="l1", solver="liblinear", C=0.1, random_state=42, max_iter=1000)
+modelo_l1.fit(StandardScaler().fit_transform(X_train), y_train)
+ranking_embedded = X_train.columns[np.argsort(np.abs(modelo_l1.coef_[0]))[::-1]].tolist()
+
+# 6. Funcao para executar a curva de ablacao
 def curva_ablacao(ordem_cols, nome_metodo, passos):
     res = []
     for k in passos:
@@ -371,17 +382,21 @@ def curva_ablacao(ordem_cols, nome_metodo, passos):
         })
     return pd.DataFrame(res)
 
-# 5. Executamos as curvas de poda de 40 ate 2 atributos
+# 7. Executamos as curvas de poda de 40 ate 2 atributos
 passos_poda = list(range(40, 1, -2))
 df_ablacao_shap = curva_ablacao(ranking_shap, "SHAP (XAI)", passos_poda)
-df_ablacao_rfe = curva_ablacao(ranking_rfe, "RFE (Tradicional)", passos_poda)
+df_ablacao_filter = curva_ablacao(ranking_filter, "Filter (Mutual Information)", passos_poda)
+df_ablacao_rfe = curva_ablacao(ranking_rfe, "Wrapper (RFE)", passos_poda)
+df_ablacao_embedded = curva_ablacao(ranking_embedded, "Embedded (Logística L1)", passos_poda)
 
 # 6. Renderizamos as curvas comparativas
 fig, axes = plt.subplots(1, 2, figsize=(16, 5))
 
 # Curva 1: F1-Score vs Poda
 axes[0].plot(df_ablacao_shap["n_atributos"], df_ablacao_shap["f1_score"], marker='o', color='#1f77b4', lw=2.5, label="Seleção SHAP")
-axes[0].plot(df_ablacao_rfe["n_atributos"], df_ablacao_rfe["f1_score"], marker='s', linestyle='--', color='#ff7f0e', lw=2, label="Seleção RFE")
+axes[0].plot(df_ablacao_filter["n_atributos"], df_ablacao_filter["f1_score"], marker='^', linestyle='-.', color='#9467bd', lw=2, label="Filter")
+axes[0].plot(df_ablacao_rfe["n_atributos"], df_ablacao_rfe["f1_score"], marker='s', linestyle='--', color='#ff7f0e', lw=2, label="Wrapper (RFE)")
+axes[0].plot(df_ablacao_embedded["n_atributos"], df_ablacao_embedded["f1_score"], marker='D', linestyle=':', color='#2ca02c', lw=2, label="Embedded (L1)")
 axes[0].axvline(x=10, color='red', linestyle=':', lw=2, label='10 Biomarcadores Vitais')
 axes[0].invert_xaxis()
 axes[0].set_title("1. Desempenho Clínico (F1-Score) vs. Poda de Atributos", fontsize=12, fontweight="bold")

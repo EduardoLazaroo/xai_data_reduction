@@ -4,7 +4,7 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), função `executar_etapa_lime`
 
-> **Objetivo da aula:** Compreender a formulacao teorica e a dinamica pratica do LIME (Local Interpretable Model-agnostic Explanations), analisando a geracao de perturbacoes estocasticas no espaco amostral, a ponderacao por kernel gaussiano de distancia e a motivacao clinica de auditar instancias proximas ao limiar de decisao de 50%.
+> **Objetivo da aula:** Compreender a formulacao teorica e a dinamica pratica do LIME (Local Interpretable Model-agnostic Explanations), analisando perturbacoes, ponderacao por distancia, fidelidade e estabilidade. O LIME sera usado para auditar instancias proximas ao limiar de decisao, nao para selecionar atributos globalmente.
 
 ## Campo Didático: Uma Lupa Para Um Paciente
 
@@ -17,7 +17,7 @@ paciente escolhido -> perturbacoes -> pesos de proximidade -> modelo simples loc
     previsao original ------------------------------> regras explicativas
 ```
 
-Observe que uma boa explicacao local nao precisa representar toda a floresta. O erro comum e tratar uma explicacao instavel como verdade absoluta ou confundir proximidade matematica com semelhança clinica. A ponte para a Camada 08 e comparar essa leitura XAI com uma selecao tradicional de atributos.
+Observe que uma boa explicacao local nao precisa representar toda a floresta. O erro comum e tratar uma explicacao instavel como verdade absoluta, confundir proximidade matematica com semelhança clinica ou usar uma lista LIME como ranking da populacao. A ponte para a Camada 08 e comparar a auditoria local com filter, wrapper e embedded.
 
 ---
 

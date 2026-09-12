@@ -322,7 +322,7 @@ No protocolo experimental do projeto de reducao de dimensionalidade, comparamos 
 
 ```python
 # =============================================================================
-# APLICACAO REAL: ESTUDO COMPARATIVO DE ABLACAO (SHAP VS. RFE)
+# APLICACAO REAL: ESTUDO COMPARATIVO DE ABLACAO (QUATRO FAMILIAS)
 # Base oficial: 2.000 pacientes, 40 atributos clinicos
 # =============================================================================
 import time
@@ -331,7 +331,9 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import RFE
+from sklearn.feature_selection import RFE, mutual_info_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import f1_score
 
 # 1. Dataset oficial padronizado
@@ -368,12 +370,19 @@ modelo_rf = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=4
 modelo_rf.fit(X_train, y_train)
 ranking_shap = np.argsort(modelo_rf.feature_importances_)[::-1]
 
+# 4. Rankings adicionais: filter e embedded.
+scores_filter = mutual_info_classif(X_train, y_train, random_state=42)
+ranking_filter = np.argsort(scores_filter)[::-1]
+modelo_l1 = LogisticRegression(penalty="l1", solver="liblinear", C=0.1, random_state=42, max_iter=1000)
+modelo_l1.fit(StandardScaler().fit_transform(X_train), y_train)
+ranking_embedded = np.argsort(np.abs(modelo_l1.coef_[0]))[::-1]
+
 # 4. Avaliacao comparativa nos patamares estrategicos de dimensionalidade
 degraus_k = [40, 20, 10, 6, 2]
 linhas_resultado = []
 
 print("=" * 76)
-print("TRAJETORIA EXPERIMENTAL DE ABLACAO: SHAP VS. RFE")
+print("TRAJETORIA EXPERIMENTAL DE ABLACAO: SHAP, FILTER, WRAPPER E EMBEDDED")
 print("=" * 76)
 
 for k in degraus_k:
@@ -392,6 +401,16 @@ for k in degraus_k:
     rf_r.fit(X_train.iloc[:, cols_r], y_train)
     tempo_r_ms = (time.perf_counter() - t0) * 1000
     f1_r = f1_score(y_test, rf_r.predict(X_test.iloc[:, cols_r]))
+
+    # Cenários filter e embedded usam o mesmo avaliador e o mesmo teste cego.
+    cols_f = ranking_filter[:k]
+    rf_f = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+    rf_f.fit(X_train.iloc[:, cols_f], y_train)
+    f1_f = f1_score(y_test, rf_f.predict(X_test.iloc[:, cols_f]))
+    cols_e = ranking_embedded[:k]
+    rf_e = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+    rf_e.fit(X_train.iloc[:, cols_e], y_train)
+    f1_e = f1_score(y_test, rf_e.predict(X_test.iloc[:, cols_e]))
     
     reducao_pct = (1.0 - (k / 40.0)) * 100.0
     
@@ -399,7 +418,9 @@ for k in degraus_k:
         "k_Atributos": k,
         "Reducao_Dados": f"{reducao_pct:.1f}%",
         "F1_SHAP": f"{f1_s:.4f}",
-        "F1_RFE": f"{f1_r:.4f}",
+        "F1_FILTER": f"{f1_f:.4f}",
+        "F1_RFE_WRAPPER": f"{f1_r:.4f}",
+        "F1_EMBEDDED": f"{f1_e:.4f}",
         "Tempo_Treino": f"{tempo_s_ms:.1f} ms"
     })
 
@@ -423,7 +444,7 @@ print("=" * 76)
 
 A analise do estudo de ablacao oferece subsidios estrategicos para a gestao hospitalar:
 
-1. **Eficiencia em larga escala:** demonstrar que o modelo operando com $k=10$ exames mantem o mesmo $F_1$-score do modelo original com 40 exames representa uma reducao de 75% na demanda de coletas laboratoriais, aliviando filas e custos operacionais sem penalizar a seguranca diagnostica.
+1. **Eficiencia em larga escala:** observar que o modelo operando com $k=10$ atributos mantém o desempenho dentro do protocolo representa uma redução de 75% no painel analisado; isso não autoriza inferir economia hospitalar ou segurança diagnóstica sem validação externa.
 2. **Mitigacao de Falsos Negativos por foco no sinal:** a remocao de colunas de ruido metabolico impede que pacientes verdadeiramente doentes sejam classificados erroneamente como saudaveis em decorrencia de flutuacoes aleatorias de dados espurios.
 3. **Identificacao do limite de seguranca:** a queda acentuada observada para $k < 8$ define um teto regulatorio inegociavel: reduzir o painel abaixo de 10 atributos compromete a integridade clinica, advertindo a administracao hospitalar contra cortes orcamentarios indiscriminados.
 
@@ -437,7 +458,7 @@ Explique sem consultar o texto e depois confira sua resposta:
 2. **Como se define conceitualmente o ponto de inflexao (*knee point*) em uma curva de ablacao?**
 3. **Por que em muitos cenarios a eliminacao inicial de atributos irrelevantes provoca um aumento no $F_1$-Score em vez de reducao?**
 4. **Qual e a consequencia tecnica de continuar podando variaveis apos ultrapassar o *knee point* em direcao a $k=2$?**
-5. **Por que a comparacao de curvas de ablacao (SHAP versus RFE) e metodologicamente superior a comparar apenas um ranking isolado em uma tabela estatica?**
+5. **Por que a comparacao de curvas de ablacao entre SHAP, filter, wrapper e embedded e superior a comparar apenas um ranking isolado?**
 6. **Como o estudo de ablacao previne o erro metodologico de recomendar uma reducao excessiva de exames com prejuizo diagnostico?**
 
 ### Mini-desafio pratico

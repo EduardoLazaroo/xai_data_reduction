@@ -171,9 +171,9 @@ A organizacao tatica de defesa perante arguicoes de revisores e esquematizada no
 Deep Learning?"                 ------->  redes neurais em dados tabulares e viabilizam
                                           TreeSHAP exato com tempo polinomial.
 
-"Por que nao usar apenas                   RFE e guloso, atinge latencia 10x maior e
-o RFE classico?"                ------->  nao fornece direcionalidade causal nem
-                                          laudo explicativo ao corpo clinico.
+"Por que nao usar apenas                   O protocolo compara tres familias e SHAP;
+o RFE classico?"                ------->  RFE e o representante wrapper, enquanto
+                                          SHAP e LIME oferecem trilhas de auditoria.
 
 "O ganho de 2.37 pts em F1                 O Fenomeno de Hughes comprova que a reducao
 e estatisticamente relevante?"  ------->  de 20 ruidos cortou o overfitting pela metade
@@ -362,7 +362,7 @@ Preencha a matriz de preparacao para arguicao de banca com os dados de sintese d
 | Pergunta Provocativa da Banca | Evidencia Numerica do Experimento | Conceito Teorico Fundamental |
 | :--- | :--- | :--- |
 | *"Nao houve perda de informacao clinica ao descartar 30 exames?"* | $F_1$ subiu de 0.8373 para 0.8610 (+2.37 pts) | |
-| *"Por que nao adotaram apenas o RFE consagrado?"* | RFE exigiu 20 retreinos com latencia 10x maior | |
+| *"Por que nao adotaram apenas o RFE consagrado?"* | O protocolo compara tres familias e SHAP; RFE e apenas o representante wrapper | |
 | *"O modelo nao esta sofrendo de sobreajuste nas 10 variaveis?"* | Gap treino-teste caiu de 12.2% para 6.1% | |
 
 **Pergunta reflexiva:** o dominio conjunto do codigo, da fundamentacao matematica e da estrutura de comunicacao cientifica confere autonomia plena para conduzir e defender pesquisas avancadas em Inteligencia Artificial?

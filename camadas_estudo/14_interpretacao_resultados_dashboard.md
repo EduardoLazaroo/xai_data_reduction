@@ -4,7 +4,7 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções com dashboard e comparativo de KPIs
 
-> **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando os quatro quadrantes do dashboard comparativo (reducao dimensional, tempo de treinamento, latencia de inferencia e retencao de F1-score) e formalizando o argumento de retorno de investimento entre o custo analitico de P&D e os ganhos operacionais permanentes em producao.
+> **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando redução dimensional, tempo de treinamento, latencia, F1, concentração Top-10 do SHAP e esparsidade local do LIME. Esses últimos são proxies operacionais de interpretabilidade, não medidas causais nem substitutos de avaliação humana.
 
 ## Campo Didático: Um Dashboard e um Argumento
 

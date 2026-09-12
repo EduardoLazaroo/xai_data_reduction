@@ -22,7 +22,7 @@ pergunta clinica -> baseline -> explicacao -> reducao -> re-treino -> comparacao
    o que medir?   como esta?   por que?    o que sai?  ficou igual?  vale usar?
 ```
 
-O estudante deve caminhar sempre em tres movimentos: primeiro explicar a etapa para uma pessoa leiga, depois executar o pequeno experimento, e por fim confrontar o resultado com F1, recall, gap, latencia e custo. O erro mais comum e confundir um grafico bonito com uma conclusao clinica. O grafico e evidencia; a conclusao exige comparacao justa, teste reservado e limitacoes declaradas. A ponte para as proximas camadas e simples: o baseline mostra o ponto de partida, a XAI explica o comportamento e a reducao testa se conseguimos manter a qualidade com menos dados.
+O estudante deve caminhar sempre em tres movimentos: primeiro explicar a etapa para uma pessoa leiga, depois executar o pequeno experimento, e por fim confrontar o resultado com F1, recall, gap, latencia, custo e proxies de interpretabilidade. O protocolo compara SHAP com filter, wrapper e embedded; o LIME permanece como auditoria local, não como seletor global. O erro mais comum e confundir um grafico bonito com uma conclusao clinica. O grafico e evidencia; a conclusao exige comparacao justa, teste reservado e limitacoes declaradas.
 
 ---
 
@@ -33,6 +33,8 @@ Este projeto esta dentro de uma historia maior. A inteligencia artificial nasceu
 O artefato visual central e o [dashboard comparativo do projeto](../assets/dashboard_final_comparativo.png). Observe-o como um documento historico da pesquisa: ele registra o momento em que precisao, custo, latencia e quantidade de dados deixam de ser assuntos separados e passam a formar uma decisao de engenharia.
 
 **Pergunta cultural:** quando um modelo melhora a metrica mas fica menos auditavel, isso e progresso? A resposta nao vem do algoritmo isolado; depende do contexto, das pessoas afetadas e do tipo de erro que a sociedade aceita.
+
+Para atualizar a base teorica, consulte o [Interpretable Machine Learning](https://christophm.github.io/interpretable-ml-book/) de Molnar (2022), o [AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) do NIST (2023), a documentacao de [Feature Selection](https://scikit-learn.org/stable/modules/feature_selection.html) e as referencias originais de [SHAP](https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions) e [LIME](https://arxiv.org/abs/1602.04938). A atualidade bibliografica deve acompanhar a precisao metodologica: referencias recentes ajudam a contextualizar, mas nao substituem a validacao do experimento.
 
 ## 1. O que Estudar em Profundidade?
 
@@ -62,8 +64,8 @@ As técnicas tradicionais de seleção de atributos (como testes estatísticos u
 ### 2.2 A Necessidade da Explicabilidade Ativa
 Aqui reside a grande inovação do seu projeto: **XAI não é usada apenas para "olhar" ou auditar o modelo no final** (como se fosse um laudo decorativo). Nós transformamos a explicabilidade em uma **ferramenta ativa de engenharia de dados**:
 1. O modelo é quem nos ensina o que é importante.
-2. Usamos a Teoria dos Jogos (SHAP) para medir o crédito de cada variável de forma matematicamente justa.
-3. Removemos as variáveis inúteis e provamos empiricamente que a medicina diagnóstica pode ser mais barata, rápida e interpretável.
+2. Usamos SHAP para obter um ranking global e LIME para auditar uma decisão individual.
+3. Comparamos filter, wrapper e embedded, removemos atributos segundo o protocolo e avaliamos desempenho, custo e proxies de interpretabilidade sem afirmar causalidade clínica.
 
 ---
 

@@ -4,7 +4,7 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções com `RFE` e `executar_etapa_ablacao`
 
-> **Objetivo da aula:** Analisar a taxonomia classica de selecao de atributos (filtros, embutidos e envoltorios/wrappers), dominando o mecanismo recursivo guloso do RFE (Recursive Feature Elimination), seu custo computacional quadratico em relacao ao numero de podas e sua funcao estrategica como linha de base classica e justa perante comites cientificos.
+> **Objetivo da aula:** Analisar a taxonomia classica de selecao de atributos (filter, embedded e wrapper), dominando o RFE como representante wrapper e comparando-o com mutual information e regressao logistica L1. A pergunta nao e qual metodo vence sempre, mas qual compromisso entre desempenho, custo e interpretabilidade e observado no protocolo.
 
 ## Campo Didático: O Detetive Que Vai Eliminando Pistas
 
@@ -17,7 +17,7 @@ todas as pistas -> treinar -> remover uma pista -> treinar de novo -> ranking fi
    modelo caro                                      selecao gulosa
 ```
 
-O que importa observar e o compromisso entre desempenho e custo, nao apenas o ranking final. O erro comum e usar o teste para escolher `k`; a escolha deve ocorrer em treino/validacao e o teste deve aparecer uma unica vez na comparacao final. A ponte para a Camada 09 e medir a curva completa de queda ao remover atributos.
+O que importa observar e o compromisso entre desempenho, custo e interpretabilidade, nao apenas o ranking final. O erro comum e usar o teste para escolher `k`; a escolha deve ocorrer em treino/validacao e o teste deve aparecer uma unica vez na comparacao final. A ponte para a Camada 09 e medir a curva completa de queda ao remover atributos.
 
 ---
 

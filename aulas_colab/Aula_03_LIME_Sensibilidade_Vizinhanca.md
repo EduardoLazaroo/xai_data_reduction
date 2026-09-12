@@ -8,8 +8,8 @@
 
 > [!NOTE]
 > 🔙 **De onde viemos:** Na Aula 02, aprendemos a calcular a importância média populacional de cada variável através do SHAP. Essa perspectiva macroscópica nos garantiu que os biomarcadores governam o modelo. No entanto, na prática médica real, médicos não tratam "a média estatística da população" — eles atendem indivíduos únicos, especialmente pacientes que estão no **fio da navalha da fronteira de decisão** (com probabilidade diagnóstica ao redor de 50%).
-> 🎯 **Objetivo Principal da Aula:** Dominar os fundamentos do **LIME (Local Interpretable Model-agnostic Explanations)**, instanciar o explicador tabular, localizar algoritmicamente o paciente de teste com maior incerteza preditiva ($P \approx 0.50$), desconstruir sua predição através de amostragem por perturbação de vizinhança e visualizar as regras locais e seus respectivos pesos de contribuição.
-> 🚀 **Para onde vamos:** Na Aula 04, daremos o salto transformador do projeto: sairemos da fase puramente analítica (auditoria passiva) e entraremos na fase de engenharia ativa: usaremos o conhecimento de explicabilidade para **podar atributos** em um estudo experimental de ablação (de 40 até 2 variáveis), confrontando o ranking SHAP com o método clássico RFE.
+> 🎯 **Objetivo Principal da Aula:** Dominar os fundamentos do **LIME (Local Interpretable Model-agnostic Explanations)**, instanciar o explicador tabular, localizar algoritmicamente o paciente de teste com maior incerteza preditiva ($P \approx 0.50$), desconstruir sua predição através de amostragem de vizinhança e visualizar regras locais. O LIME será tratado como instrumento de auditoria local, não como ranking global de seleção.
+> 🚀 **Para onde vamos:** Na Aula 04, o estudo de ablação comparará SHAP com três famílias de baseline: filter (mutual information), wrapper (RFE) e embedded (regressão logística L1).
 
 ---
 
@@ -372,7 +372,7 @@ gerar_grafico_lime(df_lime_aluno, y_proba_teste[idx_paciente_aluno], index_insta
 > 🧠 **Conceito-Semente — Da Auditoria Passiva à Ação Ativa de Engenharia**  
 > Nas Aulas 02 e 03, usamos o XAI como um "espectador curioso": olhamos para a floresta aleatória e vimos quem era importante (SHAP) e como os casos difíceis decidiam (LIME). Mas agora vem o grande momento da ciência de dados:  
 > **Se o SHAP já nos provou que 20 atributos são ruídos inúteis e 10 são redundantes, por que continuamos mantendo 40 colunas no modelo?**  
-> Na **Aula 04**, realizaremos um **Estudo de Ablação Progressiva**: começaremos com 40 atributos e iremos podando de 2 em 2 até sobrar apenas 2 atributos! Compararemos a seleção por SHAP contra o método tradicional da indústria (**RFE — Recursive Feature Elimination**) para descobrir se a explicabilidade consegue reduzir 75% dos atributos sem derrubar o F1-Score!
+> Na **Aula 04**, realizaremos um **Estudo de Ablação Progressiva**: começaremos com 40 atributos e iremos podando de 2 em 2 até sobrar apenas 2 atributos. Compararemos SHAP com filter (mutual information), wrapper (RFE) e embedded (logística L1), sem transformar a explicação local do LIME em ranking populacional.
 > 
 > 🚀 **Desafio Proativo de Autoestudo (Opcional):**  
 > Pesquise na documentação do scikit-learn como funciona o algoritmo `RFE` (`from sklearn.feature_selection import RFE`) e pense: qual método gasta mais tempo de computador: podar com RFE ou podar com SHAP?

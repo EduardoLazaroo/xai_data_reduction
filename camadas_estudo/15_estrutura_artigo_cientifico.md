@@ -4,7 +4,7 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
 **Código de referência:** [gerar_artigo_word.py](../gerar_artigo_word.py) e [docs/artigo_xai_reduction.docx](../docs/artigo_xai_reduction.docx)
 
-> **Objetivo da aula:** Compreender a arquitetura de comunicacao cientifica baseada no formato canonico IMRaD (Introducao, Metodologia, Resultados e Discussao), estabelecendo a demarcacao metodologica estrita entre o relato objetivo de resultados e a interpretacao analitica da discussao, alem de formalizar o teste quantitativo das hipoteses de equivalencia diagnostica (H1) e eficiencia computacional (H2).
+> **Objetivo da aula:** Compreender a arquitetura de comunicacao cientifica baseada no formato canonico IMRaD, relatando a comparacao entre filter, wrapper, embedded e SHAP, o papel local do LIME e os proxies de interpretabilidade junto de desempenho e custo.
 
 ## Campo Didático: Separar Fato, Método e Interpretação
 

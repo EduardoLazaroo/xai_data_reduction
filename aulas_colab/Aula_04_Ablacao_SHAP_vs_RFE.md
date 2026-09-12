@@ -7,8 +7,8 @@
 ---
 
 > [!NOTE]
-> 🔙 **De onde viemos:** Nas Aulas 02 e 03, utilizamos o XAI como uma ferramenta puramente analítica e diagnóstica (SHAP para visão global e LIME para casos individuais). Comprovamos empiricamente que mais da metade dos nossos 40 atributos não possuem valor causal. No entanto, o modelo Baseline continua sendo obrigado a processar todas as 40 colunas durante o treinamento e a inferência!
-> 🎯 **Objetivo Principal da Aula:** Transformar o XAI em uma ferramenta ativa de **engenharia e redução de dados**. Implementar um experimento rigoroso de **Ablação Progressiva** (removendo atributos de 40 até 2), confrontar a seleção baseada no ranking do **SHAP** contra o algoritmo clássico **RFE (Recursive Feature Elimination)**, e analisar as curvas de manutenção do $F_1$-score e a dramática redução do tempo de computação.
+> 🔙 **De onde viemos:** Nas Aulas 02 e 03, utilizamos SHAP para visão global e LIME para auditoria de casos individuais. Essa distinção é importante: explicação local não é evidência de causalidade nem ranking global.
+> 🎯 **Objetivo Principal da Aula:** Implementar um experimento rigoroso de **Ablação Progressiva** (removendo atributos de 40 até 2), confrontando SHAP com representantes das três famílias de seleção: **filter** (mutual information), **wrapper** (RFE) e **embedded** (regressão logística L1). O resultado será lido junto de F1, custo e proxies declarados de interpretabilidade.
 > 🚀 **Para onde vamos:** Na Aula 05, aprenderemos que podar apenas por ranking de módulo $|SHAP|$ ainda pode ser perigoso se houver correlação ou coeficientes com sinal invertido. Criaremos um **Pré-Filtro Híbrido** e a metodologia estatística avançada **shap-select** com regressão logística e $p$-valor!
 
 ---
@@ -16,9 +16,9 @@
 ## Organização Tática da Aula
 
 | Módulo | Atividade | Foco Pedagógico |
-| :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- | :--- |
 | **Módulo 1** | **Fundamentação Teórica & O Conceito de Ablação** | O que é um estudo de ablação em ciência da computação e a busca pelo "Ponto de Inflexão" (Elbow Point). |
-| **Módulo 2** | **O Mecanismo por Dentro & SHAP vs. RFE** | Como funciona a Eliminação Recursiva de Atributos e suas diferenças frente à atribuição de crédito justa do SHAP. |
+| **Módulo 2** | **O Mecanismo por Dentro & Quatro Rankings** | Diferenças entre filter, wrapper, embedded e SHAP, incluindo custos e limitações. |
 | **Módulo 3** | **Prática Guiada no Google Colab** | 6 blocos de código em Python minuciosamente comentados linha por linha, executando a ablação e gerando curvas comparativas. |
 | **Módulo 4** | **Prática Orientada & Experimentação Fácil** | Experimentação com diferentes pontos de corte e análise da taxa de compressão de atributos. |
 | **Módulo 5** | **Checklist de Autonomia & Bibliografia** | Autoavaliação do estudante e referências de seleção de atributos. |
@@ -59,17 +59,17 @@ graph TD
 
 ## Módulo 2: O Mecanismo por Dentro & Regras Práticas
 
-### 2.1 Comparativo: Seleção Guiada por SHAP vs. RFE Tradicional
+### 2.1 Comparativo: SHAP, Filter, Wrapper e Embedded
 
-| Critério | Seleção Guiada por SHAP (XAI) | Seleção Tradicional RFE (Scikit-Learn) |
+| Critério | SHAP (XAI) | Filter: Mutual Information | Wrapper: RFE | Embedded: Logística L1 |
 | :--- | :--- | :--- |
-| **Mecânica de Funcionamento** | Treina o modelo uma única vez, calcula os Valores Shapley e gera o ranking global estático. | Treina o modelo repetidamente, remove os $k$ piores atributos segundo a árvore, re-treina e repete o ciclo. |
-| **Custo Computacional de Seleção** | **Muito Baixo:** Apenas 1 treino e 1 passada rápida de TreeSHAP. | **Elevado:** Exige dezenas de re-treinamentos completos da floresta a cada passo de poda. |
-| **Sensibilidade à Multicolinearidade** | Separa de forma justa a contribuição de variáveis correlacionadas graças aos axiomas de Shapley. | Pode eliminar uma variável útil prematuramente porque ela divide importância com sua cópia redundante. |
-| **Estabilidade do Ranking** | Alta robustez matemática baseada em Teoria dos Jogos. | Pode variar consideravelmente dependendo da semente aleatória das árvores. |
+| **Mecânica de Funcionamento** | Treina o modelo, calcula os Valores Shapley e gera o ranking global. | Ordena por dependência estatística univariada. | Treina repetidamente e remove atributos no ciclo recursivo. | Seleciona durante o ajuste por coeficientes penalizados L1. |
+| **Custo Computacional de Seleção** | Uma explicação global após o treino. | Baixo. | Elevado por re-treinamentos. | Moderado, dependente do ajuste. |
+| **Limitação principal** | Atribuição depende do modelo e da distribuição de referência. | Ignora interações multivariadas. | Pode variar com o estimador e a semente. | Depende da escala, penalização e arquitetura linear. |
+| **Estabilidade do Ranking** | Deve ser verificada entre sementes e referências. | Deve ser verificada entre amostras. | Pode variar com o estimador e a semente. | Pode variar com escala e regularização. |
 
 > [!IMPORTANT]
-> 💡 **Em 1 Frase:** O SHAP permite encontrar o subconjunto ideal de atributos muito mais rápido que o RFE, pois não necessita re-treinar dezenas de modelos durante a fase de ranqueamento.
+> 💡 **Em 1 Frase:** O SHAP oferece um ranking global após o treino, enquanto filter, wrapper e embedded fazem escolhas com custos e hipóteses diferentes; a ablação decide qual compromisso é observado neste dataset.
 
 ---
 
@@ -78,7 +78,7 @@ graph TD
 Abra o seu Notebook no [Google Colab](https://colab.research.google.com) e acompanhe a execução dos blocos a seguir.
 
 > [!NOTE]
-> **Roteiro de estudo:** Executaremos a extração do ranking pelo SHAP e pelo RFE. Em seguida, faremos um loop iterativo podando os atributos de 40 até 2, cronometrando cada passo e gerando dois gráficos: o de **Manutenção do F1-Score** e o de **Economia de Tempo de Treinamento**.
+> **Roteiro de estudo:** Executaremos a extração dos rankings SHAP, filter, wrapper e embedded. Em seguida, faremos um loop iterativo podando os atributos de 40 até 2, comparando F1, custo e redução. O LIME continua reservado à auditoria local.
 
 ---
 

@@ -10,7 +10,7 @@ Este script consolida 100% das etapas do projeto em um único pipeline executáv
   2. Treinamento e avaliação do modelo Baseline (Random Forest com 40 atributos).
   3. Explicabilidade Global via SHAP (Valores Shapley, Bar Plot e Beeswarm).
   4. Explicabilidade Local via LIME (Análise forense no limiar crítico P ≈ 50%).
-  5. Estudo de Ablação Progressiva (Poda de 40 a 2 variáveis: SHAP vs. RFE).
+    5. Estudo de Ablação Progressiva (SHAP e baselines filter, wrapper e embedded).
   6. Engenharia Avançada: Pré-Filtro Híbrido (Variância + Colinearidade) + shap-select.
   7. Otimização Bayesiana de Hiperparâmetros via Optuna (TPE) no espaço reduzido.
   8. Avaliação do Modelo Campeão e Geração do Dashboard Executivo de 4 Painéis.
@@ -32,7 +32,9 @@ import seaborn as sns
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import VarianceThreshold, RFE
+from sklearn.feature_selection import VarianceThreshold, RFE, mutual_info_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -193,8 +195,10 @@ def executar_etapa_shap(modelo, X_train, output_path=os.path.join(OUTPUT_DIR, "m
 def executar_etapa_lime(modelo, X_train, X_test, y_proba_teste, output_path=os.path.join(OUTPUT_DIR, "modulo3_lime_local.png")):
     """
     Localiza o paciente no limiar crítico (P ≈ 50%), gera perturbação de vizinhança e plota laudo.
+    O LIME tem papel exclusivamente local: audita uma decisão individual e não define
+    o ranking global de seleção de atributos.
     """
-    print("\n[ETAPA 3/6] Computando Explicabilidade Local via LIME no Limiar Crítico (P ≈ 50%)...")
+    print("\n[ETAPA 3/6] Computando Explicabilidade Local via LIME no Limiar Critico (P ~ 50%)...")
     explainer_lime = lime_tabular.LimeTabularExplainer(
         training_data=np.array(X_train),
         feature_names=X_train.columns.tolist(),
@@ -235,21 +239,31 @@ def executar_etapa_lime(modelo, X_train, X_test, y_proba_teste, output_path=os.p
 
 
 # =============================================================================
-# ETAPA 4: ESTUDO DE ABLAÇÃO PROGRESSIVA (SHAP vs. RFE)
+# ETAPA 4: ESTUDO DE ABLAÇÃO PROGRESSIVA E BASELINES DE SELEÇÃO
 # =============================================================================
 def executar_etapa_ablacao(X_train, X_test, y_train, y_test, ranking_shap, output_path=os.path.join(OUTPUT_DIR, "modulo4_ablation_curves.png")):
     """
-    Executa a poda progressiva de 40 a 2 atributos comparando SHAP vs. RFE.
+    Compara famílias de seleção: SHAP (XAI), filter (mutual information),
+    wrapper (RFE) e embedded (regressão logística L1).
     """
-    print("\n[ETAPA 4/6] Executando Estudo de Ablação Progressiva (SHAP vs. RFE)...")
+    print("\n[ETAPA 4/6] Comparando métodos filter, wrapper, embedded e SHAP...")
+
+    # Filter: ranking univariado aprendido somente no conjunto de treino.
+    scores_filter = mutual_info_classif(X_train, y_train, random_state=42)
+    ranking_filter = X_train.columns[np.argsort(scores_filter)[::-1]].tolist()
     
-    # RFE tradicional
+    # Wrapper: elimina recursivamente atributos usando o estimador completo.
     rfe = RFE(estimator=RandomForestClassifier(n_estimators=30, random_state=42, n_jobs=1), n_features_to_select=1, step=2)
     rfe.fit(X_train, y_train)
     df_rfe = pd.DataFrame({"atributo": X_train.columns, "ranking": rfe.ranking_}).sort_values(by="ranking").reset_index(drop=True)
     ranking_rfe = df_rfe["atributo"].tolist()
 
-    passos = list(range(40, 1, -2))
+    # Embedded: coeficientes esparsos de regressão logística L1 após padronização.
+    modelo_l1 = LogisticRegression(penalty="l1", solver="liblinear", C=0.1, random_state=42, max_iter=1000)
+    modelo_l1.fit(StandardScaler().fit_transform(X_train), y_train)
+    ranking_embedded = X_train.columns[np.argsort(np.abs(modelo_l1.coef_[0]))[::-1]].tolist()
+
+    passos = list(range(X_train.shape[1], 1, -2))
     
     def rodar_curva(ordem_cols, nome_metodo):
         res = []
@@ -269,11 +283,15 @@ def executar_etapa_ablacao(X_train, X_test, y_train, y_test, ranking_shap, outpu
         return pd.DataFrame(res)
 
     df_res_shap = rodar_curva(ranking_shap, "SHAP (XAI)")
-    df_res_rfe = rodar_curva(ranking_rfe, "RFE (Tradicional)")
+    df_res_filter = rodar_curva(ranking_filter, "Filter (Mutual Information)")
+    df_res_rfe = rodar_curva(ranking_rfe, "Wrapper (RFE)")
+    df_res_embedded = rodar_curva(ranking_embedded, "Embedded (Logística L1)")
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 5))
     axes[0].plot(df_res_shap["n_atributos"], df_res_shap["f1_score"], marker='o', color='#1f77b4', lw=2.5, label="Seleção SHAP (XAI)")
-    axes[0].plot(df_res_rfe["n_atributos"], df_res_rfe["f1_score"], marker='s', linestyle='--', color='#ff7f0e', lw=2, label="Seleção RFE (Tradicional)")
+    axes[0].plot(df_res_filter["n_atributos"], df_res_filter["f1_score"], marker='^', linestyle='-.', color='#9467bd', lw=2, label="Filter (Mutual Information)")
+    axes[0].plot(df_res_rfe["n_atributos"], df_res_rfe["f1_score"], marker='s', linestyle='--', color='#ff7f0e', lw=2, label="Wrapper (RFE)")
+    axes[0].plot(df_res_embedded["n_atributos"], df_res_embedded["f1_score"], marker='D', linestyle=':', color='#2ca02c', lw=2, label="Embedded (Logística L1)")
     axes[0].axvline(x=10, color='red', linestyle=':', lw=2, label='10 Biomarcadores Vitais')
     axes[0].invert_xaxis()
     axes[0].set_title("1. Desempenho Clínico (F1-Score) vs. Poda de Atributos", fontsize=12, fontweight="bold")
@@ -296,7 +314,24 @@ def executar_etapa_ablacao(X_train, X_test, y_train, y_test, ranking_shap, outpu
     plt.close()
     print(f"  [+] Gráficos de ablação salvos em: {output_path}")
 
-    return df_res_shap, df_res_rfe
+    return {
+        "SHAP (XAI)": df_res_shap,
+        "Filter (Mutual Information)": df_res_filter,
+        "Wrapper (RFE)": df_res_rfe,
+        "Embedded (Logística L1)": df_res_embedded
+    }
+
+
+def avaliar_interpretabilidade(df_importancia_shap, df_lime, num_atributos_baseline, num_atributos_reduzidos, top_k=10):
+    """Calcula proxies transparentes de interpretabilidade, sem tratá-los como causalidade."""
+    massa_total = df_importancia_shap["importancia_shap"].sum()
+    massa_top_k = df_importancia_shap.head(top_k)["importancia_shap"].sum()
+    return {
+        "reducao_atributos_pct": (1 - num_atributos_reduzidos / num_atributos_baseline) * 100,
+        "concentracao_shap_top_k": massa_top_k / massa_total if massa_total else 0.0,
+        "esparsidade_lime_pct": (1 - len(df_lime) / num_atributos_baseline) * 100,
+        "observacao": "Proxies operacionais; não medem causalidade nem substituem avaliação humana."
+    }
 
 
 # =============================================================================
@@ -491,7 +526,7 @@ def executar_pipeline_completo():
     df_lime, idx_limiar = executar_etapa_lime(modelo_base, X_train, X_test, y_proba_base)
 
     # 5. Estudo de Ablação Progressiva
-    df_res_shap, df_res_rfe = executar_etapa_ablacao(X_train, X_test, y_train, y_test, ranking_shap)
+    resultados_selecao = executar_etapa_ablacao(X_train, X_test, y_train, y_test, ranking_shap)
 
     # 6. Pré-Filtro Híbrido e shap-select
     atributos_selecionados, df_shap_select = executar_shap_select(X_train, y_train)
@@ -506,6 +541,12 @@ def executar_pipeline_completo():
     # 8. Treino do Modelo Campeão Reduzido
     modelo_campeao = RandomForestClassifier(**best_params, random_state=42, n_jobs=1)
     m_reduzido, y_pred_red, y_proba_red = treinar_e_avaliar_modelo(modelo_campeao, X_train_red, X_test_red, y_train, y_test)
+    metricas_interpretabilidade = avaliar_interpretabilidade(
+        df_importancia_shap,
+        df_lime,
+        m_baseline["num_atributos"],
+        m_reduzido["num_atributos"]
+    )
 
     # 9. Dashboard Final Executivo
     gerar_dashboard_executivo(m_baseline, m_reduzido)
@@ -522,6 +563,10 @@ def executar_pipeline_completo():
     print(f" ROC-AUC (Área)           | {m_baseline['roc_auc']:<23.4f} | {m_reduzido['roc_auc']:<20.4f}")
     print(f" Tempo de Treino (ms)     | {m_baseline['tempo_treino_ms']:<23.2f} | {m_reduzido['tempo_treino_ms']:<20.2f}")
     print(f" Latência Inferência (ms) | {m_baseline['tempo_inferencia_ms']:<23.2f} | {m_reduzido['tempo_inferencia_ms']:<20.2f}")
+    print(f" Redução de Atributos     | {metricas_interpretabilidade['reducao_atributos_pct']:.1f}%")
+    print(f" Concentração SHAP Top-10 | {metricas_interpretabilidade['concentracao_shap_top_k']:.4f}")
+    print(f" Esparsidade Local LIME   | {metricas_interpretabilidade['esparsidade_lime_pct']:.1f}%")
+    print(f" Comparativos de seleção  | {', '.join(resultados_selecao.keys())}")
     print("=" * 75)
 
     # 11. Validações e Sanity Checks Finais
@@ -529,11 +574,11 @@ def executar_pipeline_completo():
     assert taxa_reducao >= 40.0, f"Erro: Redução de atributos insuficiente ({taxa_reducao:.1f}%)"
     assert m_reduzido["f1_score"] >= (m_baseline["f1_score"] - 0.05), "Erro: Queda excessiva de F1-Score"
 
-    print("\n🎉 SANITY CHECK FINAL APROVADO COM EXCELÊNCIA:")
-    print(f"  ✅ Compressão da Base        : {taxa_reducao:.1f}% dos atributos eliminados!")
-    print(f"  ✅ Integridade Clínica       : F1 Baseline = {m_baseline['f1_score']:.4f} vs. F1 Reduzido = {m_reduzido['f1_score']:.4f}")
-    print(f"  ✅ Aceleração de Treinamento : {(1 - m_reduzido['tempo_treino_ms']/m_baseline['tempo_treino_ms'])*100:.1f}% mais veloz!")
-    print(f"  ✅ Todos os gráficos foram salvos na pasta '{OUTPUT_DIR}/'.")
+    print("\nSANITY CHECK FINAL APROVADO COM EXCELENCIA:")
+    print(f"  [OK] Compressao da Base        : {taxa_reducao:.1f}% dos atributos eliminados!")
+    print(f"  [OK] Integridade Clinica       : F1 Baseline = {m_baseline['f1_score']:.4f} vs. F1 Reduzido = {m_reduzido['f1_score']:.4f}")
+    print(f"  [OK] Aceleracao de Treinamento : {(1 - m_reduzido['tempo_treino_ms']/m_baseline['tempo_treino_ms'])*100:.1f}% mais veloz!")
+    print(f"  [OK] Todos os graficos foram salvos na pasta '{OUTPUT_DIR}/'.")
     print("=" * 75)
 
 
