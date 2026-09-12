@@ -53,6 +53,7 @@ O que estudar:
 - O que é sobreajuste (overfitting) e por que datasets com muitos atributos
   facilitam isso.
 
+
 Recursos sugeridos:
 - Documentação do scikit-learn: "Getting Started"
 - Vídeos introdutórios sobre "classificação binária" e "train/test split"
