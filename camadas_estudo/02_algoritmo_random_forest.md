@@ -234,6 +234,7 @@ O ajuste das arvores e o sorteio de bootstrap ocorrem estritamente dentro de `X_
 O codigo compara uma arvore sem limites de profundidade com um Random Forest de 100 arvores em um problema bidimensional ruidoso.
 
 ```python
+# Bibliotecas: numeros, grafico, dados de treino/teste e modelos de arvores.
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_moons
@@ -242,23 +243,35 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
+# n_samples=150: cria 150 pacientes ficticios.
+# noise=0.35: espalha os pontos; quanto maior, mais dificil separar as classes.
+# random_state=42: fixa o sorteio para o resultado ser reproduzivel.
 X, y = make_moons(n_samples=150, noise=0.35, random_state=42)
+# test_size=0.30: reserva 30% para a prova que o modelo ainda nao viu.
+# stratify=y: preserva a proporcao entre classes no treino e no teste.
 X_train, X_test, y_train, y_test = train_test_split(
+# O treino aprende as regras; o teste apenas mede se elas generalizam.
     X, y, test_size=0.30, stratify=y, random_state=42)
 
 modelos = {
+    # Uma arvore: modelo individual, sensivel aos detalhes da amostra.
     "Arvore unica": DecisionTreeClassifier(random_state=42),
+    # 100 arvores: varias visoes que terao suas probabilidades agregadas.
     "Random Forest (100 arvores)": RandomForestClassifier(n_estimators=100, random_state=42)
 }
 
+# Dois paineis tornam a comparacao visual direta.
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 for ax, (nome, modelo) in zip(axes, modelos.items()):
+    # fit aprende as regras usando somente os dados de treino.
     modelo.fit(X_train, y_train)
+    # A malha transforma a regra matematica em uma fronteira desenhada.
     xx, yy = np.meshgrid(np.linspace(-1.5, 2.5, 250), np.linspace(-1, 1.5, 250))
     z = modelo.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
     ax.contourf(xx, yy, z, alpha=0.25, cmap="coolwarm")
     ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap="coolwarm", edgecolor="k", label="treino")
     ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap="coolwarm", marker="*", s=70, label="teste")
+    # Comparamos treino e teste para enxergar generalizacao e overfitting.
     acc_tr = accuracy_score(y_train, modelo.predict(X_train))
     acc_te = accuracy_score(y_test, modelo.predict(X_test))
     ax.set_title(f"{nome}\nTreino: {acc_tr:.2f} | Teste: {acc_te:.2f}")
@@ -289,6 +302,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              precision_score, recall_score, roc_auc_score)
 
+# Semente fixa: reproduz os mesmos pacientes e a mesma comparacao.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
@@ -317,6 +331,7 @@ def avaliar(modelo, X_tr, X_te, y_tr, y_te):
     }
 
 res_dt = avaliar(DecisionTreeClassifier(random_state=SEED), X_train, X_test, y_train, y_test)
+# 100 arvores formam o baseline; n_jobs=1 mantem a medicao de tempo previsivel.
 res_rf = avaliar(RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1), X_train, X_test, y_train, y_test)
 
 comparativo = pd.DataFrame([res_dt, res_rf], index=["Arvore Unica", "Random Forest 100"]).round(4)

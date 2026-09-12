@@ -240,24 +240,26 @@ from sklearn.model_selection import cross_val_score, StratifiedKFold
 import optuna
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
-np.random.seed(42)
+np.random.seed(42)  # Torna os dados do toy example reproduziveis.
 
-# 1. Base sintetica com 500 pacientes e 6 biomarcadores limpos
+# 1. Base sintetica com 500 pacientes e 6 biomarcadores limpos.
 X_toy, y_toy = make_classification(
     n_samples=500,
     n_features=6,
     n_informative=6,
     n_redundant=0,
     n_classes=2,
-    random_state=42
+    random_state=42  # Mesmo sorteio em cada execucao.
 )
 
 # 2. Definicao formal da funcao objetivo
 def funcao_objetivo(trial):
+    # Cada suggest e uma escolha de hiperparametro feita pelo Optuna.
     n_est = trial.suggest_int("n_estimators", 25, 125, step=25)
     profundidade = trial.suggest_int("max_depth", 3, 9)
     min_split = trial.suggest_int("min_samples_split", 2, 8)
     
+    # A floresta recebe a combinacao proposta nesta tentativa.
     clf = RandomForestClassifier(
         n_estimators=n_est,
         max_depth=profundidade,
@@ -265,11 +267,12 @@ def funcao_objetivo(trial):
         random_state=42
     )
     
+    # 3 dobras estratificadas: cada tentativa e testada em partes diferentes.
     cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
     scores = cross_val_score(clf, X_toy, y_toy, cv=cv, scoring="f1")
     return float(scores.mean())
 
-# 3. Execucao do estudo bayesiano com 15 tentativas
+# 3. 15 trials: quinze combinacoes serao avaliadas e comparadas.
 estudo = optuna.create_study(direction="maximize")
 estudo.optimize(funcao_objetivo, n_trials=15)
 

@@ -241,15 +241,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # 1. Resultados consolidados do experimento oficial
+# Cada dicionario representa um modelo e guarda as unidades usadas nas hipoteses.
 dados_baseline = {"atributos": 40, "f1": 0.8373, "tempo_treino_ms": 601.7, "latencia_us": 30.8}
 dados_campeao  = {"atributos": 10, "f1": 0.8610, "tempo_treino_ms": 185.2, "latencia_us": 12.4}
 
 # 2. Avaliacao formal da Hipotese H1 (Preservacao Diagnostica)
+# H1: corte de atributos sem queda de F1 acima da margem de -0.05.
 taxa_corte = (1.0 - (dados_campeao["atributos"] / dados_baseline["atributos"])) * 100.0
 delta_f1 = dados_campeao["f1"] - dados_baseline["f1"]
 h1_valida = (taxa_corte >= 50.0) and (delta_f1 >= -0.05)
 
 # 3. Avaliacao formal da Hipotese H2 (Eficiencia Computacional)
+# H2: calcula a reducao percentual no treino e na inferencia.
 ganho_treino = (1.0 - (dados_campeao["tempo_treino_ms"] / dados_baseline["tempo_treino_ms"])) * 100.0
 ganho_latencia = (1.0 - (dados_campeao["latencia_us"] / dados_baseline["latencia_us"])) * 100.0
 h2_valida = (ganho_treino >= 40.0) and (ganho_latencia >= 40.0)

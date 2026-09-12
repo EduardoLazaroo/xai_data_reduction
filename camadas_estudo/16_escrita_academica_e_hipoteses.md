@@ -242,6 +242,7 @@ Execute o bloco abaixo no Google Colab para inspecionar um gerador deterministic
 # Demonstracao: Geracao Parametrizada de Paragrafo de Discussao Cientifica
 # =============================================================================
 def redigir_paragrafo_discussao(p_inicial, p_final, f1_base, f1_camp, t_base, t_camp):
+    # A funcao recebe numeros e devolve um paragrafo; nao inventa metricas.
     taxa_reducao = (1.0 - (p_final / p_inicial)) * 100.0
     delta_f1 = (f1_camp - f1_base) * 100.0
     speedup_treino = (1.0 - (t_camp / t_base)) * 100.0
@@ -259,6 +260,7 @@ def redigir_paragrafo_discussao(p_inicial, p_final, f1_base, f1_camp, t_base, t_
     )
     return paragrafo
 
+# Estes valores representam baseline, campeao, F1 e tempos do protocolo.
 texto_gerado = redigir_paragrafo_discussao(40, 10, 0.8373, 0.8610, 601.7, 185.2)
 
 print("PARAGRAFO ACADEMICO FORMATADO (PADRAO QUALIS A):")
@@ -294,6 +296,7 @@ python gerar_artigo_word.py
 import os
 import pandas as pd
 
+# Cada dicionario descreve uma secao e o padrao que sera auditado.
 secoes_artigo = [
     {"Numero": "01", "Titulo": "Titulo, Autores e Afiliações Academicas", "Padrao": "ABNT / IEEE"},
     {"Numero": "02", "Titulo": "Resumo e Abstract Estruturado", "Padrao": "250 palavras max."},
@@ -311,6 +314,7 @@ secoes_artigo = [
     {"Numero": "14", "Titulo": "12. Conclusao e Trabalhos Futuros", "Padrao": "Direcionamentos finais"}
 ]
 
+# DataFrame organiza a lista para uma tabela legivel no terminal.
 df_estrutura = pd.DataFrame(secoes_artigo)
 print("=" * 76)
 print("AUDITORIA ESTRUTURAL DO MANUSCRITO (artigo_xai_reduction.docx)")

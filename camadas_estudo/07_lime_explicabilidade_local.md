@@ -278,6 +278,8 @@ prob_real = 1.0 / (1.0 + np.exp(-logit))
 y = (prob_real >= 0.50).astype(int)
 
 # 2. Treinamento do modelo complexo
+# 60 arvores e profundidade 5: floresta complexa, mas controlada para o exemplo.
+# random_state fixa o sorteio e torna a explicacao reproduzivel.
 modelo = RandomForestClassifier(n_estimators=60, max_depth=5, random_state=42)
 modelo.fit(X, y)
 
@@ -300,10 +302,12 @@ y_perturbado = modelo.predict_proba(X_perturbado)[:, 1]
 
 # Ponderacao das amostras por kernel exponencial da distancia
 distancias = np.linalg.norm(X_perturbado - x_alvo, axis=1)
+# sigma=0.50 define o raio da vizinhanca; menor valor privilegia clones proximos.
 sigma = 0.50
 pesos = np.exp(- (distancias ** 2) / (sigma ** 2))
 
 # 5. Ajuste do modelo linear local interpretavel (Ridge Regression)
+# alpha=1.0 regulariza a reta local e evita coeficientes exagerados.
 reg_local = Ridge(alpha=1.0)
 reg_local.fit(X_perturbado, y_perturbado, sample_weight=pesos)
 
@@ -382,6 +386,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # 2. Treinamento da floresta de referencia
+# Modelo de referencia: 100 arvores e profundidade 8.
 rf = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
 rf.fit(X_train, y_train)
 
@@ -419,10 +424,12 @@ probas_sinteticas = rf.predict_proba(amostras_sinteticas)[:, 1]
 
 # Ponderacao de proximidade por kernel gaussiano
 distancias = np.linalg.norm((amostras_sinteticas - paciente_alvo) / (desvio_train + 1e-8), axis=1)
+# O sigma considera a escala da vizinhanca em 40 atributos.
 sigma = np.sqrt(40) * 0.75
 pesos_kernel = np.exp(- (distancias ** 2) / (sigma ** 2))
 
 # Ajuste da regressao linear local interpretavel
+# Ridge traduz a vizinhanca complexa em coeficientes locais legiveis.
 explicador_linear = Ridge(alpha=1.0)
 explicador_linear.fit(amostras_sinteticas, probas_sinteticas, sample_weight=pesos_kernel)
 tempo_auditoria_ms = (time.perf_counter() - t0) * 1000

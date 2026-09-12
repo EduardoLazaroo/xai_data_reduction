@@ -236,33 +236,35 @@ Execute o bloco abaixo no Google Colab para renderizar os quatro quadrantes do d
 # =============================================================================
 import matplotlib.pyplot as plt
 
+# Os dois modelos sao as colunas de comparacao em todos os paineis.
 modelos = ["Baseline (40 Atrib.)", "Campeao XAI (10 Atrib.)"]
 paleta = ["#7f8c8d", "#2980b9"]
 
+# 2 linhas x 2 colunas formam os quatro quadrantes do dashboard.
 fig, eixos = plt.subplots(2, 2, figsize=(11, 7.5))
 
-# Quadrante 1: Dimensao de Atributos
+# Quadrante 1: quantidade de exames usados por paciente.
 eixos[0, 0].bar(modelos, [40, 10], color=paleta, width=0.45, edgecolor="black")
 eixos[0, 0].set_title("1. Atributos Coletados (Dimensionalidade)", fontsize=10, fontweight="bold")
 eixos[0, 0].set_ylabel("Quantidade de Exames", fontsize=9)
 eixos[0, 0].text(1, 12, "-75.0%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
 eixos[0, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
-# Quadrante 2: Tempo de Treinamento
+# Quadrante 2: milissegundos gastos para ajustar a floresta.
 eixos[0, 1].bar(modelos, [600, 185], color=paleta, width=0.45, edgecolor="black")
 eixos[0, 1].set_title("2. Tempo de Ajuste em Servidor (ms)", fontsize=10, fontweight="bold")
 eixos[0, 1].set_ylabel("Milissegundos", fontsize=9)
 eixos[0, 1].text(1, 210, "-69.2%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
 eixos[0, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
-# Quadrante 3: Latencia por Paciente
+# Quadrante 3: microssegundos gastos por paciente na inferencia.
 eixos[1, 0].bar(modelos, [30.8, 12.4], color=paleta, width=0.45, edgecolor="black")
 eixos[1, 0].set_title("3. Latencia de Inferencia (Microssegundos)", fontsize=10, fontweight="bold")
 eixos[1, 0].set_ylabel("Microssegundos (us)", fontsize=9)
 eixos[1, 0].text(1, 14.5, "-59.7%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
 eixos[1, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
-# Quadrante 4: Rendimento Clinico (F1-Score)
+# Quadrante 4: qualidade diagnostica, medida pelo F1 no teste cego.
 eixos[1, 1].bar(modelos, [0.8373, 0.8610], color=paleta, width=0.45, edgecolor="black")
 eixos[1, 1].set_title("4. Retencao Diagnostica (F1-Score)", fontsize=10, fontweight="bold")
 eixos[1, 1].set_ylabel("F1-Score no Teste Cego", fontsize=9)

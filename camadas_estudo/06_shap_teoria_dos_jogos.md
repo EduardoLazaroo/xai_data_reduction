@@ -207,6 +207,7 @@ Calcular a formula classica exigiria avaliar $2^{40} \approx 1,1$ trilhao de coa
 O codigo treina uma floresta em 3 atributos (2 informativos e 1 ruido) e calcula os valores SHAP exatos.
 
 ```python
+# Instala o SHAP no mesmo Python que executa esta celula.
 import sys
 import subprocess
 subprocess.check_call([sys.executable, "-m", "pip", "install", "shap", "-q"])
@@ -216,21 +217,24 @@ import shap
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
-np.random.seed(42)
-n = 300
-idade = np.random.uniform(20, 80, n)
-pressao = np.random.uniform(90, 180, n)
-ruido = np.random.normal(0, 1, n)
+np.random.seed(42)  # Reproduz os mesmos pacientes a cada execucao.
+n = 300  # Numero de pacientes do exemplo.
+idade = np.random.uniform(20, 80, n)  # Faixa de idade usada como sinal.
+pressao = np.random.uniform(90, 180, n)  # Faixa de pressao usada como sinal.
+ruido = np.random.normal(0, 1, n)  # Coluna sem relacao com o alvo.
 
+# A probabilidade sintetica depende de idade e pressao, nao do ruido.
 prob = 1 / (1 + np.exp(-(-5.0 + 0.04 * idade + 0.02 * pressao)))
 y = (prob > 0.5).astype(int)
 df = pd.DataFrame({"Idade": idade, "Pressao": pressao, "Ruido_Sorte": ruido})
 
+# TreeSHAP abre a floresta e calcula o credito de cada atributo.
 rf = RandomForestClassifier(n_estimators=50, random_state=42).fit(df, y)
 explainer = shap.TreeExplainer(rf)
 sv = explainer.shap_values(df)
 valores = sv[1] if isinstance(sv, list) else (sv[:, :, 1] if len(sv.shape) == 3 else sv)
 
+# O bar plot mostra o impacto absoluto medio de cada coluna.
 shap.summary_plot(valores, df, plot_type="bar", show=False)
 plt.title("Ranking Global SHAP (|Impacto Medio|)")
 plt.tight_layout(); plt.show()
@@ -259,6 +263,7 @@ from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
+# Semente fixa: torna a decomposicao SHAP comparavel entre execucoes.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
@@ -267,6 +272,7 @@ nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])
 X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
+# Esta divisao impede que o ranking SHAP veja os pacientes reservados.
     X, y, test_size=0.25, stratify=y, random_state=SEED)
 
 rf = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1).fit(X_train, y_train)

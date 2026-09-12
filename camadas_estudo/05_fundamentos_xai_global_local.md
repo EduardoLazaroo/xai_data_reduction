@@ -201,24 +201,29 @@ A explicabilidade global para selecao de variaveis deve ser calculada estritamen
 O codigo treina um modelo simples em 4 colunas (2 informativas e 2 ruidos puros) e inspeciona se a IA realmente aprendeu a ignorar o ruido.
 
 ```python
+# Toy example: dois sinais, dois ruidos e um alvo binario.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
-np.random.seed(42)
-n = 400
-v1 = np.random.normal(0, 1, n)
+np.random.seed(42)  # Reprodutibilidade do exemplo.
+n = 400  # Quantidade de pacientes simulados.
+v1 = np.random.normal(0, 1, n)  # Primeiro biomarcador informativo.
 v2 = np.random.normal(0, 1, n)
-r1 = np.random.normal(0, 1, n)
-r2 = np.random.normal(0, 1, n)
+r1 = np.random.normal(0, 1, n)  # Ruido: nao participa da regra do alvo.
+r2 = np.random.normal(0, 1, n)  # Outro ruido independente.
 
+# O alvo depende de v1 e v2; os coeficientes mostram forca e direcao.
 y = ((1.8 * v1 - 1.2 * v2 + np.random.normal(0, 0.4, n)) > 0).astype(int)
+# Nomes tornam o ranking legivel para uma pessoa, nao apenas para o Python.
 df = pd.DataFrame({"Biomarcador_A": v1, "Biomarcador_B": v2, "Ruido_1": r1, "Ruido_2": r2})
 
+# A floresta calcula importancia baseada no uso das colunas nos cortes.
 rf = RandomForestClassifier(n_estimators=50, random_state=42).fit(df, y)
 importancias = pd.Series(rf.feature_importances_, index=df.columns).sort_values()
 
+# O grafico traduz a tabela numerica em uma comparacao visual.
 plt.figure(figsize=(8, 3.5))
 importancias.plot(kind="barh", color=["gray", "gray", "steelblue", "navy"])
 plt.title("Auditoria de Importancia: o Modelo Confessando")
@@ -249,6 +254,7 @@ from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
+# Semente fixa: permite reproduzir o ranking de explicabilidade.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
@@ -257,6 +263,7 @@ nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])
 X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
+# A explicacao global nasce do treino; o teste nao participa da selecao.
     X, y, test_size=0.25, stratify=y, random_state=SEED)
 
 rf = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1).fit(X_train, y_train)

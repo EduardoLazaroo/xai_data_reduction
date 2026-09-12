@@ -225,23 +225,27 @@ X_test   ---> apenas recebe as mesmas colunas
 A coluna `temperatura_clone` acompanha `temperatura`; `exame_estatua` nunca muda.
 
 ```python
+# Toy example: uma coluna parada, um clone e uma coluna independente.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import VarianceThreshold
 
-rng = np.random.default_rng(42)
-n = 100
-temperatura = rng.normal(36.5, 0.4, n)
-temperatura_clone = temperatura * 1.01 + rng.normal(0, 0.01, n)
-exame_estatua = np.full(n, 42.0)
-pressao = rng.normal(120, 12, n)
+rng = np.random.default_rng(42)  # Sorteio reproduzivel.
+n = 100  # Cem pacientes para deixar o exemplo leve.
+temperatura = rng.normal(36.5, 0.4, n)  # Exame que varia.
+temperatura_clone = temperatura * 1.01 + rng.normal(0, 0.01, n)  # Quase duplicata.
+exame_estatua = np.full(n, 42.0)  # Nao varia: variancia igual a zero.
+pressao = rng.normal(120, 12, n)  # Coluna independente para comparacao.
 df = pd.DataFrame({"temperatura": temperatura, "temperatura_clone": temperatura_clone,
                    "exame_estatua": exame_estatua, "pressao": pressao})
+# threshold=0.01: remove colunas com variacao menor que esse limite.
 seletor = VarianceThreshold(0.01).fit(df)
 df_var = df.loc[:, seletor.get_support()]
+# Correlacao absoluta ignora o sinal e procura clones lineares.
 corr = df_var.corr().abs()
 upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+# 0.90: so considera redundante uma relacao linear muito forte.
 remover = [c for c in upper.columns if (upper[c] > 0.90).any()]
 df_limpo = df_var.drop(columns=remover)
 print("Antes:", list(df.columns))
@@ -275,6 +279,7 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
+# Semente fixa: permite comparar baseline e pos-filtro na mesma coorte.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, n_classes=2, weights=[0.6, 0.4], flip_y=0.03,
@@ -284,6 +289,7 @@ nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])
 X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
+# A mascara aprendida no treino sera reaplicada ao teste sem recalculo.
     X, y, test_size=0.20, stratify=y, random_state=SEED)
 
 def pre_filtro(X_treino, limiar_var=0.01, limiar_corr=0.90):

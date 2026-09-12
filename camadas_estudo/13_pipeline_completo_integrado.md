@@ -285,12 +285,15 @@ def executar_mini_pipeline():
     
     # 1. Geracao e Particao dos Dados
     t0 = time.perf_counter()
+    # 1.000 amostras, 20 colunas e 5 sinais informativos.
     X, y = make_classification(n_samples=1000, n_features=20, n_informative=5, random_state=42)
+    # 30% fica fora do treino para medir pacientes novos.
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.30, random_state=42)
     tempos["1. Particao"] = (time.perf_counter() - t0) * 1000
     
     # 2. Ajuste do Baseline
     t0 = time.perf_counter()
+    # Baseline: 50 arvores sem poda de profundidade.
     rf_base = RandomForestClassifier(n_estimators=50, random_state=42)
     rf_base.fit(X_tr, y_tr)
     f1_base = f1_score(y_te, rf_base.predict(X_te))
@@ -298,11 +301,13 @@ def executar_mini_pipeline():
     
     # 3. Poda de Atributos
     t0 = time.perf_counter()
+    # feature_importances_ ordena colunas; os cinco maiores sobrevivem.
     indices_top5 = np.argsort(rf_base.feature_importances_)[-5:]
     tempos["3. Poda"] = (time.perf_counter() - t0) * 1000
     
     # 4. Ajuste do Modelo Enxuto
     t0 = time.perf_counter()
+    # Modelo enxuto: mesma quantidade de arvores, profundidade limitada a 6.
     rf_enxuto = RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42)
     rf_enxuto.fit(X_tr[:, indices_top5], y_tr)
     f1_enxuto = f1_score(y_te, rf_enxuto.predict(X_te[:, indices_top5]))

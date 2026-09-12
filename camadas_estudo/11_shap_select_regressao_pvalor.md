@@ -373,7 +373,7 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-# 1. Dataset oficial padronizado
+# 1. Dataset oficial padronizado: 2.000 pacientes e 40 colunas.
 X_raw, y = make_classification(
     n_samples=2000,
     n_features=40,
@@ -382,7 +382,7 @@ X_raw, y = make_classification(
     n_classes=2,
     weights=[0.6, 0.4],
     flip_y=0.03,
-    random_state=42
+    random_state=42  # Mantem a base sintetica reproduzivel.
 )
 
 feature_names = (
@@ -392,20 +392,22 @@ feature_names = (
 )
 
 df_clinico = pd.DataFrame(X_raw, columns=feature_names)
+# 25% dos pacientes ficam escondidos para a avaliacao final.
 X_train, X_test, y_train, y_test = train_test_split(
     df_clinico, y, test_size=0.25, stratify=y, random_state=42
 )
 
-# 2. Ajuste do modelo base de treino
+# 2. Ajuste do modelo base: 100 arvores, profundidade maxima 8.
 rf_base = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
 rf_base.fit(X_train, y_train)
 
-# 3. Extracao dos valores SHAP na particao de treino
+# 3. SHAP e calculado no treino: a selecao nao pode consultar o teste.
 print("=" * 74)
 print("INICIANDO PROTOCOLO shap-select: RIGOR ECONOMETRICO COM P-VALOR")
 print("=" * 74)
 
 t0_shap = time.perf_counter()
+# 500 linhas reduzem o custo do exemplo sem mudar a ideia do metodo.
 amostra_treino = X_train.iloc[:500]
 amostra_y = y_train[:500]
 

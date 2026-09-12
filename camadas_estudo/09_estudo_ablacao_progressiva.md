@@ -266,9 +266,11 @@ X, y = make_classification(
     n_classes=2,
     random_state=42
 )
+# 30% fica reservado para medir o desempenho fora da amostra.
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
 
 # 2. Modelo inicial para extracao do ranking de importancia
+# A mesma floresta sera usada como referencia em todos os tamanhos.
 modelo_base = RandomForestClassifier(n_estimators=50, random_state=42)
 modelo_base.fit(X_train, y_train)
 indices_ordenados = np.argsort(modelo_base.feature_importances_)[::-1]
@@ -279,6 +281,7 @@ historico_f1 = []
 
 for k in niveis_k:
     atributos_k = indices_ordenados[:k]
+    # Cada valor de k recebe um novo treino para medir o custo da remocao.
     clf_k = RandomForestClassifier(n_estimators=50, random_state=42)
     clf_k.fit(X_train[:, atributos_k], y_train)
     pred_k = clf_k.predict(X_test[:, atributos_k])
@@ -355,6 +358,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # 2. Extracao do ranking RFE tradicional
+# step=2 remove duas colunas por rodada; 1 cria o ranking completo.
 seletor_rfe = RFE(estimator=RandomForestClassifier(n_estimators=50, random_state=42), n_features_to_select=1, step=2)
 seletor_rfe.fit(X_train, y_train)
 ranking_rfe = np.argsort(seletor_rfe.ranking_)

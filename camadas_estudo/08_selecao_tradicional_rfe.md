@@ -271,6 +271,7 @@ df_toy = pd.DataFrame({
 })
 
 # 2. Configuracao do RFE para podar ate restar 1 variavel (gerando ranking completo)
+# 40 arvores e profundidade 4: estimador leve para o exemplo didatico.
 estimador = RandomForestClassifier(n_estimators=40, max_depth=4, random_state=42)
 seletor_rfe = RFE(estimator=estimador, n_features_to_select=1, step=1)
 seletor_rfe.fit(df_toy, y)
@@ -353,6 +354,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # 2. Execucao do RFE com cronometragem precisa
+# Modelo profissional de referencia: 100 arvores e profundidade 8.
 estimador_base = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
 seletor_rfe = RFE(estimator=estimador_base, n_features_to_select=1, step=2)
 

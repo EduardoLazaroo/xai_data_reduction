@@ -220,6 +220,7 @@ A remocao de atributos redundantes e ruidos deve aprender estritamente sobre a b
 O codigo comeca com 10 atributos informativos reais e adiciona progressivamente colunas de puro ruido gaussiano, medindo o impacto na acuracia de treino e teste.
 
 ```python
+# O experimento mede o efeito de acrescentar colunas sem sinal.
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
@@ -227,9 +228,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
-np.random.seed(42)
-X_puro, y = make_classification(n_samples=1000, n_features=10, n_informative=10, n_redundant=0, random_state=42)
+np.random.seed(42)  # Mantem os sorteios iguais entre execucoes.
+# 1.000 amostras, 10 colunas e todas as 10 com sinal informativo.
+X_puro, y = make_classification(
+    n_samples=1000, n_features=10, n_informative=10,
+    n_redundant=0, random_state=42
+)
 
+# Cada numero representa uma nova quantidade de colunas de ruido.
 quantidades_ruido = [0, 10, 30, 60, 100]
 acc_tr_lista = []
 acc_te_lista = []
@@ -239,12 +245,17 @@ for n_r in quantidades_ruido:
     if n_r == 0:
         X = X_puro
     else:
+        # Media 0 e desvio 1: ruido sem relacao com o diagnostico.
         ruidos = np.random.normal(0, 1, size=(1000, n_r))
         X = np.hstack([X_puro, ruidos])
+    # 30% fica reservado para medir generalizacao; stratify preserva as classes.
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.30, stratify=y, random_state=42
     )
-    rf = RandomForestClassifier(n_estimators=50, max_depth=8, random_state=42).fit(X_tr, y_tr)
+    # 50 arvores e profundidade 8: modelo forte, mas com complexidade controlada.
+    rf = RandomForestClassifier(
+        n_estimators=50, max_depth=8, random_state=42
+    ).fit(X_tr, y_tr)
     acc_treino = accuracy_score(y_tr, rf.predict(X_tr))
     acc_teste = accuracy_score(y_te, rf.predict(X_te))
     acc_tr_lista.append(acc_treino)
@@ -286,6 +297,7 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
+# Semente fixa: baseline e modelo enxuto usam os mesmos pacientes.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
@@ -295,6 +307,7 @@ nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
 X = pd.DataFrame(X_raw, columns=nomes)
 
 X_train, X_test, y_train, y_test = train_test_split(
+# A comparacao usa o mesmo teste para que a diferenca venha das colunas.
     X, y, test_size=0.25, stratify=y, random_state=SEED)
 
 def cronometrar(modelo, X_tr, X_te, y_tr, y_te):

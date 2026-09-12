@@ -201,25 +201,32 @@ A matriz de confusao e as metricas oficiais de teste devem ser extraidas exclusi
 O codigo simula 1.000 pacientes com uma doenca rara (95% saudaveis). Ele compara um classificador dummy que sempre chuta saudavel com um classificador real.
 
 ```python
+# Dataset numerico pequeno para tornar a matriz de confusao visivel.
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
-np.random.seed(42)
-X_raro = np.random.randn(1000, 5)
+np.random.seed(42)  # Fixa o sorteio e permite reproduzir a aula.
+X_raro = np.random.randn(1000, 5)  # 1.000 pacientes e 5 atributos sem sinal.
+# p=[0.95, 0.05]: somente 5% dos pacientes tem a classe positiva.
 y_raro = np.random.choice([0, 1], size=1000, p=[0.95, 0.05])
 
 modelos = {
+    # Baseline ingenuo: sempre responde a classe mais frequente, 0.
     "Chuta sempre saudavel": DummyClassifier(strategy="most_frequent"),
+    # Modelo comparativo: tenta encontrar padroes nos atributos.
     "Random Forest": RandomForestClassifier(random_state=42)
 }
 
+# Cada painel mostra os quatro tipos de acerto e erro.
 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 for ax, (nome, mod) in zip(axes, modelos.items()):
+    # Treino e previsao: aqui o modelo produz o diagnostico de cada paciente.
     mod.fit(X_raro, y_raro)
     pred = mod.predict(X_raro)
+    # Acuracia pode enganar; F1 verifica se a classe rara foi encontrada.
     acc = accuracy_score(y_raro, pred)
     f1 = f1_score(y_raro, pred, zero_division=0)
     cm = confusion_matrix(y_raro, pred)
@@ -256,6 +263,7 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              precision_score, recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
+# Semente fixa: reproduz a coorte e a divisao treino/teste.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
@@ -264,6 +272,7 @@ nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])
 X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
+# O treino aprende; o teste fica intocado para medir erros reais.
     X, y, test_size=0.25, stratify=y, random_state=SEED)
 
 rf = RandomForestClassifier(n_estimators=100, random_state=SEED, n_jobs=1)
