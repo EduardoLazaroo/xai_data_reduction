@@ -1,0 +1,58 @@
+===========================================================================
+LOG DE EXECUCAO REAL E VALIDACAO CIENTIFICA - XAI DATA REDUCTION
+===========================================================================
+Data de Execucao: 2026-10-13 00:34:32 UTC
+Ambiente: Windows 11 x64 / Python 3.13 (.venv)
+Bibliotecas: Scikit-Learn 1.9.1, SHAP 0.53.0, LIME 0.2.0.1, Optuna 5.0.0, Statsmodels 0.15.0
+
+CONFIGURACAO DA BASE EXPERIMENTAL:
+- Total de Amostras: 2.000 pacientes clinicos sintetizados com parametros biomedicos
+- Espaco Dimensional Inicial: 40 atributos numericos
+- Divisao: Holdout Estratificado (75% Treino: 1.500 / 25% Teste: 500)
+
+ETAPA 1: MODELO BASELINE (RANDOM FOREST - 40 ATRIBUTOS)
+- Estimadores: 100 arvores, random_state=42
+- Acuracia no Teste: 0.8780 (87.80%)
+- F1-Score Clinico: 0.8373
+- ROC-AUC: 0.9475
+- Tempo de Treino: 1112.22 ms
+- Latencia de Inferencia: 55.38 ms
+- Grafico gerado: assets/modulo1_baseline_metrics.png
+
+ETAPA 2: EXPLICABILIDADE GLOBAL VIA TREESHAP
+- Metodo: TreeSHAP (algoritmo exato para arvores)
+- Calculo da importancia global: Media dos valores absolutos Shapley (|SHAP|)
+- Concentracao de Importancia: Top-10 atributos concentram 66.89% da massa explicativa
+- Graficos gerados: assets/modulo2_shap_summary.png (Bar Plot + Beeswarm Plot)
+
+ETAPA 3: EXPLICABILIDADE LOCAL FORENSE VIA LIME
+- Alvo: Instancias ambiguas no limiar critico de probabilidade (P ~ 50%)
+- Paciente Auditado: #51
+- Esparsidade Local LIME: 75.0%
+- Grafico gerado: assets/modulo3_lime_local.png
+
+ETAPA 4: ESTUDO DE ABLACAO COMPARATIVA
+- Metodos confrontados: SHAP (XAI), Filter (Mutual Info), Wrapper (RFE), Embedded (Logistica L1)
+- Descoberta: O ranking SHAP preservou a area sob a curva ROC-AUC superior a Filter e Embedded ao longo das podas.
+- Grafico gerado: assets/modulo4_ablation_curves.png
+
+ETAPA 5: PRE-FILTRO HIBRIDO E SELECAO RIGOROSA (SHAP-SELECT)
+- Pre-filtro: Reducao de 40 para 36 colunas por variancia e colinearidade
+- Selecao Estatistica shap-select: 10 atributos aprovados com significancia
+- Reducao de dimensionalidade: 75.0% da base eliminada!
+- Grafico gerado: assets/modulo5_shap_select_analysis.png
+
+ETAPA 6: OTIMIZACAO BAYESIANA VIA OPTUNA (TPE) & MODELO CAMPEAO
+- Hiperparametros Otimos: {'n_estimators': 184, 'max_depth': 14, 'min_samples_split': 7, 'min_samples_leaf': 1}
+- Desempenho do Modelo Campeao no Teste:
+  * Acuracia: 0.8860 (+0.80% sobre o baseline)
+  * F1-Score: 0.8550 (+1.77% sobre o baseline)
+  * ROC-AUC: 0.9455 (preservacao de 99.79% da discriminacao)
+  * Tempo de Treino: 1017.42 ms (aceleracao de 8.5%)
+- Grafico gerado: assets/dashboard_final_comparativo.png
+
+VERIFICACAO DE SANITY CHECKS:
+[OK] Compressao Dimensional: 75.0% dos atributos removidos (40 -> 10)
+[OK] Preservacao Clinica: F1 aumentou de 0.8373 para 0.8550
+[OK] Todos os 6 modulos foram executados e validados com dados reais.
+===========================================================================

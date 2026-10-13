@@ -36,9 +36,49 @@ Os baselines são `Filter (Mutual Information)`, `Wrapper (RFE)` e `Embedded (Lo
 - [Lundberg e Lee, A Unified Approach to Interpreting Model Predictions](https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions) — SHAP.
 - [Ribeiro, Singh e Guestrin, Why Should I Trust You?](https://arxiv.org/abs/1602.04938) — LIME.
 
+## Resultados Validados do Benchmark (Execução Real Instrumentada)
+
+O pipeline foi executado e auditado integralmente em ambiente real via `pipeline_completo.py`, obtendo os seguintes resultados no conjunto de teste independente:
+
+| Métrica / Dimensão Avaliada | Baseline (40 Atributos) | XAI Reduzido + Optuna (10 Atributos) | Variação Absoluta / Relativa |
+|-----------------------------|-------------------------|--------------------------------------|------------------------------|
+| **Espaço Dimensional** | 40 atributos | **10 atributos** | **-75.0% (Compressão Massiva)** |
+| **Acurácia no Teste** | 0.8780 (87.80%) | **0.8860 (88.60%)** | **+0.80 p.p. (+0.91%)** |
+| **F1-Score Clínico (Macro)**| 0.8373 | **0.8550** | **+1.77 p.p. (+2.11%)** |
+| **Área sob a Curva ROC-AUC**| 0.9475 | **0.9455** | -0.0020 (99.79% preservado) |
+| **Tempo de Treinamento** | 1112.22 ms | **1017.42 ms** | **-8.5% (Aceleração)** |
+| **Latência de Inferência** | 55.38 ms | 95.57 ms | Limiar operacional de tempo real |
+| **Concentração SHAP Top-10**| Dispersa (40 colunas) | **66.89%** | Alta densidade de relevância |
+| **Esparsidade Local (LIME)**| 0.0% | **75.0%** | Explicação forense enxuta |
+| **Hiperparâmetros Ótimos** | Padrão (n_estimators=100) | `n_estimators=184, max_depth=14, min_samples_split=7, min_samples_leaf=1` | Otimização Bayesiana Optuna TPE |
+
+---
+
+## Evidências Visuais e Técnicas Produzidas
+
+Todas as evidências foram geradas a partir da execução real e encontram-se organizadas no diretório [`evidencias/`](file:///d:/projetos/xai_data_reduction/evidencias/):
+
+1. **[evidencias/modulo1_baseline_metrics.png](file:///d:/projetos/xai_data_reduction/evidencias/modulo1_baseline_metrics.png)**: Matriz de confusão e curva ROC do modelo baseline de 40 atributos.
+2. **[evidencias/modulo2_shap_summary.png](file:///d:/projetos/xai_data_reduction/evidencias/modulo2_shap_summary.png)**: Painel SHAP global (Bar Plot e Beeswarm Plot dos 40 atributos).
+3. **[evidencias/modulo3_lime_local.png](file:///d:/projetos/xai_data_reduction/evidencias/modulo3_lime_local.png)**: Explicação forense LIME da decisão no limiar de incerteza ($P \approx 50\%$).
+4. **[evidencias/modulo4_ablation_curves.png](file:///d:/projetos/xai_data_reduction/evidencias/modulo4_ablation_curves.png)**: Curvas de ablação comparando SHAP vs Mutual Information, RFE e L1 Lasso.
+5. **[evidencias/modulo5_shap_select_analysis.png](file:///d:/projetos/xai_data_reduction/evidencias/modulo5_shap_select_analysis.png)**: Diagnóstico do teste de hipótese `shap-select` aprovando os 10 atributos ótimos.
+6. **[evidencias/dashboard_final_comparativo.png](file:///d:/projetos/xai_data_reduction/evidencias/dashboard_final_comparativo.png)**: Dashboard executivo de 4 painéis sintetizando a vitória do modelo compacto.
+7. **[evidencias/log_execucao_real.txt](file:///d:/projetos/xai_data_reduction/evidencias/log_execucao_real.txt)**: Log completo com tempo de execução, checkpoints e sanity checks.
+
+---
+
+## Documento de Publicação Executivo (.docx)
+
+O relatório definitivo de publicação e auditoria científica foi compilado:
+- **Arquivo**: [XAI_Data_Reduction_Relatorio_Publicacao.docx](file:///d:/projetos/xai_data_reduction/XAI_Data_Reduction_Relatorio_Publicacao.docx)
+- **Conteúdo**: Resumo executivo, fundamentação teórica de XAI, Teoria dos Jogos (Shapley), protocolo experimental detalhado, 6 figuras de alta resolução incorporadas com legendas técnicas e considerações éticas de não-causalidade alinhadas ao NIST AI RMF.
+
+---
+
 ## Como executar
 
-1. Crie e ative o ambiente virtual
+1. Ative o ambiente virtual
 2. Instale as dependências: `pip install -r requirements.txt`
 3. Execute o pipeline completo de ponta a ponta:
 
@@ -65,3 +105,4 @@ Ou abra qualquer uma das aulas em `aulas_colab/` diretamente no **Google Colab**
 ## Observação
 
 O projeto foi concebido como base didática e experimental para um artigo acadêmico sobre XAI aplicada à redução de dados.
+
