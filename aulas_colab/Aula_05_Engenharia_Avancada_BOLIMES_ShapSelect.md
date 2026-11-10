@@ -9,9 +9,9 @@
 ---
 
 > [!NOTE]
-> 🔙 **De onde viemos:** Na Aula 04, realizamos um estudo de ablação e provamos que a poda guiada pelo ranking SHAP mantém o $F_1$-score alto mesmo reduzindo 75% dos atributos. Porém, selecionar apenas olhando para a média do módulo $|SHAP|$ possui duas falhas científicas críticas: (1) gasta tempo computacional calculando explicações caras em colunas que eram redundantes óbvias; (2) ignora se o atributo atua a favor da resposta verdadeira ou se é um ruído que empurra para a classe errada!
-> 🎯 **Objetivo Principal da Aula:** Implementar uma estratégia de engenharia de dados em duas fases: a **Fase 1 (Pré-Filtro Híbrido)**, eliminando atributos de variância nula e variáveis multicolineares ($|r| > 0.90$) no estilo BOLIMES; e a **Fase 2 (shap-select)**, ajustando uma **Regressão Logística** da variável alvo real ($y$) em relação à matriz de valores SHAP ($\Phi$), admitindo no modelo final apenas atributos com **coeficiente positivo ($\beta > 0$)** e **significância estatística comprovada ($p$-valor $< 0.05$)**.
-> 🚀 **Para onde vamos:** Na Aula 06 (O Grande Final), conectaremos todas as peças do quebra-cabeça em um **Pipeline Industrial Fim-a-Fim**: reotimizaremos os hiperparâmetros do modelo reduzido usando o framework bayesiano **Optuna** e geraremos o **Dashboard Comparativo Executivo de 4 Painéis**!
+> 🔙 **De onde viemos:** Na Aula 04, realizamos um estudo de ablação e provamos que a poda guiada pelo ranking SHAP mantém o $F_1$-score alto mesmo reduzindo 75% dos atributos. Porém, selecionar apenas olhando para a média do módulo $|SHAP|$ possui três falhas científicas críticas: (1) gasta tempo computacional calculando explicações em colunas redundantes multivariadas; (2) divide a importância de Shapley entre atributos colineares; e (3) se calcularmos SHAP nos mesmos dados onde a floresta foi treinada (*in-sample*), árvores profundas memorizam os dados e inflam artificialmente os $p$-valores do ruído!
+> 🎯 **Objetivo Principal da Aula:** Implementar uma estratégia de engenharia de dados em duas fases sem vazamento: a **Fase 1 (Pré-Filtro Híbrido + VIF)**, eliminando atributos de variância nula, correlações bivariadas ($|r| > 0.90$) e **colinearidade multivariada via Fator de Inflação da Variância ($\text{VIF} \le 10$)**; e a **Fase 2 (`shap-select` Out-of-Fold)**, extraindo a matriz TreeSHAP fora da amostra (**3-Fold Stratified OOF**) e ajustando uma **Regressão Logística** da variável alvo real ($y$) em relação a $\Phi_{\text{OOF}}$, admitindo no modelo final apenas atributos com **coeficiente positivo ($\beta > 0$)** e **significância estatística comprovada ($p$-valor $< 0.05$)** sem corte Top-K forçado!
+> 🚀 **Para onde vamos:** Na Aula 06 (O Grande Final), conectaremos todas as peças do quebra-cabeça em um **Pipeline Industrial Fim-a-Fim**: avaliaremos o subconjunto tanto de forma *ceteris paribus* (sem Optuna) quanto após reotimizar os hiperparâmetros com **Optuna (5-Fold CV)** e geraremos o **Dashboard Comparativo Executivo de 4 Painéis**!
 
 ---
 
@@ -111,18 +111,18 @@ import shap
 # 2. Importamos a biblioteca de modelagem econometrica para calculo formal de p-valores
 import statsmodels.api as sm
 
-# 3. Importamos os seletores de variancia e ensemble do Scikit-Learn
+# 3. Importamos os seletores de variancia, K-Fold estratificado e ensemble do Scikit-Learn
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import VarianceThreshold
 
-# 4. Sintetizamos a coorte clinica padrao com 40 atributos
+# 4. Sintetizamos a coorte clinica padrao com 40 atributos (shuffle=False preserva a ordem do ground truth)
 def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=10, n_redundant=10, random_state=42):
     X_raw, y = make_classification(
         n_samples=n_samples, n_features=n_features, n_informative=n_informative,
         n_redundant=n_redundant, n_repeated=0, n_classes=2, weights=[0.6, 0.4],
-        flip_y=0.03, random_state=random_state
+        flip_y=0.03, shuffle=False, random_state=random_state
     )
     feature_names = (
         [f"biomarcador_{i+1}" for i in range(n_informative)] +
@@ -139,19 +139,19 @@ print(f"[OK] Benchmark sintetico instanciado: {X_train.shape[1]} atributos aguar
 
 ---
 
-### Bloco 5.2 — Implementação da Fase 1: Pré-Filtro Híbrido (BOLIMES)
+### Bloco 5.2 — Implementação da Fase 1: Pré-Filtro Híbrido (Pearson + VIF $\le 10$)
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
-> **O que faz o comando `np.triu(..., k=1)` na matriz de correlação?**  
-> Uma matriz de correlação é espelhada (a correlação entre $A$ e $B$ é igual à de $B$ e $A$) e a diagonal principal é sempre $1.0$. O `np.triu` isola apenas o triângulo superior acima da diagonal principal, permitindo identificar e remover colunas redundantes sem duplicar o descarte.
+> **Por que usamos o VIF ($\text{VIF} = \frac{1}{1 - R^2_j} \le 10$) além da correlação de Pearson ($|r| > 0.90$)?**  
+> Porque uma variável redundante formada pela combinação linear de vários atributos informativos possui correlação par-a-par moderada ($|r| < 0.90$), escapando do filtro de Pearson, mas possui multicolinearidade multivariada perfeita ($R^2_j \to 1 \implies \text{VIF} \to \infty$). A eliminação iterativa via VIF remove todas as 10 variáveis redundantes ($40 \to 30$ colunas)!
 
 ```python
-# 1. Definimos a funcao do Pre-filtro Hibrido para faxina estatistica preliminar
-def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
+# 1. Definimos a funcao do Pre-filtro Hibrido (Variancia + Pearson + VIF Iterativo <= 10.0)
+def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90, threshold_vif=10.0):
     """
-    Fase 1: Limpeza rápida pré-XAI para eliminar colunas de variância nula/baixa
-    e variáveis altamente correlacionadas (redundâncias óbvias).
+    Fase 1: Limpeza rápida pré-XAI para eliminar colunas de variância nula/baixa,
+    correlações bivariadas (> 0.90) e combinações lineares multivariadas (VIF > 10).
     """
     # 2. Etapa A: Filtro de Variancia Minima
     selector = VarianceThreshold(threshold=threshold_var)
@@ -159,112 +159,115 @@ def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
     cols_var = X_train.columns[selector.get_support()].tolist()
     X_var = X_train[cols_var]
 
-    # 3. Etapa B: Filtro de Multicolinearidade de Pearson
+    # 3. Etapa B: Filtro de Correlacao Par-a-Par de Pearson
     corr_matrix = X_var.corr().abs()
-    # 4. Extraímos o triangulo superior da matriz de correlacao
     upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-    
-    # 5. Mapeamos as colunas que apresentam correlacao absoluta superior a 0.90
-    to_drop = []
-    for column in upper.columns:
-        col_corr = upper[column].dropna()
-        if not col_corr.empty and (col_corr > threshold_corr).any():
-            to_drop.append(column)
+    to_drop_corr = [col for col in upper.columns if (upper[col].dropna() > threshold_corr).any()]
+    cols_corr = [c for c in cols_var if c not in to_drop_corr]
 
-    # 6. Construímos a lista de colunas aprovadas
-    cols_finais = [c for c in cols_var if c not in to_drop]
+    # 4. Etapa C: Filtro Iterativo de Multicolinearidade Multivariada (VIF <= 10.0)
+    cols_atuais = list(cols_corr)
+    while len(cols_atuais) > 2:
+        mat = X_train[cols_atuais].values
+        mat_std = (mat - mat.mean(axis=0)) / (mat.std(axis=0) + 1e-12)
+        corr_mat = np.corrcoef(mat_std, rowvar=False)
+        try:
+            inv_corr = np.linalg.inv(corr_mat)
+            vifs = np.diag(inv_corr)
+        except np.linalg.LinAlgError:
+            inv_corr = np.linalg.pinv(corr_mat)
+            vifs = np.diag(inv_corr)
 
-    # 7. Exibimos o relatorio da Fase 1 no console
-    print(f"[*] Pré-filtro Híbrido: Reduzido de {X_train.shape[1]} para {len(cols_finais)} atributos antes do XAI.")
-    return X_train[cols_finais], cols_finais
+        max_idx = int(np.argmax(vifs))
+        if vifs[max_idx] > threshold_vif or vifs[max_idx] < 0:
+            cols_atuais.pop(max_idx)
+        else:
+            break
 
-# 10. Executamos o Pre-filtro Hibrido nos dados de treino
+    print(f"[*] Pré-filtro Híbrido (Pearson + VIF <= 10): Reduzido de {X_train.shape[1]} para {len(cols_atuais)} atributos antes do XAI.")
+    return X_train[cols_atuais], cols_atuais
+
+# 5. Executamos o Pre-filtro Hibrido nos dados de treino
 X_train_pre, cols_pre = pré_filtro_hibrido(X_train)
 ```
 
 ---
 
-### Bloco 5.3 — Implementação da Fase 2: O Algoritmo `shap-select`
+### Bloco 5.3 — Implementação da Fase 2: O Algoritmo `shap-select` Out-of-Fold (3-Fold OOF)
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
-> **Por que usamos um fallback com `sm.OLS` se o `sm.Logit` falhar?**  
-> Em alguns conjuntos de dados com alta separabilidade linear, a regressão logística pode sofrer do fenômeno de *quasi-complete separation* (onde os parâmetros explodem para infinito). O fallback para Mínimos Quadrados Ordinários (OLS) garante robustez industrial contra travamentos.
+> **Por que calculamos a matriz SHAP em 3-Fold Out-of-Fold (OOF) em vez de no treino direto?**  
+> Se calcularmos valores TreeSHAP nas mesmas amostras em que as árvores foram treinadas (*in-sample*), as folhas profundas memorizam ruídos idiossincráticos e fazem variáveis de ruído parecerem ter $p < 0.05$. Calculando **Out-of-Fold**, cada valor SHAP vem de uma floresta que não viu aquela amostra no treino, fazendo o corte $p < 0.05$ aprovar exatamente os 10 atributos informativos verdadeiros (`10/10`) e zero ruídos (`0/20`), sem precisar de `.head(10)`!
 
 ```python
-# 1. Definimos a funcao principal da metodologia shap-select
-def executar_shap_select(X_train, y_train, p_value_cutoff=0.05, random_state=42):
+# 1. Definimos a funcao principal da metodologia shap-select Out-of-Fold
+def executar_shap_select(X_train, y_train, p_value_cutoff=0.05, random_state=42, n_splits=3):
     """
-    Fase 2 (shap-select): Regressão dos rótulos reais y vs Matriz SHAP.
+    Fase 2 (shap-select Out-of-Fold):
+    Extrai a matriz TreeSHAP fora da amostra (3-Fold Stratified OOF) e ajusta
+    regressão dos rótulos reais y vs Matriz SHAP OOF.
     Atributos com coeficientes <= 0 ou p-valor >= 0.05 são descartados.
     """
-    # 2. Ajustamos o Random Forest sobre as colunas sobreviventes do Pre-filtro
-    modelo = RandomForestClassifier(n_estimators=100, random_state=random_state, n_jobs=1)
-    modelo.fit(X_train, y_train)
+    # 2. Extraímos os valores TreeSHAP Out-of-Fold (3-Fold Stratified CV dentro de X_train)
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    Phi_oof = np.zeros((X_train.shape[0], X_train.shape[1]), dtype=float)
+    y_arr = np.asarray(y_train)
+
+    for tr_idx, val_idx in skf.split(X_train, y_arr):
+        X_tr_fold, y_tr_fold = X_train.iloc[tr_idx], y_arr[tr_idx]
+        X_val_fold = X_train.iloc[val_idx]
+
+        modelo_fold = RandomForestClassifier(n_estimators=100, random_state=random_state, n_jobs=1)
+        modelo_fold.fit(X_tr_fold, y_tr_fold)
+
+        explainer_fold = shap.TreeExplainer(modelo_fold)
+        sv_val = explainer_fold(X_val_fold)
+        Phi_oof[val_idx, :] = sv_val.values[:, :, 1] if len(sv_val.shape) == 3 else sv_val.values
+
+    df_phi = pd.DataFrame(Phi_oof, columns=X_train.columns, index=X_train.index)
     
-    # 3. Computamos a explicabilidade com TreeExplainer
-    explainer = shap.TreeExplainer(modelo)
-    shap_vals = explainer(X_train)
-    
-    # 4. Extraímos a matriz de explicabilidade Phi referente a presenca de patologia
-    if len(shap_vals.shape) == 3:
-        Phi = shap_vals.values[:, :, 1]
-    else:
-        Phi = shap_vals.values
-        
-    df_phi = pd.DataFrame(Phi, columns=X_train.columns)
-    
-    # 5. Adicionamos a constante (intercepto alfa) para a regressao
+    # 3. Adicionamos a constante (intercepto alfa) para a regressao
     X_const = sm.add_constant(df_phi)
     
-    # 6. Tentamos ajustar a Regressao Logistica formal com statsmodels
+    # 4. Ajustamos a Regressao Logistica formal com statsmodels (com fallback OLS)
     try:
-        logit_mod = sm.Logit(y_train, X_const)
+        logit_mod = sm.Logit(y_arr, X_const)
         result = logit_mod.fit(disp=False)
         params = result.params.drop("const")
         pvalues = result.pvalues.drop("const")
     except Exception as e:
-        # 7. Fallback robusto para OLS caso ocorra nao-convergencia numerica
         print(f"[!] Logit com quasi-separabilidade ({e}). Usando OLS robusto para shap-select.")
-        ols_mod = sm.OLS(y_train, X_const)
+        ols_mod = sm.OLS(y_arr, X_const)
         result = ols_mod.fit()
         params = result.params.drop("const")
         pvalues = result.pvalues.drop("const")
         
-    # 8. Estruturamos os resultados econometricos em um DataFrame comparativo
+    # 5. Estruturamos os resultados econometricos em um DataFrame comparativo
     df_shap_select = pd.DataFrame({
         "atributo": X_train.columns,
         "coeficiente": params.values,
         "p_value": pvalues.values,
-        "mean_abs_shap": np.abs(Phi).mean(axis=0)
+        "mean_abs_shap": np.abs(Phi_oof).mean(axis=0)
     })
 
-    # 9. Aplicamos a regra de ouro: Coeficiente estritamente positivo E p-valor significativo
+    # 6. Aplicamos a regra de ouro: Coeficiente estritamente positivo E p-valor < 0.05 (sem corte Top-K!)
     df_shap_select["selecionado"] = (df_shap_select["coeficiente"] > 0) & (df_shap_select["p_value"] < p_value_cutoff)
     df_shap_select = df_shap_select.sort_values(by="mean_abs_shap", ascending=False).reset_index(drop=True)
 
-    # 10. Selecionamos os 10 melhores atributos aprovados
-    atributos_aprovados = df_shap_select[df_shap_select["selecionado"]]["atributo"].head(10).tolist()
+    atributos_aprovados = df_shap_select[df_shap_select["selecionado"]]["atributo"].tolist()
 
-    # 11. Fallbacks graduais de seguranca caso o limiar estatistico seja severo demais
-    if len(atributos_aprovados) < 2:
-        atributos_aprovados = df_shap_select[df_shap_select["coeficiente"] > 0]["atributo"].head(10).tolist()
-    if len(atributos_aprovados) < 2:
-        print("[!] Warning: Usando Fallback para os 10 maiores |SHAP|.")
-        atributos_aprovados = df_shap_select.head(10)["atributo"].tolist()
-
-    # 12. Exibimos a conclusao da selecao
-    print(f"[*] shap-select: Aprovados {len(atributos_aprovados)} de {X_train.shape[1]} atributos com significância estatística!")
+    print(f"[*] shap-select OOF: Aprovados automaticamente {len(atributos_aprovados)} de {X_train.shape[1]} atributos com significância estatística (p < {p_value_cutoff})!")
     return atributos_aprovados, df_shap_select
 
-# 13. Executamos a selecao estatistica avancada
+# 7. Executamos a selecao estatistica avancada Out-of-Fold
 atributos_aprovados, df_shap_select = executar_shap_select(X_train_pre, y_train)
 
-# 14. Exibimos a tabela das variaveis avaliadas
+# 8. Exibimos a tabela das variaveis avaliadas
 print("\n" + "=" * 75)
-print("--- RELATÓRIO ESTATÍSTICO DE SELEÇÃO SHAP-SELECT ---")
+print("--- RELATÓRIO ESTATÍSTICO DE SELEÇÃO SHAP-SELECT OUT-OF-FOLD ---")
 print("=" * 75)
-for i, row in df_shap_select.head(12).iterrows():
+for i, row in df_shap_select.head(15).iterrows():
     status = "✅ APROVADO" if row['selecionado'] else "❌ REJEITADO"
     print(f" {row['atributo']:<24} | Coef β: {row['coeficiente']:+.4f} | P-Valor: {row['p_value']:.4e} | {status}")
 print("=" * 75)

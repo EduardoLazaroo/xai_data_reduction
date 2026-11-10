@@ -371,6 +371,7 @@ X_raw, y = make_classification(
     n_classes=2,
     weights=[0.6, 0.4],
     flip_y=0.03,
+    shuffle=False,
     random_state=42
 )
 

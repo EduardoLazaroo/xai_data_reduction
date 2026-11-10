@@ -1,58 +1,67 @@
 ===========================================================================
 LOG DE EXECUCAO REAL E VALIDACAO CIENTIFICA - XAI DATA REDUCTION
 ===========================================================================
-Data de Execucao: 2026-10-13 00:34:32 UTC
+Data de Execucao: 2026-11-10 10:30:36 BRT
 Ambiente: Windows 11 x64 / Python 3.13 (.venv)
-Bibliotecas: Scikit-Learn 1.9.1, SHAP 0.53.0, LIME 0.2.0.1, Optuna 5.0.0, Statsmodels 0.15.0
+Bibliotecas: Scikit-Learn, SHAP, LIME, Optuna, Statsmodels
 
-CONFIGURACAO DA BASE EXPERIMENTAL:
-- Total de Amostras: 2.000 pacientes clinicos sintetizados com parametros biomedicos
-- Espaco Dimensional Inicial: 40 atributos numericos
-- Divisao: Holdout Estratificado (75% Treino: 1.500 / 25% Teste: 500)
+CONFIGURACAO DA BASE EXPERIMENTAL (BENCHMARK SINTETICO CONTROLADO):
+- Total de Amostras: 2.000 observacoes sinteticas (make_classification, shuffle=False, seed=42)
+- Espaco Dimensional Inicial: 40 atributos numericos (10 informativos, 10 redundantes por combinacao linear, 20 ruidos puros)
+- Proporcao de Classes: 60% Classe 0 / 40% Classe 1 (flip_y = 0.03)
+- Divisao: Holdout Estratificado (75% Treino: 1.500 / 25% Teste: 500) + Validacao Cruzada Estratificada de 5 Folds
 
 ETAPA 1: MODELO BASELINE (RANDOM FOREST - 40 ATRIBUTOS)
-- Estimadores: 100 arvores, random_state=42
-- Acuracia no Teste: 0.8780 (87.80%)
-- F1-Score Clinico: 0.8373
-- ROC-AUC: 0.9475
-- Tempo de Treino: 1112.22 ms
-- Latencia de Inferencia: 55.38 ms
+- Estimadores: 100 arvores, random_state=42, n_jobs=1
+- Acuracia no Holdout: 0.9060 (90.60%)
+- F1-Score no Holdout: 0.8856
+- F1-Score CV (5-Fold): 0.8649 ± 0.0159
+- ROC-AUC no Holdout: 0.9655
+- Tempo de Treino: 878.80 ms
+- Latencia de Inferencia (Lote 500 obs): 48.70 ms
 - Grafico gerado: assets/modulo1_baseline_metrics.png
 
 ETAPA 2: EXPLICABILIDADE GLOBAL VIA TREESHAP
-- Metodo: TreeSHAP (algoritmo exato para arvores)
+- Metodo: TreeSHAP (algoritmo exato para ensembles de arvores)
 - Calculo da importancia global: Media dos valores absolutos Shapley (|SHAP|)
-- Concentracao de Importancia: Top-10 atributos concentram 66.89% da massa explicativa
+- Concentracao de Importancia: Os 10 atributos informativos verdadeiros concentram 51.53% da massa explicativa global
 - Graficos gerados: assets/modulo2_shap_summary.png (Bar Plot + Beeswarm Plot)
 
-ETAPA 3: EXPLICABILIDADE LOCAL FORENSE VIA LIME
-- Alvo: Instancias ambiguas no limiar critico de probabilidade (P ~ 50%)
-- Paciente Auditado: #51
-- Esparsidade Local LIME: 75.0%
-- Grafico gerado: assets/modulo3_lime_local.png
-
-ETAPA 4: ESTUDO DE ABLACAO COMPARATIVA
-- Metodos confrontados: SHAP (XAI), Filter (Mutual Info), Wrapper (RFE), Embedded (Logistica L1)
-- Descoberta: O ranking SHAP preservou a area sob a curva ROC-AUC superior a Filter e Embedded ao longo das podas.
-- Grafico gerado: assets/modulo4_ablation_curves.png
-
-ETAPA 5: PRE-FILTRO HIBRIDO E SELECAO RIGOROSA (SHAP-SELECT)
-- Pre-filtro: Reducao de 40 para 36 colunas por variancia e colinearidade
-- Selecao Estatistica shap-select: 10 atributos aprovados com significancia
-- Reducao de dimensionalidade: 75.0% da base eliminada!
+ETAPA 3: PRE-FILTRO ESTATISTICO MULTIVARIADO (VARIANCIA + PEARSON + VIF <= 10) E SHAP-SELECT OUT-OF-FOLD
+- Pre-filtro nao-supervisionado (X_train):
+  * VarianceThreshold (< 0.01) e Pearson par-a-par (|r| > 0.90): 40 -> 33 colunas
+  * Eliminacao iterativa por Fator de Inflacao da Variancia (VIF <= 10.0): 33 -> 30 colunas (100% das 10 combinacoes lineares redundantes eliminadas)
+- Selecao Inferencial Out-of-Fold (shap-select 3-Fold OOF):
+  * Matriz TreeSHAP calculada fora da amostra (3-Fold Stratified OOF em X_train_pre) para impedir memorizacao in-sample
+  * Regressao Logit (y_train ~ Phi_OOF) com criterio estrito Beta > 0 e p-valor < 0.05 (sem corte Top-K arbitrario)
+  * Resultado: 10 atributos aprovados automaticamente (10/10 informativos verdadeiros, 0/10 redundantes, 0/20 ruidos)
+- Reducao de dimensionalidade: 75.0% da base eliminada com 100% de recuperacao do ground truth!
 - Grafico gerado: assets/modulo5_shap_select_analysis.png
 
-ETAPA 6: OTIMIZACAO BAYESIANA VIA OPTUNA (TPE) & MODELO CAMPEAO
-- Hiperparametros Otimos: {'n_estimators': 184, 'max_depth': 14, 'min_samples_split': 7, 'min_samples_leaf': 1}
-- Desempenho do Modelo Campeao no Teste:
-  * Acuracia: 0.8860 (+0.80% sobre o baseline)
-  * F1-Score: 0.8550 (+1.77% sobre o baseline)
-  * ROC-AUC: 0.9455 (preservacao de 99.79% da discriminacao)
-  * Tempo de Treino: 1017.42 ms (aceleracao de 8.5%)
-- Grafico gerado: assets/dashboard_final_comparativo.png
+ETAPA 4: BENCHMARK MULTI-FAMILIAS (COMPARACAO CETERIS PARIBUS E OTIMIZADA) E ABLACAO PROGRESSIVA
+- Metodos confrontados (K=10):
+  1. XAI Proposto (shap-select OOF + Optuna): 10/10 inf. | 0/10 red. | 0/20 ruido | F1 Holdout = 0.8872 | F1 CV = 0.8864 ± 0.0122 | AUC = 0.9734 | Selecao = 79.30 s | Treino = 1075.5 ms
+  2. XAI Proposto (shap-select OOF Puro):     10/10 inf. | 0/10 red. | 0/20 ruido | F1 Holdout = 0.8861 | F1 CV = 0.8873 ± 0.0213 | AUC = 0.9686 | Selecao = 11.04 s | Treino = 525.7 ms
+  3. Wrapper (RFE):                           7/10 inf.  | 3/10 red. | 0/20 ruido | F1 Holdout = 0.8759 | F1 CV = 0.8533 ± 0.0085 | AUC = 0.9580 | Selecao = 4.55 s  | Treino = 574.5 ms
+  4. Embedded (Lasso L1):                     6/10 inf.  | 3/10 red. | 1/20 ruido | F1 Holdout = 0.8689 | F1 CV = 0.8621 ± 0.0080 | AUC = 0.9626 | Selecao = 0.05 s  | Treino = 582.7 ms
+  5. Embedded (Tree MDI):                     7/10 inf.  | 3/10 red. | 0/20 ruido | F1 Holdout = 0.8558 | F1 CV = 0.8409 ± 0.0107 | AUC = 0.9493 | Selecao = 0.01 s  | Treino = 612.8 ms
+  6. Filter (ANOVA F):                        7/10 inf.  | 3/10 red. | 0/20 ruido | F1 Holdout = 0.8550 | F1 CV = 0.8186 ± 0.0123 | AUC = 0.9510 | Selecao = 0.005 s | Treino = 605.9 ms
+  7. XAI (TreeSHAP Direto):                   7/10 inf.  | 3/10 red. | 0/20 ruido | F1 Holdout = 0.8465 | F1 CV = 0.8288 ± 0.0202 | AUC = 0.9489 | Selecao = 13.56 s | Treino = 532.8 ms
+  8. Filter (Mutual Info):                    5/10 inf.  | 4/10 red. | 1/20 ruido | F1 Holdout = 0.8365 | F1 CV = 0.8229 ± 0.0171 | AUC = 0.9378 | Selecao = 0.41 s  | Treino = 545.7 ms
+  9. Baseline Completo (40 Atributos):        10/10 inf. | 10/10 red.| 20/20 ruido| F1 Holdout = 0.8856 | F1 CV = 0.8649 ± 0.0159 | AUC = 0.9655 | Selecao = 0.00 s  | Treino = 878.8 ms
+- Graficos gerados: assets/modulo4_ablation_curves.png, assets/dashboard_final_comparativo.png
 
-VERIFICACAO DE SANITY CHECKS:
-[OK] Compressao Dimensional: 75.0% dos atributos removidos (40 -> 10)
-[OK] Preservacao Clinica: F1 aumentou de 0.8373 para 0.8550
-[OK] Todos os 6 modulos foram executados e validados com dados reais.
+ETAPA 5: AUDITORIA LOCAL FORENSE VIA LIME (INSTANCIA CRITICA E COORTE DE FRONTEIRA N=20)
+- Observacao Mais Incerta do Holdout: #295 (Probabilidade Baseline P = 50.00%)
+  * Fidelidade Local R² na Obs. #295: subiu de 0.3066 (Baseline 40 atrib.) para 0.3851 (Reduzido 10 atrib.)
+  * Regras nao-informativas (redundantes/ruido) no Top-10 da Obs. #295: caiu de 3/10 para 0/10
+- Coorte de Fronteira (N = 20 observacoes mais incertas proximas a P = 50%):
+  * R² Medio na Coorte (N=20): passou de 0.2478 ± 0.1053 (Baseline) para 0.2555 ± 0.1016 (Reduzido)
+  * Regras nao-informativas no Top-10 LIME (N=20): caiu de 3.80 / 10 regras para 0.00 / 10 regras (100% de pureza local)
+- Grafico gerado: assets/modulo3_lime_local.png
+
+VERIFICACAO DE SANITY CHECKS E HIPOTESES:
+[OK] H1 (Desempenho Preditivo): 75.0% dos atributos removidos (40 -> 10) com GANHO de F1 (0.8856 -> 0.8861 Puro e 0.8872 + Optuna no Holdout; 0.8649 -> 0.8864 na CV 5-Fold).
+[OK] H2 (Pureza de Selecao e Custo): Unico metodo a atingir 10/10 informativos e 0/20 ruidos; treino acelerado em 40.2% (878.8 ms -> 525.7 ms no modelo puro), com trade-off de selecao offline (11.04 s vs. 4.55 s do RFE).
+[OK] H3 (Auditoria Local LIME): Ganho de R² na observacao #295 (0.3066 -> 0.3851) e eliminacao total de atributos nao-informativos nas regras locais da coorte N=20 (3.80 -> 0.00).
 ===========================================================================

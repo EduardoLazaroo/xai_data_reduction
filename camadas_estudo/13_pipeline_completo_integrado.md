@@ -58,11 +58,11 @@ Fixe `random_state`, salve nomes de colunas, registre tempos e mantenha o teste 
 Uma execucao pode produzir esta cadeia:
 
 ```text
-40 atributos -> baseline F1 0,837 -> pre-filtro 28 -> shap-select 10
-            -> Optuna: 100 trials -> campeao F1 0,861 -> latencia menor
+40 atributos -> baseline F1 0,8856 -> pre-filtro VIF 30 -> shap-select OOF 10 (F1 0,8861 Puro)
+            -> Optuna: 20 trials (5-Fold CV) -> campeao F1 0,8872 (ROC-AUC 0,9734)
 ```
 
-Essa linha nao autoriza atribuir o ganho inteiro ao Optuna. Para investigar, compare versoes: baseline, baseline mais pre-filtro, pre-filtro mais `shap-select` e pipeline completo. Se o F1 mudar de `0,837` para `0,850` antes do Optuna e para `0,861` depois dele, cada etapa tem uma contribuicao observada, mas ainda sujeita a variacao de split.
+Essa linha mostra por que avaliamos versões separadas: o Baseline (40 atributos, $\text{F1} = 0{,}8856$), a seleção pura sem Optuna (*ceteris paribus*, 10 atributos, $\text{F1} = 0{,}8861$ e redução de 40,2% no tempo de treino) e o modelo com Optuna ($\text{F1} = 0{,}8872$), além da validação cruzada estratificada de 5 folds ($\text{F1}_{\text{CV}} = 0{,}8864 \pm 0{,}0122$).
 
 ### Duvidas frequentes
 
@@ -378,6 +378,7 @@ X_raw, y = make_classification(
     n_classes=2,
     weights=[0.6, 0.4],
     flip_y=0.03,
+    shuffle=False,
     random_state=42
 )
 feature_names = (

@@ -266,7 +266,7 @@ from sklearn.model_selection import train_test_split
 # Semente fixa: torna a decomposicao SHAP comparavel entre execucoes.
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
-    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, random_state=SEED)
+    n_redundant=10, weights=[0.6, 0.4], flip_y=0.03, shuffle=False, random_state=SEED)
 nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"exame_redundante_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])

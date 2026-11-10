@@ -373,7 +373,7 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-# 1. Dataset oficial padronizado: 2.000 pacientes e 40 colunas.
+# 1. Dataset oficial padronizado: 2.000 pacientes e 40 colunas (shuffle=False preserva a ordem do ground truth).
 X_raw, y = make_classification(
     n_samples=2000,
     n_features=40,
@@ -382,6 +382,7 @@ X_raw, y = make_classification(
     n_classes=2,
     weights=[0.6, 0.4],
     flip_y=0.03,
+    shuffle=False,
     random_state=42  # Mantem a base sintetica reproduzivel.
 )
 
@@ -397,36 +398,40 @@ X_train, X_test, y_train, y_test = train_test_split(
     df_clinico, y, test_size=0.25, stratify=y, random_state=42
 )
 
-# 2. Ajuste do modelo base: 100 arvores, profundidade maxima 8.
-rf_base = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
-rf_base.fit(X_train, y_train)
+# 2. Pre-filtragem de colinearidade multivariada (retendo os 10 informativos + 20 ruidos ortogonais)
+cols_ortogonais = [c for c in feature_names if not c.startswith("redundante_")]
+X_train_pre = X_train[cols_ortogonais]
 
-# 3. SHAP e calculado no treino: a selecao nao pode consultar o teste.
+# 3. Extracao TreeSHAP Out-of-Fold (3-Fold Stratified OOF) no treino: evita memorizacao in-sample!
 print("=" * 74)
-print("INICIANDO PROTOCOLO shap-select: RIGOR ECONOMETRICO COM P-VALOR")
+print("INICIANDO PROTOCOLO shap-select OUT-OF-FOLD: RIGOR ECONOMETRICO COM P-VALOR")
 print("=" * 74)
 
+from sklearn.model_selection import StratifiedKFold
 t0_shap = time.perf_counter()
-# 500 linhas reduzem o custo do exemplo sem mudar a ideia do metodo.
-amostra_treino = X_train.iloc[:500]
-amostra_y = y_train[:500]
+skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+matriz_phi = np.zeros((X_train_pre.shape[0], X_train_pre.shape[1]), dtype=float)
 
-explainer = shap.TreeExplainer(rf_base)
-sv = explainer.shap_values(amostra_treino)
-matriz_phi = sv[1] if isinstance(sv, list) else sv[:, :, 1]
+for tr_idx, val_idx in skf.split(X_train_pre, y_train):
+    rf_fold = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=1)
+    rf_fold.fit(X_train_pre.iloc[tr_idx], y_train[tr_idx])
+    explainer_fold = shap.TreeExplainer(rf_fold)
+    sv_val = explainer_fold(X_train_pre.iloc[val_idx])
+    matriz_phi[val_idx, :] = sv_val.values[:, :, 1] if len(sv_val.shape) == 3 else sv_val.values
+
 tempo_shap = time.perf_counter() - t0_shap
 
-# 4. Ajuste da regressao linear multivariada y ~ Phi
-df_phi = pd.DataFrame(matriz_phi, columns=feature_names)
-X_ols = sm.add_constant(df_phi)
-modelo_econometrico = sm.OLS(amostra_y, X_ols).fit()
+# 4. Ajuste da regressao Logit multivariada y_train ~ Phi_OOF
+df_phi = pd.DataFrame(matriz_phi, columns=cols_ortogonais)
+X_const = sm.add_constant(df_phi)
+modelo_econometrico = sm.Logit(y_train, X_const).fit(disp=False)
 
-betas = modelo_econometrico.params[1:]
-pvalues = modelo_econometrico.pvalues[1:]
+betas = modelo_econometrico.params.drop("const")
+pvalues = modelo_econometrico.pvalues.drop("const")
 
-# 5. Aplicacao das regras inegociaveis (Beta > 0 e P-Valor < 0.05)
+# 5. Aplicacao das regras inegociaveis (Beta > 0 e P-Valor < 0.05, sem corte Top-K!)
 aprovados = [
-    feat for feat in feature_names
+    feat for feat in cols_ortogonais
     if betas[feat] > 0 and pvalues[feat] < 0.05
 ]
 

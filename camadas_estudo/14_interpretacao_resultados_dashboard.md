@@ -44,11 +44,11 @@ latencia              -> quanto levou a predicao do lote de teste?
 F1/recall             -> quais foram as metricas no holdout?
 ```
 
-Um resultado deve ser interpretado como um conjunto: a proposta reduziu atributos e o tempo de treino, mas o F1 caiu e o tempo de predicao do lote aumentou ligeiramente. Nao foram medidos volume de producao ou custos de exames.
+Um resultado deve ser interpretado como um conjunto: a proposta reduziu 75% dos atributos (recuperando 10/10 informativos e 0/20 ruídos), elevou o F1 tanto sem Optuna (0,8861, com redução de 40,2% no tempo de treino) quanto com Optuna (0,8872 no holdout e 0,8864 ± 0,0122 na validação cruzada de 5 folds). Nao foram medidos volume de producao ou custos de exames.
 
 ### Como separar observacao de interpretacao
 
-Observacao: “a proposta usou 10 atributos e teve F1 de 0,8395”. Interpretacao: “nesta particao, a reducao de 75% veio acompanhada de queda de F1 de 0,0461”. Conclusao forte demais: “os outros 30 exames sao clinicamente inuteis”. O dashboard deve ajudar a enxergar essa diferenca.
+Observacao: “a proposta usou 10 atributos e obteve F1 de 0,8861 (sem Optuna) e 0,8872 (com Optuna), contra 0,8856 do baseline”. Interpretacao: “nesta particao e na validacao cruzada de 5 folds, a reducao de 75% recuperou os 10 atributos informativos sintéticos e superou o baseline em F1”. Conclusao forte demais: “os outros 30 exames sao clinicamente inuteis”. O dashboard deve ajudar a enxergar essa diferenca.
 
 ### Duvidas frequentes
 
@@ -120,17 +120,20 @@ Uma objecao frequente apresentada por avaliadores diz respeito ao esforco comput
 
 Os tempos de selecao, treino e predicao medem etapas diferentes e devem ser reportados separadamente. Esta execucao nao mediu implantacao, custos de producao ou efeitos em pacientes.
 
-| Metrica | Baseline (40 atributos) | Proposta (10 atributos) |
-| :--- | :--- | :--- |
-| Atributos | 40 | 10 |
-| Informativos retidos (sinteticos) | 10/10 | 7/10 |
-| F1 no holdout | 0,8856 | 0,8395 |
-| Acuracia no holdout | 0,9060 | 0,8700 |
-| Treino (ms) | 558,5 | 377,3 |
-| Predicao do lote de teste (ms) | 32,14 | 34,49 |
-| Selecao de atributos (s) | 0,00 | 14,17 |
+| Metrica | Baseline (40 atributos) | Proposta Puro (10 atrib.) | Proposta + Optuna (10 atrib.) |
+| :--- | :--- | :--- | :--- |
+| Atributos | 40 | 10 | 10 |
+| Informativos retidos (sinteticos) | 10/10 | 10/10 | 10/10 |
+| Redundantes / Ruidos retidos | 10/10 red., 20/20 ruidos | 0/10 red., 0/20 ruidos | 0/10 red., 0/20 ruidos |
+| F1 no holdout | 0,8856 | 0,8861 | 0,8872 |
+| F1 CV (5-Fold) | 0,8649 ± 0,0159 | 0,8873 ± 0,0213 | 0,8864 ± 0,0122 |
+| Acuracia no holdout | 0,9060 | 0,9080 | 0,9100 |
+| ROC-AUC no holdout | 0,9655 | 0,9686 | 0,9734 |
+| Treino (ms) | 878,8 | 525,7 | 1075,5 |
+| Predicao do lote de teste (ms) | 48,70 | 40,39 | 78,36 |
+| Selecao de atributos (s) | 0,00 | 11,04 | 79,30 |
 
-Nesta particao, a reducao de atributos foi de 75% e a queda de F1 foi de 0,0461, dentro por pouco do limite de 0,05 definido para H1. O tempo de treino caiu, mas a predicao do lote de teste ficou ligeiramente mais lenta; a selecao levou mais tempo que RFE (3,07 s). Esses resultados sao descritivos de uma execucao.
+Nesta execucao, a reducao de atributos foi de 75% (recuperando 10/10 atributos informativos sem corte Top-K forçado) e houve ganho de F1 tanto no modelo puro sem Optuna (+0,0005 no holdout; +0,0224 na CV 5-Fold) quanto no modelo com Optuna (+0,0016 no holdout; +0,0215 na CV 5-Fold), superando com folga o criterio de H1. No modelo puro (*ceteris paribus*), o tempo de treino caiu 40,2% (878,8 ms para 525,7 ms); a selecao OOF levou 11,04 s contra 4,55 s do RFE.
 
 ---
 
@@ -140,44 +143,39 @@ O diagrama abaixo sintetiza a disposicao dos quatro quadrantes do dashboard exec
 
 ```text
 ==================================================================================
-                 PAINEL EXECUTIVO: CONFRONTO BASELINE VS. MODELO XAI
+           PAINEL EXECUTIVO: BASELINE (40) VS. XAI PURO (10) VS. + OPTUNA (10)
 ==================================================================================
- QUADRANTE 1: ATRIBUTOS SINTETICOS          QUADRANTE 2: TEMPO DE TREINO
-   40 | [==========] 40 atributos            600 | [==========] 558.5 ms
-   30 |                                      600 | 
-   20 |                                      400 | 
-   10 | [===] 10 atributos (-75.0%)          200 | [======] 377.3 ms
-    0 +--------------------------              0 +--------------------------
-        Baseline     Campeao XAI                   Baseline     Campeao XAI
+ QUADRANTE 1: ATRIBUTOS SINTETICOS          QUADRANTE 2: TEMPO DE TREINO (ms)
+   40 | [==========] 40 (Baseline)           1100 | [==========] 1075.5 (+Optuna)
+   20 | [===] 10 (XAI Puro / +Optuna)         880 | [========] 878.8 (Baseline)
+    0 +--------------------------             525 | [=====] 525.7 (XAI Puro -40.2%)
 ----------------------------------------------------------------------------------
  QUADRANTE 3: PREDICAO DO HOLDOUT (ms)     QUADRANTE 4: F1 NO HOLDOUT
-   40 | [=========] 32.14 ms                 1.0 | [=======] 0.8856  [======] 0.8395
-   30 |                                      0.8 |
-   20 |                                      0.6 |
-   10 | [==========] 34.49 ms                0.4 |
-    0 +--------------------------            0.0 +--------------------------
-        Baseline     Campeao XAI                   Baseline (40)  Campeao (10)
+   80 | [==========] 78.36 (+Optuna)          1.0 | [========] 0.8856 (Baseline)
+   50 | [======] 48.70 (Baseline)             0.9 | [========] 0.8861 (XAI Puro)
+   40 | [=====] 40.39 (XAI Puro)              0.8 | [========] 0.8872 (+Optuna)
 ==================================================================================
 ```
 
 A comparacao nao estima retorno operacional nem desempenho futuro:
 
 ```text
-[ ETAPA DE SELECAO ]                       [ MODELO NO HOLDOUT ]
+[ ETAPA DE SELECAO ]                       [ MODELO NO HOLDOUT E 5-FOLD CV ]
 Tempo medido nesta execucao:               Resultados observados:
-• shap-select + Optuna: 14.17 s            • F1: 0.8395 (baseline: 0.8856)
-• RFE: 3.07 s                              • Predicao do lote: 34.49 ms (baseline: 32.14 ms)
+• shap-select OOF Puro: 11.04 s            • F1 Holdout: 0.8861 (Puro) / 0.8872 (+Optuna)
+• shap-select OOF + Optuna: 79.30 s        • F1 CV 5-Fold: 0.8873 (Puro) / 0.8864 (+Optuna)
+• RFE: 4.55 s                              • Baseline (40): F1 Holdout 0.8856 / CV 0.8649
       │                                          │
       ▼                                          ▼
-[ CUSTO DE SELECAO ]                       [ UMA PARTICAO SINTETICA ]
+[ CUSTO DE SELECAO OFFLINE ]               [ BENCHMARK SINTETICO CONTROLADO ]
 ```
 
 | Quadrante | Metrica Apresentada | Leitura Tecnica | Significado Institucional |
 | :--- | :--- | :--- | :--- |
-| **Q1 (Atributos)** | $M_{\text{inicial}} \to M_{\text{final}}$ | 40 para 10 atributos sinteticos | Reducao dimensional de 75% neste split |
-| **Q2 (Treinamento)** | Tempo de ajuste (ms) | 558,5 para 377,3 ms | Medicao dependente da maquina |
-| **Q3 (Predicao)** | Tempo para prever o lote de teste (ms) | 32,14 para 34,49 ms | Sem ganho nesta medicao |
-| **Q4 (Desempenho)** | $F_1$-Score e Acuracia | F1 0,8856 para 0,8395 | Queda de F1 de 0,0461 neste holdout |
+| **Q1 (Atributos)** | $M_{\text{inicial}} \to M_{\text{final}}$ | 40 para 10 atributos (10/10 informativos) | Reducao dimensional de 75% com 0 ruídos |
+| **Q2 (Treinamento)** | Tempo de ajuste (ms) | 878,8 ms para 525,7 ms (Puro) | Reducao de 40,2% sob o mesmo estimador padrao |
+| **Q3 (Predicao)** | Tempo para prever o lote de teste (ms) | 48,70 ms para 40,39 ms (Puro) | Aceleracao no estimador padrao; maior no Optuna por ter mais arvores |
+| **Q4 (Desempenho)** | $F_1$-Score e Acuracia | F1 0,8856 para 0,8861 (Puro) e 0,8872 (+Optuna) | Ganho preditivo no Holdout e na CV de 5 Folds |
 
 ---
 
@@ -209,11 +207,11 @@ O pipeline nao exporta uma metrica de gap de generalizacao nesta tabela. Nao se 
 
 | Simbolo | Significado Formal | Leitura no Projeto |
 | :--- | :--- | :--- |
-| $\Delta_p$ | Taxa percentual de reducao de dimensionalidade | Eliminacao de 75% dos atributos sinteticos |
-| $S_{\text{train}}$ | Fator de aceleracao no tempo de treinamento | Aproximadamente 1,48 nesta medicao |
-| $S_{\text{infer}}$ | Fator entre tempos de predicao do lote | Aproximadamente 0,93; sem ganho nesta medicao |
+| $\Delta_p$ | Taxa percentual de reducao de dimensionalidade | Eliminacao de 75% dos atributos sinteticos (10/10 informativos retidos) |
+| $S_{\text{train}}$ | Fator de aceleracao no tempo de treinamento (modelo puro) | Aproximadamente 1,67 (redução de 40,2%: 878,8 ms → 525,7 ms) |
+| $S_{\text{infer}}$ | Fator entre tempos de predicao do lote (modelo puro) | Aproximadamente 1,21 (48,70 ms → 40,39 ms) |
 | $\text{Gap}_{\text{overfit}}$ | Diferenca entre desempenho de treino e teste | Nao calculada nem exportada pelo pipeline |
-| $F_1$ | Media harmonica entre precisao e recall | 0,8856 no baseline e 0,8395 na proposta |
+| $F_1$ | Media harmonica entre precisao e recall | 0,8856 no baseline, 0,8861 no XAI Puro e 0,8872 no XAI + Optuna |
 
 ### A ordem correta evita distorcoes
 
@@ -235,40 +233,44 @@ import pandas as pd
 
 # Os valores sao lidos da execucao mais recente do pipeline.
 resultados = pd.read_csv("assets/tabela_comparativa_completa.csv")
-baseline = resultados.loc[resultados["Familia"] == "Referência"].iloc[0]
-proposta = resultados.loc[
-    resultados["Metodo"] == "XAI Proposto (shap-select + Optuna)"
+baseline = resultados.loc[resultados["Metodo"] == "Baseline Completo (40 Atributos)"].iloc[0]
+proposta_pura = resultados.loc[
+    resultados["Metodo"] == "XAI Proposto (shap-select OOF Puro)"
 ].iloc[0]
-modelos = ["Baseline (40)", "Proposta (10)"]
-paleta = ["#7f8c8d", "#2980b9"]
+proposta = resultados.loc[
+    resultados["Metodo"] == "XAI Proposto (shap-select OOF + Optuna)"
+].iloc[0]
+modelos = ["Baseline (40)", "XAI Puro (10)", "XAI + Optuna (10)"]
+paleta = ["#7f8c8d", "#1f77b4", "#27ae60"]
 reducao = (1 - proposta["N_Atributos"] / baseline["N_Atributos"]) * 100
 
 # 2 linhas x 2 colunas formam os quatro quadrantes do dashboard.
-fig, eixos = plt.subplots(2, 2, figsize=(11, 7.5))
+fig, eixos = plt.subplots(2, 2, figsize=(12, 7.5))
 
 # Quadrante 1: atributos sinteticos selecionados.
-eixos[0, 0].bar(modelos, [baseline["N_Atributos"], proposta["N_Atributos"]], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 0].bar(modelos, [baseline["N_Atributos"], proposta_pura["N_Atributos"], proposta["N_Atributos"]], color=paleta, width=0.45, edgecolor="black")
 eixos[0, 0].set_title("1. Atributos Sinteticos", fontsize=10, fontweight="bold")
 eixos[0, 0].set_ylabel("Quantidade de Atributos", fontsize=9)
-eixos[0, 0].text(1, proposta["N_Atributos"] + 2, f"-{reducao:.1f}%", ha="center", fontsize=10, fontweight="bold")
+eixos[0, 0].text(2, proposta["N_Atributos"] + 2, f"-{reducao:.1f}%", ha="center", fontsize=10, fontweight="bold")
 eixos[0, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
 # Quadrante 2: milissegundos gastos para ajustar a floresta.
-eixos[0, 1].bar(modelos, [baseline["Tempo_Treino_ms"], proposta["Tempo_Treino_ms"]], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 1].bar(modelos, [baseline["Tempo_Treino_ms"], proposta_pura["Tempo_Treino_ms"], proposta["Tempo_Treino_ms"]], color=paleta, width=0.45, edgecolor="black")
 eixos[0, 1].set_title("2. Tempo de Treinamento (ms)", fontsize=10, fontweight="bold")
 eixos[0, 1].set_ylabel("Milissegundos", fontsize=9)
 eixos[0, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
 # Quadrante 3: tempo de predicao do lote de teste.
-eixos[1, 0].bar(modelos, [baseline["Latencia_Inf_ms"], proposta["Latencia_Inf_ms"]], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 0].bar(modelos, [baseline["Latencia_Inf_ms"], proposta_pura["Latencia_Inf_ms"], proposta["Latencia_Inf_ms"]], color=paleta, width=0.45, edgecolor="black")
 eixos[1, 0].set_title("3. Predicao do Lote de Teste (ms)", fontsize=10, fontweight="bold")
 eixos[1, 0].set_ylabel("Milissegundos", fontsize=9)
 eixos[1, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
 # Quadrante 4: F1 no holdout sintetico.
-eixos[1, 1].bar(modelos, [baseline["F1_Score"], proposta["F1_Score"]], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 1].bar(modelos, [baseline["F1_Score"], proposta_pura["F1_Score"], proposta["F1_Score"]], color=paleta, width=0.45, edgecolor="black")
 eixos[1, 1].set_title("4. F1 no Holdout Sintetico", fontsize=10, fontweight="bold")
 eixos[1, 1].set_ylabel("F1-Score no Teste Cego", fontsize=9)
+eixos[1, 1].set_ylim(0.80, 0.92)
 eixos[1, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
 plt.suptitle("DASHBOARD EXECUTIVO COMPARATIVO: XAI APLICADA A REDUCAO DE DADOS", fontsize=12, fontweight="bold")
@@ -277,10 +279,10 @@ plt.show()
 ```
 
 > **O que voce deve notar no grafico gerado:**
-> 1. A proposta usa menos atributos e teve menor tempo de treinamento nesta execucao.
-> 2. O F1 caiu 0,0461 e a predicao do lote foi ligeiramente mais lenta; estes resultados nao demonstram seguranca ou beneficio clinico.
+> 1. A proposta usa 75% menos atributos (recuperando 10/10 informativos) e, na comparação *ceteris paribus* (XAI Puro), reduz o tempo de treino em 40,2% e eleva o F1 para 0,8861.
+> 2. Com Optuna, o F1 sobe para 0,8872 (e ROC-AUC para 0,9734); estes resultados descrevem o benchmark sintético e não demonstram segurança ou benefício clínico.
 
-**Mini-experimento:** use o CSV para comparar a selecao da proposta com RFE. O que a diferenca de tempo permite concluir sobre H2 nesta execucao?
+**Mini-experimento:** use o CSV para comparar a selecao da proposta com RFE. O que a diferenca de pureza (10/10 vs. 7/10 informativos) e de tempo de selecao (11,04 s vs. 4,55 s) permite concluir sobre H2?
 
 ---
 
@@ -288,7 +290,7 @@ plt.show()
 
 > **Chega de brinquedo!** Agora que o conceito esta cristalino, vamos para a trincheira real da nossa aplicacao com os dados do projeto.
 
-No fechamento do projeto de reducao de dimensionalidade, emitimos o quadro consolidado oficial de KPIs cruzando todas as dimensoes operacionais, estatisticas e clinicas.
+No fechamento do projeto de reducao de dimensionalidade, emitimos o quadro consolidado oficial de KPIs cruzando todas as dimensoes operacionais, estatisticas e preditivas.
 
 ```python
 # =============================================================================
@@ -298,26 +300,30 @@ No fechamento do projeto de reducao de dimensionalidade, emitimos o quadro conso
 import pandas as pd
 
 resultados = pd.read_csv("assets/tabela_comparativa_completa.csv")
-baseline = resultados.loc[resultados["Familia"] == "Referência"].iloc[0]
+baseline = resultados.loc[resultados["Metodo"] == "Baseline Completo (40 Atributos)"].iloc[0]
+proposta_pura = resultados.loc[
+    resultados["Metodo"] == "XAI Proposto (shap-select OOF Puro)"
+].iloc[0]
 proposta = resultados.loc[
-    resultados["Metodo"] == "XAI Proposto (shap-select + Optuna)"
+    resultados["Metodo"] == "XAI Proposto (shap-select OOF + Optuna)"
 ].iloc[0]
 quadro_resultados = pd.DataFrame([
-    {"Metrica": "Atributos sinteticos", "Baseline": baseline["N_Atributos"], "Proposta": proposta["N_Atributos"]},
-    {"Metrica": "F1 no holdout", "Baseline": baseline["F1_Score"], "Proposta": proposta["F1_Score"]},
-    {"Metrica": "Acuracia no holdout", "Baseline": baseline["Acuracia"], "Proposta": proposta["Acuracia"]},
-    {"Metrica": "Recall no holdout", "Baseline": baseline["Recall"], "Proposta": proposta["Recall"]},
-    {"Metrica": "ROC-AUC no holdout", "Baseline": baseline["ROC_AUC"], "Proposta": proposta["ROC_AUC"]},
-    {"Metrica": "Treino (ms)", "Baseline": baseline["Tempo_Treino_ms"], "Proposta": proposta["Tempo_Treino_ms"]},
-    {"Metrica": "Predicao do lote de teste (ms)", "Baseline": baseline["Latencia_Inf_ms"], "Proposta": proposta["Latencia_Inf_ms"]},
-    {"Metrica": "Selecao (s)", "Baseline": baseline["Tempo_Selecao_s"], "Proposta": proposta["Tempo_Selecao_s"]},
+    {"Metrica": "Atributos sinteticos", "Baseline (40)": baseline["N_Atributos"], "XAI Puro (10)": proposta_pura["N_Atributos"], "XAI + Optuna (10)": proposta["N_Atributos"]},
+    {"Metrica": "Informativos retidos (/10)", "Baseline (40)": baseline["Biomarcadores_Retidos (max 10)"], "XAI Puro (10)": proposta_pura["Biomarcadores_Retidos (max 10)"], "XAI + Optuna (10)": proposta["Biomarcadores_Retidos (max 10)"]},
+    {"Metrica": "F1 no holdout", "Baseline (40)": baseline["F1_Score"], "XAI Puro (10)": proposta_pura["F1_Score"], "XAI + Optuna (10)": proposta["F1_Score"]},
+    {"Metrica": "F1 CV (5-Fold Media)", "Baseline (40)": baseline["F1_CV_Media"], "XAI Puro (10)": proposta_pura["F1_CV_Media"], "XAI + Optuna (10)": proposta["F1_CV_Media"]},
+    {"Metrica": "Acuracia no holdout", "Baseline (40)": baseline["Acuracia"], "XAI Puro (10)": proposta_pura["Acuracia"], "XAI + Optuna (10)": proposta["Acuracia"]},
+    {"Metrica": "ROC-AUC no holdout", "Baseline (40)": baseline["ROC_AUC"], "XAI Puro (10)": proposta_pura["ROC_AUC"], "XAI + Optuna (10)": proposta["ROC_AUC"]},
+    {"Metrica": "Treino (ms)", "Baseline (40)": baseline["Tempo_Treino_ms"], "XAI Puro (10)": proposta_pura["Tempo_Treino_ms"], "XAI + Optuna (10)": proposta["Tempo_Treino_ms"]},
+    {"Metrica": "Predicao do lote de teste (ms)", "Baseline (40)": baseline["Latencia_Inf_ms"], "XAI Puro (10)": proposta_pura["Latencia_Inf_ms"], "XAI + Optuna (10)": proposta["Latencia_Inf_ms"]},
+    {"Metrica": "Selecao (s)", "Baseline (40)": baseline["Tempo_Selecao_s"], "XAI Puro (10)": proposta_pura["Tempo_Selecao_s"], "XAI + Optuna (10)": proposta["Tempo_Selecao_s"]},
 ])
 
-print("=" * 82)
-print("QUADRO OFICIAL CONSOLIDADO DE KPIS: BASELINE VS. MODELO REDUZIDO CAMPEAO")
-print("=" * 82)
+print("=" * 88)
+print("QUADRO OFICIAL CONSOLIDADO DE KPIS: BASELINE VS. XAI PURO VS. XAI + OPTUNA")
+print("=" * 88)
 print(quadro_resultados.to_string(index=False))
-print("=" * 82)
+print("=" * 88)
 ```
 
 ### Tabela oficial de KPIs
@@ -335,8 +341,8 @@ print("=" * 82)
 
 Os KPIs descrevem somente esta execucao:
 
-1. **Desempenho:** o F1 caiu 0,0461, dentro por pouco da margem definida para H1 nesta particao.
-2. **Custo medido:** o treino foi mais rapido, mas a selecao foi mais lenta que RFE e a predicao do lote aumentou ligeiramente.
+1. **Desempenho:** o F1 subiu de 0,8856 para 0,8861 (sem Optuna) e 0,8872 (com Optuna), além de superar na validação cruzada de 5 folds (0,8864 ± 0,0122 vs. 0,8649 ± 0,0159).
+2. **Custo medido:** o treino no modelo puro foi 40,2% mais rápido (525,7 ms vs. 878,8 ms), enquanto a seleção OOF levou mais tempo offline que o RFE (11,04 s vs. 4,55 s).
 3. **Limites:** nao foram medidos custos de exames, uso clinico, escalabilidade ou desempenho em dados externos.
 
 ---

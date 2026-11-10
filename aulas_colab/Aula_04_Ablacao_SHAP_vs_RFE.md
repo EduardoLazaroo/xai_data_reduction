@@ -111,7 +111,7 @@ def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=1
     X_raw, y = make_classification(
         n_samples=n_samples, n_features=n_features, n_informative=n_informative,
         n_redundant=n_redundant, n_repeated=0, n_classes=2, weights=[0.6, 0.4],
-        flip_y=0.03, random_state=random_state
+        flip_y=0.03, shuffle=False, random_state=random_state
     )
     feature_names = (
         [f"biomarcador_{i+1}" for i in range(n_informative)] +

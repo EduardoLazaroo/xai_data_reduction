@@ -115,7 +115,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 # 4. Importamos os modulos de ensemble, seletores e metricas do Scikit-Learn
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.metrics import (
@@ -132,20 +132,20 @@ print("[OK] Todas as dependências do Pipeline Industrial foram carregadas com s
 
 ---
 
-### Bloco 6.2 — Funções Modulares do Pipeline (Geração, Pré-Filtro e shap-select)
+### Bloco 6.2 — Funções Modulares do Pipeline (Geração, Pré-Filtro VIF e shap-select Out-of-Fold)
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
-> **Por que agrupamos a geração de dados e os filtros em funções reutilizáveis?**  
-> Porque no desenvolvimento de software de Inteligência Artificial de nível industrial (MLOps), a modularização permite testar e dar manutenção em cada bloco de código de forma isolada e elegante.
+> **Por que agrupamos a geração de dados, o pré-filtro VIF e o `shap-select` OOF em funções reutilizáveis?**  
+> Porque no desenvolvimento de software de Inteligência Artificial de nível industrial (MLOps), a modularização permite testar e dar manutenção em cada bloco de código de forma isolada, garantindo zero vazamento de dados entre treino e teste.
 
 ```python
-# 1. Funcao geradora do dataset de saude com 40 atributos heterogeneos
+# 1. Funcao geradora do dataset de saude com 40 atributos heterogeneos (shuffle=False preserva o ground truth)
 def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=10, n_redundant=10, random_state=42):
     X_raw, y = make_classification(
         n_samples=n_samples, n_features=n_features, n_informative=n_informative,
         n_redundant=n_redundant, n_repeated=0, n_classes=2, weights=[0.6, 0.4],
-        flip_y=0.03, random_state=random_state
+        flip_y=0.03, shuffle=False, random_state=random_state
     )
     feature_names = (
         [f"biomarcador_{i+1}" for i in range(n_informative)] +
@@ -154,8 +154,8 @@ def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=1
     )
     return pd.DataFrame(X_raw, columns=feature_names), y
 
-# 2. Funcao do Pre-filtro Hibrido (Variancia minima e eliminacao de correlacao > 0.90)
-def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
+# 2. Funcao do Pre-filtro Hibrido (Variancia + Pearson > 0.90 + VIF Iterativo <= 10.0)
+def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90, threshold_vif=10.0):
     selector = VarianceThreshold(threshold=threshold_var)
     selector.fit(X_train)
     cols_var = X_train.columns[selector.get_support()].tolist()
@@ -163,30 +163,52 @@ def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
 
     corr_matrix = X_var.corr().abs()
     upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-    to_drop = [col for col in upper.columns if (upper[col].dropna() > threshold_corr).any()]
-    cols_finais = [c for c in cols_var if c not in to_drop]
+    to_drop_corr = [col for col in upper.columns if (upper[col].dropna() > threshold_corr).any()]
+    cols_corr = [c for c in cols_var if c not in to_drop_corr]
 
-    print(f"[*] Pré-filtro Híbrido: Base reduzida de {X_train.shape[1]} para {len(cols_finais)} colunas.")
-    return X_train[cols_finais], cols_finais
+    cols_atuais = list(cols_corr)
+    while len(cols_atuais) > 2:
+        mat = X_train[cols_atuais].values
+        mat_std = (mat - mat.mean(axis=0)) / (mat.std(axis=0) + 1e-12)
+        corr_mat = np.corrcoef(mat_std, rowvar=False)
+        try:
+            inv_corr = np.linalg.inv(corr_mat)
+            vifs = np.diag(inv_corr)
+        except np.linalg.LinAlgError:
+            inv_corr = np.linalg.pinv(corr_mat)
+            vifs = np.diag(inv_corr)
+        max_idx = int(np.argmax(vifs))
+        if vifs[max_idx] > threshold_vif or vifs[max_idx] < 0:
+            cols_atuais.pop(max_idx)
+        else:
+            break
 
-# 3. Funcao do shap-select (Regressao Logistica com filtro beta > 0 e p-valor < 0.05)
-def executar_shap_select(X_train, y_train, p_value_cutoff=0.05, random_state=42):
-    modelo = RandomForestClassifier(n_estimators=100, random_state=random_state, n_jobs=1)
-    modelo.fit(X_train, y_train)
-    
-    explainer = shap.TreeExplainer(modelo)
-    shap_vals = explainer(X_train)
-    Phi = shap_vals.values[:, :, 1] if len(shap_vals.shape) == 3 else shap_vals.values
-    df_phi = pd.DataFrame(Phi, columns=X_train.columns)
-    
+    print(f"[*] Pré-filtro Híbrido (Pearson + VIF <= 10): Base reduzida de {X_train.shape[1]} para {len(cols_atuais)} colunas.")
+    return X_train[cols_atuais], cols_atuais
+
+# 3. Funcao do shap-select Out-of-Fold (3-Fold OOF + Regressao Logistica Beta > 0 e p-valor < 0.05)
+def executar_shap_select(X_train, y_train, p_value_cutoff=0.05, random_state=42, n_splits=3):
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    Phi_oof = np.zeros((X_train.shape[0], X_train.shape[1]), dtype=float)
+    y_arr = np.asarray(y_train)
+
+    for tr_idx, val_idx in skf.split(X_train, y_arr):
+        X_tr_f, y_tr_f = X_train.iloc[tr_idx], y_arr[tr_idx]
+        X_val_f = X_train.iloc[val_idx]
+        mod_f = RandomForestClassifier(n_estimators=100, random_state=random_state, n_jobs=1).fit(X_tr_f, y_tr_f)
+        exp_f = shap.TreeExplainer(mod_f)
+        sv_f = exp_f(X_val_f)
+        Phi_oof[val_idx, :] = sv_f.values[:, :, 1] if len(sv_f.shape) == 3 else sv_f.values
+
+    df_phi = pd.DataFrame(Phi_oof, columns=X_train.columns, index=X_train.index)
     X_const = sm.add_constant(df_phi)
     try:
-        logit_mod = sm.Logit(y_train, X_const)
+        logit_mod = sm.Logit(y_arr, X_const)
         result = logit_mod.fit(disp=False)
         params = result.params.drop("const")
         pvalues = result.pvalues.drop("const")
     except Exception:
-        ols_mod = sm.OLS(y_train, X_const)
+        ols_mod = sm.OLS(y_arr, X_const)
         result = ols_mod.fit()
         params = result.params.drop("const")
         pvalues = result.pvalues.drop("const")
@@ -195,18 +217,13 @@ def executar_shap_select(X_train, y_train, p_value_cutoff=0.05, random_state=42)
         "atributo": X_train.columns,
         "coeficiente": params.values,
         "p_value": pvalues.values,
-        "mean_abs_shap": np.abs(Phi).mean(axis=0)
+        "mean_abs_shap": np.abs(Phi_oof).mean(axis=0)
     })
     df_res["selecionado"] = (df_res["coeficiente"] > 0) & (df_res["p_value"] < p_value_cutoff)
     df_res = df_res.sort_values(by="mean_abs_shap", ascending=False).reset_index(drop=True)
     
-    atributos_aprovados = df_res[df_res["selecionado"]]["atributo"].head(10).tolist()
-    if len(atributos_aprovados) < 2:
-        atributos_aprovados = df_res[df_res["coeficiente"] > 0]["atributo"].head(10).tolist()
-    if len(atributos_aprovados) < 2:
-        atributos_aprovados = df_res.head(10)["atributo"].tolist()
-        
-    print(f"[*] shap-select: Aprovados {len(atributos_aprovados)} atributos com significância estatística!")
+    atributos_aprovados = df_res[df_res["selecionado"]]["atributo"].tolist()
+    print(f"[*] shap-select OOF: Aprovados automaticamente {len(atributos_aprovados)} atributos com significância estatística!")
     return atributos_aprovados, df_res
 
 print("[OK] Módulos de filtragem e seleção de dados compilados com sucesso!")

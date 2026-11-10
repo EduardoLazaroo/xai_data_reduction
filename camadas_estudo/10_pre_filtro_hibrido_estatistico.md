@@ -283,25 +283,42 @@ from sklearn.model_selection import train_test_split
 SEED = 42
 X_raw, y = make_classification(n_samples=2000, n_features=40, n_informative=10,
     n_redundant=10, n_classes=2, weights=[0.6, 0.4], flip_y=0.03,
-    random_state=SEED)
+    shuffle=False, random_state=SEED)
 nomes = ([f"biomarcador_{i+1}" for i in range(10)] +
          [f"exame_redundante_{i+1}" for i in range(10)] +
          [f"ruido_metabolico_{i+1}" for i in range(20)])
 X = pd.DataFrame(X_raw, columns=nomes)
 X_train, X_test, y_train, y_test = train_test_split(
 # A mascara aprendida no treino sera reaplicada ao teste sem recalculo.
-    X, y, test_size=0.20, stratify=y, random_state=SEED)
+    X, y, test_size=0.25, stratify=y, random_state=SEED)
 
-def pre_filtro(X_treino, limiar_var=0.01, limiar_corr=0.90):
+def pre_filtro(X_treino, limiar_var=0.01, limiar_corr=0.90, limiar_vif=10.0):
     t0 = time.perf_counter()
     var = VarianceThreshold(limiar_var).fit(X_treino)
     colunas_var = X_treino.columns[var.get_support()].tolist()
     X_var = X_treino[colunas_var]
     corr = X_var.corr().abs()
     upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
-    remover = [c for c in upper.columns if (upper[c] > limiar_corr).any()]
-    colunas = [c for c in colunas_var if c not in remover]
-    return colunas, remover, time.perf_counter() - t0
+    remover_corr = [c for c in upper.columns if (upper[c] > limiar_corr).any()]
+    colunas_corr = [c for c in colunas_var if c not in remover_corr]
+
+    # Etapa C: Eliminacao iterativa de multicolinearidade multivariada via VIF <= 10.0
+    colunas = list(colunas_corr)
+    remover_vif = []
+    while len(colunas) > 2:
+        mat = X_treino[colunas].values
+        mat_std = (mat - mat.mean(axis=0)) / (mat.std(axis=0) + 1e-12)
+        corr_mat = np.corrcoef(mat_std, rowvar=False)
+        try:
+            vifs = np.diag(np.linalg.inv(corr_mat))
+        except np.linalg.LinAlgError:
+            vifs = np.diag(np.linalg.pinv(corr_mat))
+        max_idx = int(np.argmax(vifs))
+        if vifs[max_idx] > limiar_vif or vifs[max_idx] < 0:
+            remover_vif.append(colunas.pop(max_idx))
+        else:
+            break
+    return colunas, remover_corr + remover_vif, time.perf_counter() - t0
 
 def medir(modelo, X_treino, X_teste, y_treino, y_teste):
     inicio = time.perf_counter()

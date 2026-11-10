@@ -132,6 +132,7 @@ def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=1
         n_classes=2,
         weights=[0.6, 0.4],
         flip_y=0.03,
+        shuffle=False,
         random_state=random_state
     )
     feature_names = (
