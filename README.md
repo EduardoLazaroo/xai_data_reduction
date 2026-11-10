@@ -3,8 +3,8 @@
 Projeto de pesquisa aplicada sobre seleção de atributos em um benchmark sintético controlado (`make_classification`), com controle exato de *ground truth* (10 informativos, 10 redundantes por combinação linear e 20 ruídos estocásticos). Os rótulos e nomes das colunas são ilustrativos para rastreamento experimental; os resultados não validam uso médico nem inferência causal.
 
 - **Autor:** Eduardo Lázaro Roesler de Oliveira
-- **Instituição:** Centro Universitário Eurípides de Marília (UNIVEM)
-- **Programa:** Ciência da Computação / Pós-Graduação
+- **Instituição:** Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP)
+- **Programa:** Programa de Pós-Graduação (Mestrado)
 - **Data de Entrega da Documentação:** 10/11
 - **Entregáveis Centrais (100% Prontos):**
   - **a. Apresentação do projeto (PDF):** [`apresentacao_projeto_xai.pdf`](apresentacao_projeto_xai.pdf) (11 slides widescreen 16:9, cronometrados para 12 min de exposição + 3 min de perguntas).

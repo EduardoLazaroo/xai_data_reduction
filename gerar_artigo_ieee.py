@@ -3,7 +3,7 @@
 GERADOR DO ARTIGO CIENTÍFICO NO PADRÃO IEEE (ATÉ 3 PÁGINAS)
 ===================================================================================
 Projeto: Redução de Dimensionalidade Guiada por Explicabilidade (XAI)
-Instituição: Centro Universitário Eurípides de Marília (UNIVEM)
+Instituição: Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP) — Mestrado
 Autor: Eduardo Lázaro Roesler de Oliveira
 
 Formatação:
@@ -358,7 +358,7 @@ def build_ieee_article():
     r_name.bold = True
     r_name.font.name = 'Times New Roman'
     r_name.font.size = Pt(9.8)
-    r_affil = p_auth.add_run("Centro Universitário Eurípides de Marília (UNIVEM) — Marília, SP, Brasil  |  eduardo.roesler@univem.edu.br")
+    r_affil = p_auth.add_run("Universidade Estadual Paulista \"Júlio de Mesquita Filho\" (UNESP) — Programa de Pós-Graduação (Mestrado)  |  eduardo.roesler@unesp.br")
     r_affil.font.name = 'Times New Roman'
     r_affil.font.size = Pt(8.5)
     r_affil.font.color.rgb = RGBColor(60, 60, 60)

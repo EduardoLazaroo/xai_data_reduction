@@ -1,8 +1,8 @@
 # Aula 04 - Poda Guiada por XAI vs. Seleção Tradicional (Estudo de Ablação)
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** Os experimentos desta aula usam dados sinteticos; exemplos de saude sao ilustrativos e nao demonstram efeito clinico.
 

@@ -1,8 +1,8 @@
 # Aula 02 - Explicabilidade Global com SHAP e a Teoria dos Jogos Cooperativos
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** Todos os dados sao sinteticos. Os nomes de saude usados em alguns exemplos sao ilustrativos e nao representam pacientes ou biomarcadores reais.
 

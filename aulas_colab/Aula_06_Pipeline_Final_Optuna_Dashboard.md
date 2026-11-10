@@ -1,8 +1,8 @@
 # Aula 06 - O Grande Final: Pipeline Integrado, Otimização com Optuna e Dashboard Comparativo
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** O pipeline deste material avalia um benchmark sintetico; nao e validacao clinica nem avaliacao de implantacao.
 

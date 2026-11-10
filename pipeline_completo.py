@@ -3,7 +3,7 @@
 PIPELINE COMPLETO DE REDUÇÃO DE DADOS GUIADA POR EXPLICABILIDADE (XAI)
 ===================================================================================
 Projeto: XAI Data Reduction
-Instituição: Centro Universitário Eurípides de Marília (UNIVEM)
+Instituição: Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP) — Mestrado
 Autor / Pesquisa: Eduardo Lázaro Roesler de Oliveira
 
 Este script consolida 100% das etapas experimentais com rigor metodológico:

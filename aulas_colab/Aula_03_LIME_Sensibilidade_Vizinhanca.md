@@ -1,8 +1,8 @@
 # Aula 03 - Explicabilidade Local com LIME e a Sensibilidade no Limiar de Decisão
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** Os dados sao sinteticos e os exemplos medicos sao ilustrativos; os resultados nao sao recomendacoes clinicas.
 

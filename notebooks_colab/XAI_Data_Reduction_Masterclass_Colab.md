@@ -1,8 +1,8 @@
 # Masterclass: Redução de Dimensionalidade Guiada por Inteligência Artificial Explicável (XAI)
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos de Machine Learning  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 ---
 

@@ -1,8 +1,8 @@
 # Aula 01 - O Baseline e a Alta Dimensionalidade em um Benchmark Sintético
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** Todos os dados desta aula são sintéticos. Os exemplos de saúde são apenas ilustrativos; não representam pacientes, exames, biomarcadores reais ou resultados clínicos.
 

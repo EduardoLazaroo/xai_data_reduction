@@ -3,7 +3,7 @@
 GERADOR DO ARTIGO COMPLETO EM WORD (.DOCX) - FORMATO ACADÊMICO PADRÃO
 ===================================================================================
 Projeto: Redução de Dimensionalidade Guiada por Explicabilidade (XAI)
-Instituição: Centro Universitário Eurípides de Marília (UNIVEM)
+Instituição: Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP) — Mestrado
 Autor: Eduardo Lázaro Roesler de Oliveira
 
 Formatação:
@@ -229,8 +229,8 @@ def build_full_academic_document():
     add_author(
         doc,
         name="Eduardo Lázaro Roesler de Oliveira",
-        affiliation="Programa de Ciência da Computação / Pós-Graduação\nCentro Universitário Eurípides de Marília (UNIVEM)",
-        email="eduardo.roesler@univem.edu.br | Marília, São Paulo, Brasil"
+        affiliation="Programa de Pós-Graduação (Mestrado)\nUniversidade Estadual Paulista \"Júlio de Mesquita Filho\" (UNESP)",
+        email="eduardo.roesler@unesp.br | São Paulo, Brasil"
     )
 
     # =========================================================================

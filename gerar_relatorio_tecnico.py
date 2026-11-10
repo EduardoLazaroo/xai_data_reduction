@@ -3,7 +3,7 @@
 GERADOR DO RELATÓRIO TÉCNICO COMPLETO DO PROJETO (DOCX & PDF)
 ===================================================================================
 Projeto: Redução de Dimensionalidade Guiada por Explicabilidade (XAI)
-Instituição: Centro Universitário Eurípides de Marília (UNIVEM)
+Instituição: Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP) — Mestrado
 Autor: Eduardo Lázaro Roesler de Oliveira
 Entrega: 10/11/2026
 
@@ -233,7 +233,7 @@ def add_image_with_caption(doc, filename, caption, width_inches=6.2):
 
 def build_full_report():
     benchmark = load_benchmark_rows()
-    proposed = benchmark["XAI Proposto (shap-select + Optuna)"]
+    proposed = benchmark["XAI Proposto (shap-select OOF + Optuna)"]
     baseline = benchmark["Baseline Completo (40 Atributos)"]
     n_reduced = int(float(proposed["N_Atributos"]))
     reduction = 100 * (1 - n_reduced / int(float(baseline["N_Atributos"])))
@@ -257,8 +257,8 @@ def build_full_report():
     add_author(
         doc,
         name="Eduardo Lázaro Roesler de Oliveira",
-        affiliation="Programa de Ciência da Computação / Pós-Graduação\nCentro Universitário Eurípides de Marília (UNIVEM)",
-        email="eduardo.roesler@univem.edu.br | Data da Documentação: 10/11/2026"
+        affiliation="Programa de Pós-Graduação (Mestrado)\nUniversidade Estadual Paulista \"Júlio de Mesquita Filho\" (UNESP)",
+        email="eduardo.roesler@unesp.br | Data da Documentação: 10/11/2026"
     )
 
     # =========================================================================
@@ -512,12 +512,13 @@ def build_full_report():
 
     # Tabela Mestre
     method_order = [
-        "XAI Proposto (shap-select + Optuna)",
-        "Embedded (Lasso L1)",
+        "XAI Proposto (shap-select OOF + Optuna)",
+        "XAI Proposto (shap-select OOF Puro)",
         "Wrapper (RFE)",
-        "XAI (TreeSHAP)",
-        "Filter (ANOVA F)",
+        "Embedded (Lasso L1)",
         "Embedded (Tree MDI)",
+        "Filter (ANOVA F)",
+        "XAI (TreeSHAP)",
         "Filter (Mutual Info)",
         "Baseline Completo (40 Atributos)"
     ]

@@ -1,8 +1,8 @@
 # Aula 05 - Engenharia Avançada: Pré-Filtros Híbridos e Seleção com Rigor Estatístico (shap-select)
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
-**Professor:** Eduardo Lázaro Roesler de Oliveira  
-**Instituição:** UNIVEM — Centro Universitário de Marília  
+**Autor / Pesquisador:** Eduardo Lázaro Roesler de Oliveira  
+**Instituição:** UNESP — Universidade Estadual Paulista "Júlio de Mesquita Filho" (Mestrado)  
 
 > **Escopo:** Os dados e atributos sao sinteticos. Os termos clinicos usados nos exemplos sao ilustrativos e nao representam biomarcadores reais.
 

@@ -3,7 +3,7 @@
 GERADOR DA APRESENTAÇÃO DO PROJETO (PDF WIDESCREEN 16:9 — 15 MINUTOS)
 ===================================================================================
 Projeto: Redução de Dimensionalidade Guiada por Explicabilidade (XAI)
-Instituição: Centro Universitário Eurípides de Marília (UNIVEM)
+Instituição: Universidade Estadual Paulista "Júlio de Mesquita Filho" (UNESP) — Mestrado
 Autor: Eduardo Lázaro Roesler de Oliveira
 Entrega: 10/11 — Tempo: 15 min (12 min apresentação + 3 min perguntas)
 
@@ -104,7 +104,7 @@ def create_slide(title=None, subtitle=None, section_tag=None, slide_num=1, total
         ax.add_patch(footer_line)
         ax.text(
             0.65, 0.25,
-            "Eduardo Lázaro Roesler de Oliveira  |  UNIVEM — Ciência da Computação  |  Redução de Dados Guiada por XAI (OOF + VIF)",
+            "Eduardo Lázaro Roesler de Oliveira  |  UNESP — Programa de Pós-Graduação (Mestrado)  |  Redução de Dados Guiada por XAI (OOF + VIF)",
             fontsize=8.5, color=MUTED_TEXT, family="sans-serif"
         )
         right_label = f"Tempo sugerido: {time_hint}   •   Slide {slide_num}/{total_slides}" if time_hint else f"Slide {slide_num}/{total_slides}"
@@ -234,7 +234,7 @@ def build_presentation():
             ax.text(1.5, 3.98 - idx * 0.27, line, fontsize=10.8, style="italic", color="#F8FAFC", family="sans-serif")
 
         ax.text(1.2, 2.25, "Autor: Eduardo Lázaro Roesler de Oliveira", fontsize=13.5, fontweight="bold", color="#FFFFFF", family="sans-serif")
-        ax.text(1.2, 1.82, "Instituição: Centro Universitário Eurípides de Marília (UNIVEM) — Ciência da Computação", fontsize=11.5, color="#CBD5E1", family="sans-serif")
+        ax.text(1.2, 1.82, "Instituição: Universidade Estadual Paulista \"Júlio de Mesquita Filho\" (UNESP) — Programa de Pós-Graduação (Mestrado)", fontsize=11.5, color="#CBD5E1", family="sans-serif")
         ax.text(1.2, 1.42, "Entregáveis: Apresentação (PDF)  •  Implementação Reprodutível (Python)  •  Artigo Científico IEEE (3 Páginas)", fontsize=10.5, color="#93C5FD", family="sans-serif")
         ax.text(1.2, 0.75, "Nota metodológica: Benchmark sintético controlado (make_classification); nomes de variáveis identificam o ground truth experimental.", fontsize=9.2, style="italic", color="#94A3B8", family="sans-serif")
         pdf.savefig(fig)
@@ -661,7 +661,7 @@ def build_presentation():
         )
         ax.text(
             8.0, 1.10,
-            "Eduardo Lázaro Roesler de Oliveira  —  eduardo.roesler@univem.edu.br  —  UNIVEM",
+            "Eduardo Lázaro Roesler de Oliveira  —  eduardo.roesler@unesp.br  —  UNESP (Mestrado)",
             fontsize=11, color="#93C5FD", ha="center", family="sans-serif", zorder=4
         )
 
