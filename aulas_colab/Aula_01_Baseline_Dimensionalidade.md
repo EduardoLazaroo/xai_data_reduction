@@ -1,15 +1,17 @@
-# Aula 01 - O Baseline e o Desafio da Alta Dimensionalidade em Dados Clínicos
+# Aula 01 - O Baseline e a Alta Dimensionalidade em um Benchmark Sintético
 
 **Disciplina:** Inteligência Artificial Explicável (XAI) & Otimização de Modelos  
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** Todos os dados desta aula são sintéticos. Os exemplos de saúde são apenas ilustrativos; não representam pacientes, exames, biomarcadores reais ou resultados clínicos.
+
 ---
 
 > [!NOTE]
 > 🔙 **De onde viemos:** No aprendizado de máquina tradicional, costuma-se acreditar no mantra ingênuo de que *"quanto mais dados e colunas tivermos, melhor o modelo irá aprender"*. No entanto, na prática de ciência de dados (especialmente na saúde e bioinformática), coletar dezenas de exames e variáveis sem critério introduz ruído estatístico, correlações espúrias e o temido **Mal da Dimensionalidade** (*The Curse of Dimensionality*).
-> 🎯 **Objetivo Principal da Aula:** Construir um ambiente experimental simulando um cenário clínico complexo de 40 atributos (10 biomarcadores vitais, 10 exames redundantes e 20 ruídos metabólicos puros), treinar um classificador de referência (**Baseline**) com **Random Forest**, mensurar seu custo computacional de treinamento e inferência, e extrair métricas diagnósticas completas (**Acurácia, F1-Score, ROC-AUC, Matriz de Confusão e Curva ROC**).
-> 🚀 **Para onde vamos:** Na Aula 02, usaremos pela primeira vez a **Inteligência Artificial Explicável (XAI)**: aplicaremos a Teoria dos Jogos Cooperativos de Lloyd Shapley (**SHAP**) para abrir a caixa-preta desse Baseline e auditar se o algoritmo tomou suas decisões olhando para os biomarcadores reais ou se foi iludido pelo ruído!
+> 🎯 **Objetivo Principal da Aula:** Construir um benchmark sintético controlado com 40 atributos (10 informativos, 10 redundantes e 20 de ruído), treinar um classificador de referência (**Baseline**) com **Random Forest**, mensurar seu custo computacional de treinamento e inferência e calcular métricas preditivas (**Acurácia, F1-Score, ROC-AUC, Matriz de Confusão e Curva ROC**).
+> 🚀 **Para onde vamos:** Na Aula 02, usaremos a **Inteligência Artificial Explicável (XAI)** e a Teoria dos Jogos Cooperativos de Lloyd Shapley (**SHAP**) para examinar como o modelo usa as variáveis sintéticas; isso não identifica biomarcadores reais nem causas.
 
 ---
 
@@ -18,7 +20,7 @@
 | Módulo | Atividade | Foco Pedagógico |
 | :--- | :--- | :--- |
 | **Módulo 1** | **Fundamentação Teórica & O Desafio da Dimensionalidade** | O problema da explosão do espaço vetorial e por que atributos inúteis degradam o tempo e a precisão do modelo. |
-| **Módulo 2** | **O Mecanismo por Dentro & Anatomia dos Dados Clínicos** | A distinção essencial entre atributos informativos, redundantes e ruído puro, e o trade-off de métricas clínicas. |
+| **Módulo 2** | **O Mecanismo por Dentro & Anatomia dos Dados Sintéticos** | A distinção entre atributos informativos, redundantes e ruído puro, e o uso descritivo de métricas preditivas. |
 | **Módulo 3** | **Prática Guiada no Google Colab** | 7 blocos de código em Python minuciosamente comentados linha por linha, com caixas de dúvidas e gráficos interativos. |
 | **Módulo 4** | **Prática Orientada & Experimentação Fácil** | Experimentação com aumento de ruído nos rótulos (*flip_y*) e injeção de novos ruídos. |
 | **Módulo 5** | **Checklist de Autonomia & Bibliografia** | Autoavaliação do estudante e referências seminais de Machine Learning. |
@@ -27,8 +29,8 @@
 
 ## Módulo 1: Fundamentação Teórica & O Desafio da Dimensionalidade
 
-### 1.1 O que é o "Mal da Dimensionalidade" no Contexto Biomédico?
-Quando treinamos um modelo supervisionado para prever se um paciente possui ou não determinada patologia, cada exame clínico ou medição atua como uma **dimensão geométrica adicional** no espaço vetorial.
+### 1.1 O que é o "Mal da Dimensionalidade"?
+Em um benchmark de classificação binária, cada atributo atua como uma **dimensão geométrica adicional** no espaço vetorial. O rótulo de saúde usado nos exemplos é apenas ilustrativo e não corresponde a diagnóstico real.
 
 1. **Espaço Esparso:** À medida que o número de variáveis ($d$) cresce linearmente, o volume do espaço cresce **exponencialmente** ($2^d$). Os pontos de dados tornam-se incrivelmente distantes uns dos outros, tornando quase impossível encontrar padrões robustos sem uma quantidade colossal de amostras.
 2. **Armadilha do Ruído:** Se um algoritmo recebe 20 colunas de ruído aleatório, por pura coincidência estatística o modelo encontrará correlações ilusórias com a patologia durante o treino, levando ao temido **Superajuste (Overfitting)**.
@@ -64,7 +66,7 @@ graph TD
 
 | Tipo de Atributo | Definição Matemática/Prática | Exemplo Clínico | Efeito no Algoritmo |
 | :--- | :--- | :--- | :--- |
-| **Informativo** | Possui relação causal ou alta dependência mútua com o alvo $y$. | Troponina elevada em suspeita de infarto; Glicemia em jejum para Diabetes. | Maximiza o ganho de informação (Gini/Entropia); melhora o $F_1$-Score. |
+| **Informativo** | Foi gerado com sinal preditivo relacionado ao alvo $y$ no dataset sintético; isso não implica causalidade. | Atributo informativo simulado, sem equivalência a exame ou biomarcador real. | Pode influenciar os cortes do modelo e as métricas preditivas. |
 | **Redundante** | Combinação linear ou fortemente correlacionada com um atributo informativo. | Hemoglobina Glicada vs. Glicemia Média Estimada; Peso e IMC. | Dilui a importância das variáveis; consome tempo de treino sem trazer nova informação. |
 | **Ruído Puro** | Distribuição gaussiana aleatória independente de $y$ ($P(y \mid X_{ruído}) = P(y)$). | Horóscopo do paciente; número do calçado; ruído térmico do sensor. | Gera ramificações espúrias na árvore; facilita overfitting e atrasa a inferência. |
 
@@ -73,12 +75,12 @@ graph TD
 1. **Acurácia:** Proporção global de acertos sobre o total de casos.
    $$\text{Acurácia} = \frac{VP + VN}{VP + VN + FP + FN}$$
    *Cuidado:* Em dados desbalanceados (ex: 95% saudáveis e 5% doentes), um modelo "burro" que chuta sempre saudável terá 95% de acurácia, mas matará todos os pacientes!
-2. **F1-Score (Média Harmônica entre Precisão e Recall):** A métrica de ouro para diagnóstico clínico.
+2. **F1-Score (Média Harmônica entre Precisão e Recall):** métrica descritiva de desempenho usada neste benchmark, sem interpretação clínica.
    $$F_1 = 2 \cdot \frac{\text{Precisão} \cdot \text{Recall}}{\text{Precisão} + \text{Recall}} = \frac{2 \cdot VP}{2 \cdot VP + FP + FN}$$
 3. **ROC-AUC (Área sob a Curva ROC):** Probabilidade de o classificador pontuar um caso positivo aleatório acima de um caso negativo aleatório. $0.50$ equivale ao chute de uma moeda e $1.0$ representa a separação perfeita.
 
 > [!IMPORTANT]
-> 💡 **Em 1 Frase:** Em problemas de saúde, nunca confie cegamente na Acurácia: o $F_1$-Score e o ROC-AUC garantem que o modelo realmente detecta a patologia sem produzir uma avalanche de falsos diagnósticos.
+> 💡 **Em 1 Frase:** Acurácia, F1 e ROC-AUC resumem aspectos distintos do desempenho preditivo; nenhuma métrica, isoladamente, garante adequação clínica ou segurança.
 
 ---
 
@@ -167,23 +169,24 @@ print("[OK] Todas as dependencias de Machine Learning foram importadas com suces
 # 1. Definimos a funcao responsavel por sintetizar o conjunto de dados clinicos
 def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=10, n_redundant=10, random_state=42):
     """
-    Gera um dataset sintético simulando um cenário clínico:
-    - 2.000 pacientes (linhas)
+    Gera um dataset sintético didático:
+    - 2.000 observações (linhas)
     - 40 atributos totais (colunas)
-    - 10 biomarcadores vitais informativos
-    - 10 exames redundantes (correlacionados)
-    - 20 ruídos metabólicos puros (sem valor preditivo)
+    - 10 atributos informativos sintéticos
+    - 10 atributos redundantes (correlacionados)
+    - 20 atributos de ruído (sem sinal preditivo construído)
     """
     # 2. Geramos as matrizes brutas controlando informatividade e redundancia
     X_raw, y = make_classification(
-        n_samples=n_samples,         # Total de pacientes na coorte simulada
-        n_features=n_features,       # Total de atributos coletados por paciente
-        n_informative=n_informative, # Quantidade de biomarcadores que realmente causam a doenca
+        n_samples=n_samples,         # Total de observacoes sinteticas
+        n_features=n_features,       # Total de atributos por observacao
+        n_informative=n_informative, # Atributos informativos para a classe sintetica
+        shuffle=False, # Mantem os grupos de atributos na ordem esperada
         n_redundant=n_redundant,     # Quantidade de exames redundantes/repetidos
         n_repeated=0,                # Nao permitimos colunas duplicadas identicas
-        n_classes=2,                 # Classificacao binaria: 0 (Saudavel) vs 1 (Patologia)
-        weights=[0.6, 0.4],          # 60% saudaveis e 40% com patologia (desbalanceamento leve realista)
-        flip_y=0.03,                 # 3% de ruido nos rotulos para simular erro humano de laudo
+        n_classes=2,                 # Classificacao binaria com classes sinteticas 0 e 1
+        weights=[0.6, 0.4],          # Proporcoes definidas para as classes sinteticas
+        flip_y=0.03,                 # 3% de ruido artificial nos rotulos
         random_state=random_state    # Semente pseudoaleatoria para garantir reprodutibilidade
     )
     
@@ -204,7 +207,7 @@ def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=1
 df_X, y = gerar_dataset_sintetico_saude()
 
 # 7. Exibimos a confirmacao das dimensoes da tabela gerada
-print(f"[*] Dataset gerado com sucesso: {df_X.shape[0]} pacientes por {df_X.shape[1]} atributos!")
+print(f"[*] Dataset sintetico gerado: {df_X.shape[0]} observacoes por {df_X.shape[1]} atributos!")
 print(f"[*] Distribuicao de classes: {np.bincount(y)[0]} Saudaveis (0) e {np.bincount(y)[1]} com Patologia (1)")
 ```
 

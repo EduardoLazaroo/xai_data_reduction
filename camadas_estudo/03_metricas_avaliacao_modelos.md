@@ -4,7 +4,7 @@
 **Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)  
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções `treinar_e_avaliar_modelo` e `plotar_graficos_baseline`
 
-> **Objetivo da aula:** compreender por que a acuracia isolada pode mascarar erros graves em dados de saude, dominar a anatomia da matriz de confusao e entender como o equilibrio entre precision, recall, F1-score e ROC-AUC fundamenta a validacao clinica de modelos de aprendizado de maquina.
+> **Objetivo da aula:** compreender por que a acuracia isolada pode mascarar erros em classificacao, dominar a anatomia da matriz de confusao e entender como precision, recall, F1-score e ROC-AUC avaliam modelos no conjunto de teste. As metricas deste projeto, por usarem dados sinteticos e uma unica particao, nao validam uso clinico.
 
 ## Campo Didático: Uma Métrica e uma Pergunta
 

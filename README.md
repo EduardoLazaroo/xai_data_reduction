@@ -1,67 +1,123 @@
-# XAI Data Reduction
+# XAI Data Reduction: Seleção de Características e Redução de Dados Guiada por Explicabilidade
 
-Projeto de estudo e demonstração de redução de dimensionalidade guiada por explicabilidade (XAI).
+Projeto de pesquisa aplicada sobre seleção de atributos em um benchmark sintético controlado. Os rótulos clínicos e nomes das colunas são ilustrativos; os resultados não validam uso médico nem inferência causal.
 
-## Objetivo
+- **Autor:** Eduardo Lázaro Roesler de Oliveira
+- **Instituição:** Centro Universitário Eurípides de Marília (UNIVEM)
+- **Programa:** Ciência da Computação / Pós-Graduação
+- **Data de Entrega da Documentação:** 10/11
+- **Entregáveis Centrais:**
+  - **Artigo científico IEEE (PDF):** [`artigo_cientifico_ieee.pdf`](artigo_cientifico_ieee.pdf), até 3 páginas.
+  - **Implementação realizada:** [`pipeline_completo.py`](pipeline_completo.py), com execução reproduzível e artefatos experimentais.
+  - **Apresentação (PDF):** já preparada pelo autor e fora do escopo deste repositório; nenhum slide será gerado aqui.
+  - **Relatório técnico:** material complementar, não substitui os entregáveis exigidos.
 
-Investigar se a seleção guiada por SHAP reduz a dimensionalidade sem perda relevante de desempenho, comparando-a com baselines representativos das três famílias clássicas: filter, wrapper e embedded. O LIME é usado exclusivamente para auditoria local de decisões individuais.
+Os arquivos `gerar_artigo_word.py`, `artigo_xai_reduction.docx` e `docs/relatorio_tecnico_completo.pdf` são versões legadas e não devem ser usados na entrega. Use apenas o artigo IEEE listado acima e o relatório técnico complementar identificado pelo nome `relatorio_tecnico_projeto`.
 
-## Protocolo de avaliação
+---
 
-O pipeline separa quatro perguntas: desempenho preditivo (F1, recall e ROC-AUC), custo (tempo de treino e inferência), redução dimensional e interpretabilidade. A última é operacionalizada por proxies declarados: concentração da massa de |SHAP| no Top-10, esparsidade da explicação local LIME e percentual de atributos removidos. Esses proxies não representam causalidade nem substituem avaliação humana.
+## 🎯 Questão Central de Pesquisa
 
-Os baselines são `Filter (Mutual Information)`, `Wrapper (RFE)` e `Embedded (Logística L1)`. A seleção e todos os rankings são aprendidos somente em `X_train`; o conjunto de teste é reservado para a comparação final.
+> *"Em um benchmark sintético controlado, como uma seleção informada por TreeSHAP e shap-select se compara a métodos filter, wrapper e embedded em desempenho preditivo, rejeição de ruído e custo de seleção, e o que uma auditoria LIME de uma observação permite concluir sobre fidelidade local?"*
 
-## Estrutura do projeto
+### Hipóteses Científicas Formais
+- **H1 (desempenho):** no holdout sintético, reduzir ao menos 50% dos atributos sem queda de F1 superior a 0,05.
+- **H2 (seleção):** rejeitar mais ruído que os métodos comparados e ter menor tempo de seleção que RFE; a execução atual não atende ao critério de custo.
+- **H3 (auditoria local):** o R² do LIME não diminui para a observação selecionada; é uma medida local de uma instância, não de explicabilidade geral.
 
-- `pipeline_completo.py` — script único em Python consolidando todas as etapas do experimento (Baseline, SHAP, LIME, Ablação, Pré-filtro Híbrido, shap-select, Optuna e Dashboard Executivo)
-- `camadas_estudo/` — 17 apostilas aprofundadas em Markdown mapeando detalhadamente cada uma das etapas do `roteiro_de_estudo.txt` (de 00 a 16), com o "porquê", a "necessidade", exemplos conceituais, código e checkpoints
-- `aulas_colab/` — 6 apostilas/aulas em Markdown prontas para o Google Colab, com fundamentação teórica, analogias, dúvidas comuns e código 100% comentado linha a linha:
-  - `Aula_01_Baseline_Dimensionalidade.md`
-  - `Aula_02_SHAP_Teoria_dos_Jogos.md`
-  - `Aula_03_LIME_Sensibilidade_Vizinhanca.md`
-  - `Aula_04_Ablacao_SHAP_vs_RFE.md`
-  - `Aula_05_Engenharia_Avancada_BOLIMES_ShapSelect.md`
-  - `Aula_06_Pipeline_Final_Optuna_Dashboard.md`
-- `notebooks_colab/` — caderno integrador `XAI_Data_Reduction_Masterclass_Colab.md` para execução contínua no Google Colab
-- `assets/` — gráficos e imagens de alta resolução gerados pelo pipeline
-- `docs/` — roteiro de estudos e propostas do projeto
-- `gerar_artigo_word.py` — gerador do artigo em Word
+---
 
-## Referências atualizadas
+## 📦 Estrutura dos Entregáveis do Projeto
 
-- [Molnar, Interpretable Machine Learning](https://christophm.github.io/interpretable-ml-book/) — explicabilidade, avaliação e limitações.
-- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) — avaliação e governança de sistemas de IA.
-- [scikit-learn: Feature Selection](https://scikit-learn.org/stable/modules/feature_selection.html) — filtros, wrappers e métodos embedded.
-- [Lundberg e Lee, A Unified Approach to Interpreting Model Predictions](https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions) — SHAP.
-- [Ribeiro, Singh e Guestrin, Why Should I Trust You?](https://arxiv.org/abs/1602.04938) — LIME.
+```
+xai_data_reduction/
+│
+├── artigo_cientifico_ieee.pdf          # ARTIGO CIENTÍFICO OFICIAL (IEEE, 3 Páginas Estritas)
+├── artigo_cientifico_ieee.docx         # Fonte editável do Artigo IEEE
+├── relatorio_tecnico_projeto.pdf       # Relatório técnico complementar
+├── relatorio_tecnico_projeto.docx      # Fonte editável do Relatório Técnico
+│
+├── pipeline_completo.py                # Pipeline científico automatizado (ML + XAI + Optuna)
+├── gerar_artigo_ieee.py                # Gerador e validador do artigo IEEE de até 3 páginas
+├── gerar_relatorio_tecnico.py          # Gerador e validador do relatório técnico expandido
+├── requirements.txt                    # Dependências Python completas do projeto
+│
+├── assets/                             # Diagnósticos e gráficos experimentais em alta resolução
+│   ├── modulo1_baseline_metrics.png        # Matriz de Confusão e Curva ROC do Baseline
+│   ├── modulo2_shap_summary.png            # Bar Plot e Beeswarm Global TreeSHAP
+│   ├── modulo3_lime_local.png              # Auditoria Forense LIME no limiar P ≈ 50%
+│   ├── modulo4_ablation_curves.png         # Curvas de ablação progressiva multivariada
+│   ├── modulo5_shap_select_analysis.png    # Diagnósticos estatísticos com p-valor
+│   ├── dashboard_final_comparativo.png     # Dashboard Executivo Integrador de 4 Painéis
+│   └── tabela_comparativa_completa.csv     # Dados brutos do benchmark de todas as famílias
+│
+└── docs/                               # Cópia sincronizada de submissão e documentação institucional
+    ├── artigo_cientifico_ieee.pdf
+    ├── relatorio_tecnico_projeto.pdf
+    ├── proposta_projeto_xai.docx
+    └── roteiro_de_estudo.txt
+```
 
-## Como executar
+---
 
-1. Crie e ative o ambiente virtual
-2. Instale as dependências: `pip install -r requirements.txt`
-3. Execute o pipeline completo de ponta a ponta:
+## 🔬 Benchmark Comparativo Consolidado
 
+Uma execução com 2.000 observações sintéticas, 40 atributos (10 informativos, 10 redundantes e 20 de ruído) e divisão estratificada 75/25. Os métodos por ranking usam K = 10; o baseline usa as 40 colunas. As contagens de atributos verdadeiros decorrem apenas da construção sintética:
+
+| Método | Família | Informativos | Ruído selecionado | Rejeição de ruído | F1 | Acurácia | ROC-AUC | Seleção (s) | Treino (ms) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | ---: | ---: |
+| **XAI (shap-select + Optuna)** | XAI | 7/10 | 0/20 | 100,0% | 0,8395 | 0,8700 | 0,9442 | 14,1670 | 377,3 |
+| Embedded (Lasso L1) | Embedded | 6/10 | 1/20 | 95,0% | 0,8689 | 0,8920 | 0,9626 | 0,0333 | 427,8 |
+| Wrapper (RFE) | Wrapper | 7/10 | 0/20 | 100,0% | 0,8759 | 0,8980 | 0,9580 | 3,0661 | 414,3 |
+| XAI (TreeSHAP) | XAI | 7/10 | 0/20 | 100,0% | 0,8465 | 0,8760 | 0,9489 | 8,9278 | 351,0 |
+| Filter (ANOVA F) | Filter | 7/10 | 0/20 | 100,0% | 0,8550 | 0,8840 | 0,9510 | 0,0094 | 361,2 |
+| Embedded (Tree MDI) | Embedded | 7/10 | 0/20 | 100,0% | 0,8558 | 0,8800 | 0,9493 | 0,0084 | 355,7 |
+| Filter (Mutual Information) | Filter | 5/10 | 1/20 | 95,0% | 0,8365 | 0,8640 | 0,9378 | 0,3144 | 358,5 |
+| **Baseline (40 atributos)** | Referência | 10/10 | 20/20 | 0,0% | 0,8856 | 0,9060 | 0,9655 | 0,0000 | 558,5 |
+
+Os tempos são medições desta execução e dependem do hardware e do ambiente; a tabela completa e os valores atualizados estão no CSV.
+
+### Principais Conclusões Científicas:
+1. **H1, neste holdout:** 75% dos atributos foram removidos; o F1 caiu 0,0461, dentro por pouco do limite predefinido de 0,05. Isso é resultado descritivo de uma única partição.
+2. **H2 não foi atendida em custo:** a proposta rejeitou todo o ruído sintético, empatando com RFE, ANOVA e Tree MDI; a seleção da proposta levou mais tempo que RFE nesta execução.
+3. **Custo do modelo final:** o treino foi menor, mas a latência de inferência aumentou ligeiramente (34,49 ms contra 32,14 ms) nesta medição; os tempos dependem do hardware e não demonstram escalabilidade.
+4. **LIME local:** o R² foi 0,2029 no baseline e 0,2679 no reduzido para uma única observação, indicando ajuste local limitado e sem conclusão geral.
+5. **Cognição:** 10 atributos excedem o limite superior 9 da heurística de Miller; não houve estudo com usuários.
+
+---
+
+## 🚀 Como Executar e Reproduzir
+
+### 1. Preparação do Ambiente
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Executar o Pipeline Experimental
+Executa baseline, TreeSHAP, benchmark, ablação, seleção, Optuna e auditoria LIME, atualizando os gráficos e o CSV. Os números de execução e tempos são escritos em `assets/tabela_comparativa_completa.csv`:
 ```bash
 python pipeline_completo.py
 ```
 
-Ou abra qualquer uma das aulas em `aulas_colab/` diretamente no **Google Colab** para fins didáticos e interativos.
+### 3. Compilar o Artigo Científico no Padrão IEEE (Até 3 Páginas)
+Depois de executar o pipeline, gera o documento em duas colunas IEEE a partir do CSV e valida a contagem de páginas:
+```bash
+python gerar_artigo_ieee.py
+```
 
-## Dependências principais
+### 4. Compilar o Relatório Técnico Complementar
+Gera o relatório técnico complementar com metodologia, resultados e figuras; a contagem de páginas é informada pelo script:
+```bash
+python gerar_relatorio_tecnico.py
+```
 
-- Python 3.10+
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- scikit-learn
-- shap
-- lime
-- optuna
-- statsmodels
-- python-docx
+---
 
-## Observação
+## 📋 Conformidade com os Critérios de Avaliação
 
-O projeto foi concebido como base didática e experimental para um artigo acadêmico sobre XAI aplicada à redução de dados.
+- [x] **Artigo científico:** PDF IEEE de até 3 páginas, orientado pela questão de pesquisa e com método, resultados, limitações e referências.
+- [x] **Implementação:** pipeline e dependências documentadas; execute-o para atualizar os resultados.
+- [x] **Apresentação:** PDF já preparado pelo autor; não será gerado nem alterado neste projeto.
+- [ ] **Revisão final de entrega:** conferir o PDF final do artigo e incluir a apresentação já pronta no pacote de entrega até 10/11.

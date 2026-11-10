@@ -4,6 +4,8 @@
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** Os dados e atributos sao sinteticos. Os termos clinicos usados nos exemplos sao ilustrativos e nao representam biomarcadores reais.
+
 ---
 
 > [!NOTE]
@@ -31,7 +33,7 @@
 Quando cientistas de dados iniciantes começam a usar XAI para selecionar variáveis, eles costumam cometer dois erros graves:
 
 1. **Desperdício de Processamento Pré-XAI:** Calcular valores SHAP em 100 variáveis quando 20 delas são duplicatas quase perfeitas ($r = 0.98$) consome horas de CPU sem nenhuma necessidade. A estatística descritiva elementar (variância e correlação) deveria ter feito a faxina prévia!
-2. **A Ilusão do Módulo $|SHAP|$:** O módulo médio $|\text{SHAP}|$ mede apenas a **magnitude do impacto**, mas não a **qualidade do impacto**! Um atributo de ruído pode ter um valor alto porque a árvore o usou para memorizar 10 pacientes com overfit, mas na direção errada.
+2. **A Ilusão do Módulo $|SHAP|$:** O módulo médio $|\text{SHAP}|$ mede apenas a **magnitude do impacto**, mas não a **qualidade do impacto**! Um atributo de ruído pode ter um valor alto porque a árvore se ajustou a observações sintéticas por acaso, sem que isso indique sinal real.
 
 Para resolver isso, combinamos o **Pré-Filtro Híbrido** (estilo BOLIMES) com a metodologia **`shap-select`**:
 
@@ -132,7 +134,7 @@ def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=1
 # 5. Instanciamos o dataset e separamos em treino e teste com estratificacao
 X, y = gerar_dataset_sintetico_saude()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
-print(f"[OK] Coorte clínica instanciada: {X_train.shape[1]} atributos aguardando engenharia avançada!")
+print(f"[OK] Benchmark sintetico instanciado: {X_train.shape[1]} atributos aguardando engenharia avancada!")
 ```
 
 ---
@@ -172,17 +174,7 @@ def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
     # 6. Construímos a lista de colunas aprovadas
     cols_finais = [c for c in cols_var if c not in to_drop]
 
-    # 7. Mecanismo de seguranca para datasets sinteticos com baixa correlacao mutua
-    if len(cols_finais) == X_train.shape[1]:
-        if len(cols_var) < X_train.shape[1]:
-            cols_finais = cols_var
-        else:
-            # 8. Descartamos uma fracao das variaveis com maior correlacao media mutua
-            corr_mean = X_var.corr().abs().mean(axis=0)
-            to_remove = corr_mean.sort_values(ascending=False).index[: max(1, X_train.shape[1] // 10)]
-            cols_finais = [c for c in X_var.columns if c not in to_remove]
-
-    # 9. Exibimos o relatorio da Fase 1 no console
+    # 7. Exibimos o relatorio da Fase 1 no console
     print(f"[*] Pré-filtro Híbrido: Reduzido de {X_train.shape[1]} para {len(cols_finais)} atributos antes do XAI.")
     return X_train[cols_finais], cols_finais
 

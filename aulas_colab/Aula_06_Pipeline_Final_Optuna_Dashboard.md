@@ -4,6 +4,8 @@
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** O pipeline deste material avalia um benchmark sintetico; nao e validacao clinica nem avaliacao de implantacao.
+
 ---
 
 > [!NOTE]
@@ -66,17 +68,17 @@ graph TD
 | :--- | :--- | :--- | :--- |
 | **Grid Search (Busca em Grade)** | Testa exaustivamente todas as combinações de uma lista pré-definida. | Simples e previsível. | Custo computacional astronômico; desperdiça tempo avaliando combinações horríveis. |
 | **Random Search (Busca Aleatória)** | Sorteia combinações aleatoriamente no espaço. | Mais eficiente que o Grid Search em espaços grandes. | "Cega": não aprende nada com os erros ou sucessos das tentativas anteriores. |
-| **Otimização Bayesiana / TPE (Optuna)** | Modela probabilisticamente $P(\text{score} \mid \text{parâmetros})$ usando densidades de probabilidade Parzen. | **Ultra-eficiente:** Foca rapidamente nas melhores regiões; atinge os maiores scores em menos de 1/5 do tempo. | Requer definição de uma função objetivo formal. |
+| **Otimização Bayesiana / TPE (Optuna)** | Modela probabilisticamente $P(\text{score} \mid \text{parâmetros})$ usando densidades de probabilidade Parzen. | Pode priorizar regiões promissoras conforme a função objetivo. | O ganho depende do espaço de busca, orçamento e dados; não é garantido neste benchmark. |
 
 ### 2.2 Anatomia dos 4 Painéis do Dashboard Executivo
 
-1. **Painel 1 — Dimensão do Dataset (Nº de Atributos):** Demonstra a economia de coleta clínica e compressão da base (esperado: de 40 para ~8 a 10 atributos, $\ge 75\%$ de redução).
-2. **Painel 2 — Tempo de Treinamento (ms):** Quantifica o ganho de velocidade no retreinamento periódico dos servidores de nuvem.
-3. **Painel 3 — Latência de Inferência (ms):** Comprova a agilidade do modelo para responder diagnósticos em tempo real em dispositivos médicos de emergência (Edge AI).
-4. **Painel 4 — Desempenho Preditivo (Acurácia vs. F1-Score):** Prova que a simplificação drástica do modelo não causou perda de precisão diagnóstica.
+1. **Painel 1 — Dimensão do Dataset (Nº de Atributos):** Mostra a redução de atributos no benchmark sintético (40 para 10 nesta execução); não mede economia de coleta.
+2. **Painel 2 — Tempo de Treinamento (ms):** Compara o tempo de treinamento medido nesta máquina.
+3. **Painel 3 — Latência de Inferência (ms):** Compara a latência medida; nesta execução o modelo reduzido teve latência ligeiramente maior.
+4. **Painel 4 — Desempenho Preditivo (Acurácia vs. F1-Score):** Apresenta as métricas no holdout sintético, sem inferência sobre precisão diagnóstica.
 
 > [!IMPORTANT]
-> 💡 **Em 1 Frase:** Um projeto de IA só tem sucesso pleno na indústria quando entrega um equilíbrio de ouro entre três pilares: alta precisão, baixa latência computacional e total transparência causal.
+> 💡 **Em 1 Frase:** Neste benchmark sintetico, comparamos desempenho preditivo, custo medido e explicacoes do modelo; isso nao demonstra causalidade nem sucesso em uso clinico.
 
 ---
 
@@ -163,11 +165,6 @@ def pré_filtro_hibrido(X_train, threshold_var=0.01, threshold_corr=0.90):
     upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
     to_drop = [col for col in upper.columns if (upper[col].dropna() > threshold_corr).any()]
     cols_finais = [c for c in cols_var if c not in to_drop]
-
-    if len(cols_finais) == X_train.shape[1]:
-        corr_mean = X_var.corr().abs().mean(axis=0)
-        to_remove = corr_mean.sort_values(ascending=False).index[: max(1, X_train.shape[1] // 10)]
-        cols_finais = [c for c in X_var.columns if c not in to_remove]
 
     print(f"[*] Pré-filtro Híbrido: Base reduzida de {X_train.shape[1]} para {len(cols_finais)} colunas.")
     return X_train[cols_finais], cols_finais
@@ -358,7 +355,7 @@ print("=" * 75)
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **Por que este dashboard de 4 painéis é ideal para relatórios executivos?**  
-> Porque ele sintetiza em uma única imagem tudo o que a diretoria médica e de tecnologia precisa saber: mostra o quanto o dataset foi enxugado (Painel 1), a economia de tempo de máquina (Painéis 2 e 3) e comprova que a precisão clínica dos pacientes foi totalmente preservada (Painel 4).
+> Porque ele resume a redução de atributos e compara métricas e tempos medidos no benchmark sintético. Não comprova preservação clínica nem garante economia em produção.
 
 ```python
 # 1. Definimos a funcao construtora do Dashboard Executivo Comparativo
@@ -433,23 +430,23 @@ gerar_dashboard_comparativo_final(m_baseline, m_reduzido)
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **O que este teste final certifica oficialmente?**  
-> Ele atesta que o nosso pipeline atingiu uma redução de dimensionalidade de no mínimo 40% (chegando a mais de 75%) e garantiu que o $F_1$-score do modelo simplificado não sofreu perda superior à margem de tolerância clínica de 0.05.
+> Ele verifica se a execucao atingiu reducao minima de 50% e se a queda de F1 ficou dentro de 0,05 no holdout sintetico. Esse sanity check nao e validacao clinica nem prova estatistica.
 
 ```python
 # 1. Definimos a funcao de checagem final do sistema
 def teste_de_sanidade_final(m_baseline, m_reduzido):
     """
     Sanity Check Final:
-    - Certifica redução de dimensionalidade mínima de 40%.
+    - Certifica redução de dimensionalidade mínima de 50%.
     - Valida integridade do F1-Score do modelo reduzido.
-    - Confirma economia de tempo de processamento.
+    - Apresenta a comparação de tempo; não garante economia.
     """
     # 2. Calculamos a taxa de compressao percentual de atributos
     reducao_atributos = (1 - m_reduzido["num_atributos"] / m_baseline["num_atributos"]) * 100
     diferenca_f1 = m_reduzido["f1_score"] - m_baseline["f1_score"]
     
     # 3. Asseguramos compressao de dados expressiva
-    assert reducao_atributos >= 40.0, f"Erro: Redução de atributos insuficiente ({reducao_atributos:.1f}%)"
+    assert reducao_atributos >= 50.0, f"Erro: Redução abaixo do critério predefinido de 50% ({reducao_atributos:.1f}%)"
     
     # 4. Asseguramos que o F1-score nao desabou
     assert m_reduzido["f1_score"] >= (m_baseline["f1_score"] - 0.05), f"Erro: Perda excessiva de F1-Score ({diferenca_f1:.4f})"
@@ -457,7 +454,7 @@ def teste_de_sanidade_final(m_baseline, m_reduzido):
     # 5. Exibimos a certidao final de conclusao com louvor
     print(f"\n🎉 [OK] SANITY CHECK FINAL DO PIPELINE APROVADO COM EXCELÊNCIA:")
     print(f"     ✅ Redução de Dimensionalidade : {reducao_atributos:.1f}% dos atributos eliminados!")
-    print(f"     ✅ Preservação Clínica (F1)    : Baseline = {m_baseline['f1_score']:.4f} | Reduzido = {m_reduzido['f1_score']:.4f}")
+    print(f"     ✅ Critério de F1 no holdout sintético: Baseline = {m_baseline['f1_score']:.4f} | Reduzido = {m_reduzido['f1_score']:.4f}")
     print(f"     ✅ Aceleração de Treinamento   : {(1 - m_reduzido['tempo_treino_ms']/m_baseline['tempo_treino_ms'])*100:.1f}% mais veloz!")
 
 # 6. Executamos o teste de sanidade

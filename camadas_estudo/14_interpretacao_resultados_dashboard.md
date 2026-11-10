@@ -1,17 +1,17 @@
 # Camada 14: Interpretacao de Resultados e Dashboard Executivo
 
 **Trilha:** XAI Aplicada à Redução de Dados em Machine Learning
-**Aplicação:** classificação binária de saúde (`0 = Saudável`, `1 = Patologia`)
+**Aplicacao:** classificacao binaria em benchmark sintetico; os rotulos de saude sao ilustrativos.
 **Código de referência:** [pipeline_completo.py](../pipeline_completo.py), funções com dashboard e comparativo de KPIs
 
 > **Objetivo da aula:** Analisar a sintese executiva e cientifica dos resultados experimentais, interpretando redução dimensional, tempo de treinamento, latencia, F1, concentração Top-10 do SHAP e esparsidade local do LIME. Esses últimos são proxies operacionais de interpretabilidade, não medidas causais nem substitutos de avaliação humana.
 
 ## Campo Didático: Um Dashboard e um Argumento
 
-Leia cada painel em duas camadas: primeiro descreva literalmente o que o grafico mostra; depois explique o que isso significa para a operacao. O roteiro e **dimensao, treino, latencia, qualidade, erro clinico e custo**. Nunca pule diretamente do grafico para a recomendacao.
+Leia cada painel em duas camadas: primeiro descreva literalmente o que o grafico mostra; depois interprete apenas o que foi medido. O roteiro e **dimensao, treino, tempo de predicao e desempenho no holdout**. O benchmark nao mede erro clinico ou custo operacional.
 
 ```text
-grafico -> numero -> comparacao baseline/campeao -> impacto operacional -> limite da conclusao
+grafico -> numero -> comparacao baseline/proposta -> limite da conclusao
 ```
 
 Observe se a reducao de atributos preserva F1 e recall, e se o ganho de tempo e maior que a variacao de medicao. O erro comum e usar escala visual para sugerir uma melhora que os numeros nao sustentam. A ponte para a Camada 15 e transformar essa leitura em metodologia e hipoteses publicaveis.
@@ -20,7 +20,7 @@ Observe se a reducao de atributos preserva F1 e recall, e se o ganho de tempo e 
 
 ### Roteiro de dominio
 
-Leia o dashboard em ordem: **o que mudou, quanto mudou, com que variabilidade, a que custo e com qual risco clinico**. Para cada painel escreva uma frase factual e uma frase interpretativa separadas. Depois procure contradicoes: menos atributos pode vir acompanhado de mais `FN`, e menor tempo nao compensa uma queda clinica inaceitavel.
+Leia o dashboard em ordem: **o que mudou, quanto mudou e quais etapas ficaram mais lentas ou mais rapidas**. Para cada painel escreva uma frase factual e uma interpretativa separadas. Nao extrapole uma unica particao sintetica para risco clinico.
 
 ### Duvidas que esta aula responde
 
@@ -40,15 +40,15 @@ Cada painel responde a uma pergunta diferente:
 ```text
 reducao dimensional  -> quantos atributos deixaram de ser usados?
 tempo de treino       -> quanto custa reconstruir o modelo?
-latencia              -> quanto custa avaliar um paciente?
-F1/recall             -> a qualidade diagnostica foi preservada?
+latencia              -> quanto levou a predicao do lote de teste?
+F1/recall             -> quais foram as metricas no holdout?
 ```
 
-Um resultado so e operacionalmente bom quando as respostas formam um conjunto coerente. Reduzir de 40 para 10 atributos e perder recall pode ser inaceitavel, mesmo que o treino fique rapido. Manter F1 e reduzir latencia pode ser valioso, mas a conclusao depende do volume de pacientes e do custo real dos exames.
+Um resultado deve ser interpretado como um conjunto: a proposta reduziu atributos e o tempo de treino, mas o F1 caiu e o tempo de predicao do lote aumentou ligeiramente. Nao foram medidos volume de producao ou custos de exames.
 
 ### Como separar observacao de interpretacao
 
-Observacao: “o campeao usou 10 atributos e teve F1 de 0,86”. Interpretacao: “isso sugere que parte das colunas nao era necessaria para a tarefa nesta amostra”. Conclusao forte demais: “os outros 30 exames sao clinicamente inuteis”. O dashboard deve ajudar a enxergar essa diferenca.
+Observacao: “a proposta usou 10 atributos e teve F1 de 0,8395”. Interpretacao: “nesta particao, a reducao de 75% veio acompanhada de queda de F1 de 0,0461”. Conclusao forte demais: “os outros 30 exames sao clinicamente inuteis”. O dashboard deve ajudar a enxergar essa diferenca.
 
 ### Duvidas frequentes
 
@@ -67,7 +67,7 @@ Dashboard executivo tem uma historia propria: a visualizacao estatistica busca r
 
 Uma boa visualizacao nao “vende” o modelo; ela torna diferencas visiveis e contestaveis. Sempre acompanhe cada painel de unidade, baseline, denominador e contexto. Evite cortar eixos para fabricar dramaticidade ou usar cor sem legenda.
 
-**Pergunta cultural:** quem e o leitor do dashboard? Um pesquisador quer incerteza e protocolo; um gestor quer decisao e custo; uma equipe clinica quer risco por tipo de erro. A mesma figura precisa declarar para quem foi desenhada.
+**Pergunta cultural:** quem e o leitor do dashboard? Um pesquisador precisa de protocolo e limites; diferentes leitores podem ter perguntas distintas. A figura deve identificar o que foi medido.
 
 ## Recursos de Mídia (Visual e Áudio)
 
@@ -112,28 +112,25 @@ Em uma aeronave comercial durante o procedimento de descida e pouso, o comandant
 3. **Tempo de resposta dos atuadores mecanicos:** a agilidade em milissegundos com que as asas respondem aos comandos do manche em situacoes de turbulencia severa.
 4. **Horizonte artificial e altitude:** a estabilidade de navegacao que garante a integridade fisica de passageiros e tripulacao.
 
-Na apresentacao de uma pesquisa em Inteligencia Artificial para comites medicos, gestores hospitalares ou bancas examinadoras, o raciocinio e idêntico: a complexidade matematica dos algoritmos deve convergir para quatro dimensoes executivas comparaveis:
-- Volume dimensional de entrada (quantos exames laboratoriais precisam ser coletados).
-- Custo computacional de re-treinamento (tempo de processamento em servidores).
-- Latencia de inferencia por paciente (tempo para emissao do diagnostico no ponto de atendimento).
-- Eficacia diagnostica ($F_1$-score e acuracia sobre pacientes do teste cego).
+Na apresentacao dos resultados, compare dimensao, desempenho e tempos medidos sob o mesmo protocolo. Os dados sao sinteticos: a reducao de atributos nao mede exames coletados, custo hospitalar ou eficacia diagnostica.
 
-### O debate metodologico: custo de P&D contra economia em producao
+### O debate metodologico: custo medido e escopo das conclusoes
 
 Uma objecao frequente apresentada por avaliadores diz respeito ao esforco computacional dispendido nas fases de explicabilidade: *"O calculo analitico de valores SHAP, a avaliacao da curva de ablacao e a busca bayesiana com Optuna nao consomem tempo relevante de CPU?"*
 
-A resposta metodologica apoia-se na diferenciacao entre fases do ciclo de vida:
-- **Fase de Pesquisa e Desenvolvimento (P&D):** a extracao analitica e a busca bayesiana ocorrem em ambiente laboratorial controlado. Trata-se de um custo computacional pago uma unica vez para descobrir quais sao as variaveis causais verdadeiras e qual e a configuracao hiperparametrica otima.
-- **Fase de Producao Hospitalar:** uma vez consolidado, o modelo enxuto (10 atributos) e implantado na rotina clinica, onde processara milhares de pacientes ao longo de anos. A cada ciclo semanal de re-treinamento e a cada prontuario submetido a inferencia, a instituicao acumula ganhos permanentes de tempo e infraestrutura.
+Os tempos de selecao, treino e predicao medem etapas diferentes e devem ser reportados separadamente. Esta execucao nao mediu implantacao, custos de producao ou efeitos em pacientes.
 
-**A grande sacada:** o custo pontual de compreensao analitica no desenvolvimento financia a reducao perene de despesas operacionais e laboratoriais em ambiente de producao.
+| Metrica | Baseline (40 atributos) | Proposta (10 atributos) |
+| :--- | :--- | :--- |
+| Atributos | 40 | 10 |
+| Informativos retidos (sinteticos) | 10/10 | 7/10 |
+| F1 no holdout | 0,8856 | 0,8395 |
+| Acuracia no holdout | 0,9060 | 0,8700 |
+| Treino (ms) | 558,5 | 377,3 |
+| Predicao do lote de teste (ms) | 32,14 | 34,49 |
+| Selecao de atributos (s) | 0,00 | 14,17 |
 
-| Dimensao | Modelo Baseline (Forca Bruta) | Modelo Reduzido Campeao (XAI + Optuna) | Ganho Operacional |
-| :--- | :--- | :--- | :--- |
-| **Coleta de Atributos** | 40 exames laboratoriais completos | 10 biomarcadores de elite validados | Reducao de 75% na carga de coleta |
-| **Tempo de Treinamento** | ~600 ms por floresta | ~185 ms por floresta | Speedup de ~3.2x em retreinos periodicos |
-| **Latencia de Inferencia** | ~30.8 microssegundos por paciente | ~12.4 microssegundos por paciente | Reducao de ~60% na latencia individual |
-| **Qualidade ($F_1$-Score)** | 0.8373 no teste cego | 0.8610 no teste cego | Preservacao e leve incremento preditivo |
+Nesta particao, a reducao de atributos foi de 75% e a queda de F1 foi de 0,0461, dentro por pouco do limite de 0,05 definido para H1. O tempo de treino caiu, mas a predicao do lote de teste ficou ligeiramente mais lenta; a selecao levou mais tempo que RFE (3,07 s). Esses resultados sao descritivos de uma execucao.
 
 ---
 
@@ -145,43 +142,42 @@ O diagrama abaixo sintetiza a disposicao dos quatro quadrantes do dashboard exec
 ==================================================================================
                  PAINEL EXECUTIVO: CONFRONTO BASELINE VS. MODELO XAI
 ==================================================================================
- QUADRANTE 1: DIMENSAO DOS DADOS           QUADRANTE 2: CUSTO DE SERVIDOR
-   40 | [==========] 40 exames               800 | [==========] 600 ms
+ QUADRANTE 1: ATRIBUTOS SINTETICOS          QUADRANTE 2: TEMPO DE TREINO
+   40 | [==========] 40 atributos            600 | [==========] 558.5 ms
    30 |                                      600 | 
    20 |                                      400 | 
-   10 | [===] 10 exames (-75.0%)             200 | [===] 185 ms (-69.2%)
+   10 | [===] 10 atributos (-75.0%)          200 | [======] 377.3 ms
     0 +--------------------------              0 +--------------------------
         Baseline     Campeao XAI                   Baseline     Campeao XAI
 ----------------------------------------------------------------------------------
- QUADRANTE 3: LATENCIA DE INFERENCIA       QUADRANTE 4: QUALIDADE DIAGNOSTICA
-   40 | [==========] 30.8 us                 1.0 | [=======] 0.8373  [=======] 0.8610
+ QUADRANTE 3: PREDICAO DO HOLDOUT (ms)     QUADRANTE 4: F1 NO HOLDOUT
+   40 | [=========] 32.14 ms                 1.0 | [=======] 0.8856  [======] 0.8395
    30 |                                      0.8 |
    20 |                                      0.6 |
-   10 | [===] 12.4 us (-59.7%)               0.4 |
+   10 | [==========] 34.49 ms                0.4 |
     0 +--------------------------            0.0 +--------------------------
         Baseline     Campeao XAI                   Baseline (40)  Campeao (10)
 ==================================================================================
 ```
 
-A dinamica temporal entre investimento computacional e retorno operacional e mapeada a seguir:
+A comparacao nao estima retorno operacional nem desempenho futuro:
 
 ```text
-[ FASE DE P&D (LABORATORIO) ]              [ FASE DE PRODUCAO (HOSPITAL) ]
-Custo unico:                               Economia continua:
-• Calculo SHAP TreeExplainer               • 75% menos reagentes de laboratorio
-• Filtragem shap-select                    • Retreinos 3x mais ageis no cluster
-• Optuna Bayesian Tuning                   • Inferencia ultra-rapida (12 us/paciente)
+[ ETAPA DE SELECAO ]                       [ MODELO NO HOLDOUT ]
+Tempo medido nesta execucao:               Resultados observados:
+• shap-select + Optuna: 14.17 s            • F1: 0.8395 (baseline: 0.8856)
+• RFE: 3.07 s                              • Predicao do lote: 34.49 ms (baseline: 32.14 ms)
       │                                          │
       ▼                                          ▼
-[ INVESTIMENTO PONTUAL: ~15-20 s ]         [ ECONOMIA PERMANENTE ESCALAVEL ]
+[ CUSTO DE SELECAO ]                       [ UMA PARTICAO SINTETICA ]
 ```
 
 | Quadrante | Metrica Apresentada | Leitura Tecnica | Significado Institucional |
 | :--- | :--- | :--- | :--- |
-| **Q1 (Atributos)** | $M_{\text{inicial}} \to M_{\text{final}}$ | Descarte de 30 colunas de ruido e redundancia | Menos desconforto ao paciente e menor custo de coleta |
-| **Q2 (Treinamento)** | Latencia de ajuste da floresta (ms) | Menos amostras e menor profundidade de divisao | Menor consumo de energia e servidores na nuvem |
-| **Q3 (Inferencia)** | Tempo de execucao de `.predict()` ($\mu$s) | Menos comparacoes condicionais por arvore | Viabilidade para Edge AI e triagens de emergencia |
-| **Q4 (Desempenho)** | $F_1$-Score e Acuracia no teste | Ausencia de colapso preditivo; fechamento de gap | Seguranca clinica absoluta no diagnostico emitido |
+| **Q1 (Atributos)** | $M_{\text{inicial}} \to M_{\text{final}}$ | 40 para 10 atributos sinteticos | Reducao dimensional de 75% neste split |
+| **Q2 (Treinamento)** | Tempo de ajuste (ms) | 558,5 para 377,3 ms | Medicao dependente da maquina |
+| **Q3 (Predicao)** | Tempo para prever o lote de teste (ms) | 32,14 para 34,49 ms | Sem ganho nesta medicao |
+| **Q4 (Desempenho)** | $F_1$-Score e Acuracia | F1 0,8856 para 0,8395 | Queda de F1 de 0,0461 neste holdout |
 
 ---
 
@@ -199,9 +195,9 @@ Em nosso experimento oficial: $\Delta_p = (1 - 10/40) \times 100\% = 75.0\%$.
 
 A razao de ganho de velocidade (speedup) no treinamento e na inferencia e formalizada por:
 
-$$S_{\text{train}} = \frac{T_{\text{train}}(\text{Baseline})}{T_{\text{train}}(\text{Campeao})}, \quad S_{\text{infer}} = \frac{\tau_{\text{infer}}(\text{Baseline})}{\tau_{\text{infer}}(\text{Campeao})}$$
+$$S_{\text{train}} = \frac{T_{\text{train}}(\text{Baseline})}{T_{\text{train}}(\text{Proposta})}, \quad S_{\text{infer}} = \frac{\tau_{\text{infer}}(\text{Baseline})}{\tau_{\text{infer}}(\text{Proposta})}$$
 
-Quando $S > 1.0$, o sistema apresenta ganho relativo de eficiencia proporcional ao inverso da complexidade dimensional restante.
+Nesta execucao, $S_{\text{train}} \approx 1.48$, enquanto $S_{\text{infer}} \approx 0.93$ para o lote de teste; portanto, o treino foi mais rapido e a predicao do lote nao.
 
 ### Gap de generalizacao (Monitoramento de Overfitting)
 
@@ -209,15 +205,15 @@ A reducao do gap entre o desempenho de treino e teste formaliza o combate ao sob
 
 $$\text{Gap}_{\text{overfit}} = \text{Acuracia}_{\text{treino}} - \text{Acuracia}_{\text{teste}}$$
 
-No modelo com 40 atributos, $\text{Gap}_{\text{bruto}} \approx 12.2\%$; no modelo compacto de 10 atributos regularizado via Optuna, $\text{Gap}_{\text{enxuto}} \approx 6.1\%$. O estreitamento dessa diferenca comprova que o modelo deixou de memorizar combinacoes aleatorias presentes nas colunas de ruido.
+O pipeline nao exporta uma metrica de gap de generalizacao nesta tabela. Nao se deve inferir reducao de overfitting apenas a partir da quantidade de atributos ou da diferenca de F1 no holdout.
 
 | Simbolo | Significado Formal | Leitura no Projeto |
 | :--- | :--- | :--- |
-| $\Delta_p$ | Taxa percentual de reducao de dimensionalidade | Eliminacao de 75% dos exames coletados |
-| $S_{\text{train}}$ | Fator de aceleracao no tempo de treinamento | Re-treino ~3.2 vezes mais rapido no servidor |
-| $S_{\text{infer}}$ | Fator de aceleracao na inferencia individual | Resposta ~2.5 vezes mais rapida por paciente |
-| $\text{Gap}_{\text{overfit}}$ | Diferenca entre acuracia de treino e teste cego | Queda de 12.2% para 6.1% (reducao pela metade) |
-| $F_1$ | Media harmonica entre precisao e sensibilidade | Preservado em patamar superior a 0.86 |
+| $\Delta_p$ | Taxa percentual de reducao de dimensionalidade | Eliminacao de 75% dos atributos sinteticos |
+| $S_{\text{train}}$ | Fator de aceleracao no tempo de treinamento | Aproximadamente 1,48 nesta medicao |
+| $S_{\text{infer}}$ | Fator entre tempos de predicao do lote | Aproximadamente 0,93; sem ganho nesta medicao |
+| $\text{Gap}_{\text{overfit}}$ | Diferenca entre desempenho de treino e teste | Nao calculada nem exportada pelo pipeline |
+| $F_1$ | Media harmonica entre precisao e recall | 0,8856 no baseline e 0,8395 na proposta |
 
 ### A ordem correta evita distorcoes
 
@@ -235,41 +231,44 @@ Execute o bloco abaixo no Google Colab para renderizar os quatro quadrantes do d
 # Demonstracao: Plotagem Comparativa dos 4 Quadrantes Estrategicos
 # =============================================================================
 import matplotlib.pyplot as plt
+import pandas as pd
 
-# Os dois modelos sao as colunas de comparacao em todos os paineis.
-modelos = ["Baseline (40 Atrib.)", "Campeao XAI (10 Atrib.)"]
+# Os valores sao lidos da execucao mais recente do pipeline.
+resultados = pd.read_csv("assets/tabela_comparativa_completa.csv")
+baseline = resultados.loc[resultados["Familia"] == "Referência"].iloc[0]
+proposta = resultados.loc[
+    resultados["Metodo"] == "XAI Proposto (shap-select + Optuna)"
+].iloc[0]
+modelos = ["Baseline (40)", "Proposta (10)"]
 paleta = ["#7f8c8d", "#2980b9"]
+reducao = (1 - proposta["N_Atributos"] / baseline["N_Atributos"]) * 100
 
 # 2 linhas x 2 colunas formam os quatro quadrantes do dashboard.
 fig, eixos = plt.subplots(2, 2, figsize=(11, 7.5))
 
-# Quadrante 1: quantidade de exames usados por paciente.
-eixos[0, 0].bar(modelos, [40, 10], color=paleta, width=0.45, edgecolor="black")
-eixos[0, 0].set_title("1. Atributos Coletados (Dimensionalidade)", fontsize=10, fontweight="bold")
-eixos[0, 0].set_ylabel("Quantidade de Exames", fontsize=9)
-eixos[0, 0].text(1, 12, "-75.0%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
+# Quadrante 1: atributos sinteticos selecionados.
+eixos[0, 0].bar(modelos, [baseline["N_Atributos"], proposta["N_Atributos"]], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 0].set_title("1. Atributos Sinteticos", fontsize=10, fontweight="bold")
+eixos[0, 0].set_ylabel("Quantidade de Atributos", fontsize=9)
+eixos[0, 0].text(1, proposta["N_Atributos"] + 2, f"-{reducao:.1f}%", ha="center", fontsize=10, fontweight="bold")
 eixos[0, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
 # Quadrante 2: milissegundos gastos para ajustar a floresta.
-eixos[0, 1].bar(modelos, [600, 185], color=paleta, width=0.45, edgecolor="black")
-eixos[0, 1].set_title("2. Tempo de Ajuste em Servidor (ms)", fontsize=10, fontweight="bold")
+eixos[0, 1].bar(modelos, [baseline["Tempo_Treino_ms"], proposta["Tempo_Treino_ms"]], color=paleta, width=0.45, edgecolor="black")
+eixos[0, 1].set_title("2. Tempo de Treinamento (ms)", fontsize=10, fontweight="bold")
 eixos[0, 1].set_ylabel("Milissegundos", fontsize=9)
-eixos[0, 1].text(1, 210, "-69.2%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
 eixos[0, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
-# Quadrante 3: microssegundos gastos por paciente na inferencia.
-eixos[1, 0].bar(modelos, [30.8, 12.4], color=paleta, width=0.45, edgecolor="black")
-eixos[1, 0].set_title("3. Latencia de Inferencia (Microssegundos)", fontsize=10, fontweight="bold")
-eixos[1, 0].set_ylabel("Microssegundos (us)", fontsize=9)
-eixos[1, 0].text(1, 14.5, "-59.7%", ha="center", fontsize=10, fontweight="bold", color="#c0392b")
+# Quadrante 3: tempo de predicao do lote de teste.
+eixos[1, 0].bar(modelos, [baseline["Latencia_Inf_ms"], proposta["Latencia_Inf_ms"]], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 0].set_title("3. Predicao do Lote de Teste (ms)", fontsize=10, fontweight="bold")
+eixos[1, 0].set_ylabel("Milissegundos", fontsize=9)
 eixos[1, 0].grid(axis="y", linestyle=":", alpha=0.6)
 
-# Quadrante 4: qualidade diagnostica, medida pelo F1 no teste cego.
-eixos[1, 1].bar(modelos, [0.8373, 0.8610], color=paleta, width=0.45, edgecolor="black")
-eixos[1, 1].set_title("4. Retencao Diagnostica (F1-Score)", fontsize=10, fontweight="bold")
+# Quadrante 4: F1 no holdout sintetico.
+eixos[1, 1].bar(modelos, [baseline["F1_Score"], proposta["F1_Score"]], color=paleta, width=0.45, edgecolor="black")
+eixos[1, 1].set_title("4. F1 no Holdout Sintetico", fontsize=10, fontweight="bold")
 eixos[1, 1].set_ylabel("F1-Score no Teste Cego", fontsize=9)
-eixos[1, 1].set_ylim(0.70, 0.92)
-eixos[1, 1].text(1, 0.872, "+2.37 pts", ha="center", fontsize=10, fontweight="bold", color="#27ae60")
 eixos[1, 1].grid(axis="y", linestyle=":", alpha=0.6)
 
 plt.suptitle("DASHBOARD EXECUTIVO COMPARATIVO: XAI APLICADA A REDUCAO DE DADOS", fontsize=12, fontweight="bold")
@@ -278,10 +277,10 @@ plt.show()
 ```
 
 > **O que voce deve notar no grafico gerado:**
-> 1. Os graficos de recursos operacionais (atributos, tempo e latencia) exibem quedas expressivas superiores a 50%.
-> 2. O grafico de qualidade diagnostica mantem-se estavel com leve acrescimo, confirmando que a remocao de colunas nao degradou o poder resolutivo.
+> 1. A proposta usa menos atributos e teve menor tempo de treinamento nesta execucao.
+> 2. O F1 caiu 0,0461 e a predicao do lote foi ligeiramente mais lenta; estes resultados nao demonstram seguranca ou beneficio clinico.
 
-**Mini-experimento:** altere os valores de latencia para simular um cenario onde o modelo enxuto operasse com tempo identico ao original. O projeto ainda assim justificaria sua adocao com base apenas na reducao dos 30 exames de laboratorio?
+**Mini-experimento:** use o CSV para comparar a selecao da proposta com RFE. O que a diferenca de tempo permite concluir sobre H2 nesta execucao?
 
 ---
 
@@ -293,49 +292,26 @@ No fechamento do projeto de reducao de dimensionalidade, emitimos o quadro conso
 
 ```python
 # =============================================================================
-# APLICACAO REAL: EMISSAO OFICIAL DO QUADRO COMPARATIVO DE RESULTADOS
-# Base oficial: 2.000 pacientes, avaliacao cega de teste
+# APLICACAO AO BENCHMARK: QUADRO COMPARATIVO DA EXECUCAO ATUAL
+# Os valores sao lidos do CSV gerado pelo pipeline.
 # =============================================================================
 import pandas as pd
 
-quadro_resultados = pd.DataFrame({
-    "Dimensao Avaliada": [
-        "Numero de Atributos de Entrada",
-        "Acuracia Global no Teste Cego",
-        "F1-Score Diagnostico (Harmonico)",
-        "Sensibilidade Clinica (Recall)",
-        "Especificidade do Modelo",
-        "Area sob a Curva ROC (AUC)",
-        "Gap de Overfitting (Treino - Teste)",
-        "Tempo de Treinamento da Floresta",
-        "Latencia Media de Inferencia",
-        "Custo Estimado de Exames / Paciente"
-    ],
-    "Baseline Bruto (40 Vars)": [
-        "40 atributos",
-        "87.80%",
-        "0.8373",
-        "78.11%",
-        "94.33%",
-        "0.9475",
-        "12.20% (Sobreajuste acentuado)",
-        "~600 ms",
-        "~30.8 us",
-        "R$ 1.200,00"
-    ],
-    "Modelo Campeao (10 Vars)": [
-        "10 atributos (-75.0%)",
-        "89.40% (+1.60%)",
-        "0.8610 (+2.37 pts)",
-        "82.50% (+4.39 pts)",
-        "94.00% (-0.33%)",
-        "0.9510 (+0.0035)",
-        "6.10% (Gap reduzido a metade)",
-        "~185 ms (-69.2%)",
-        "~12.4 us (-59.7%)",
-        "R$ 300,00 (-75.0%)"
-    ]
-})
+resultados = pd.read_csv("assets/tabela_comparativa_completa.csv")
+baseline = resultados.loc[resultados["Familia"] == "Referência"].iloc[0]
+proposta = resultados.loc[
+    resultados["Metodo"] == "XAI Proposto (shap-select + Optuna)"
+].iloc[0]
+quadro_resultados = pd.DataFrame([
+    {"Metrica": "Atributos sinteticos", "Baseline": baseline["N_Atributos"], "Proposta": proposta["N_Atributos"]},
+    {"Metrica": "F1 no holdout", "Baseline": baseline["F1_Score"], "Proposta": proposta["F1_Score"]},
+    {"Metrica": "Acuracia no holdout", "Baseline": baseline["Acuracia"], "Proposta": proposta["Acuracia"]},
+    {"Metrica": "Recall no holdout", "Baseline": baseline["Recall"], "Proposta": proposta["Recall"]},
+    {"Metrica": "ROC-AUC no holdout", "Baseline": baseline["ROC_AUC"], "Proposta": proposta["ROC_AUC"]},
+    {"Metrica": "Treino (ms)", "Baseline": baseline["Tempo_Treino_ms"], "Proposta": proposta["Tempo_Treino_ms"]},
+    {"Metrica": "Predicao do lote de teste (ms)", "Baseline": baseline["Latencia_Inf_ms"], "Proposta": proposta["Latencia_Inf_ms"]},
+    {"Metrica": "Selecao (s)", "Baseline": baseline["Tempo_Selecao_s"], "Proposta": proposta["Tempo_Selecao_s"]},
+])
 
 print("=" * 82)
 print("QUADRO OFICIAL CONSOLIDADO DE KPIS: BASELINE VS. MODELO REDUZIDO CAMPEAO")
@@ -350,18 +326,18 @@ print("=" * 82)
 
 | KPI | Como e calculado | Pergunta operacional |
 | :--- | :--- | :--- |
-| **Taxa de Poda Estrutural (%)** | $(1 - p_{\text{reduzido}} / p_{\text{bruto}}) \times 100$ | Quantas variaveis foram retiradas permanentemente do fluxo de coleta? |
-| **Sensibilidade Clinica (Recall)** | $\text{VP} / (\text{VP} + \text{FN})$ no teste cego | A remocao de exames evitou o aumento de Falsos Negativos? |
-| **Contencao de Overfitting ($\Delta \text{Gap}$)** | $\text{Gap}_{\text{bruto}} - \text{Gap}_{\text{enxuto}}$ | A reducao de dimensionalidade tornou as arvores menos dependentes de ruido? |
-| **Reducao de Custo Laboratorial (%)** | Proporcao direta do custo financeiro dos exames eliminados | Qual e o impacto economico direto da pesquisa na operacao hospitalar? |
+| **Reducao de atributos (%)** | $(1 - p_{\text{proposta}} / p_{\text{baseline}}) \times 100$ | Qual foi a reducao neste benchmark? |
+| **F1 no holdout** | Media harmonica de precisao e recall | A queda ficou dentro do criterio predefinido de H1? |
+| **Tempo de selecao** | Segundos medidos no pipeline | Como se compara a selecao com RFE? |
+| **Fidelidade LIME** | $R^2$ do substituto em uma observacao | Qual foi o ajuste local e qual o limite dessa observacao? |
 
-### Interpretacao clinica e de negocio
+### Interpretacao do benchmark sintetico
 
-A analise integrada dos KPIs fundamenta a viabilidade pratica da pesquisa:
+Os KPIs descrevem somente esta execucao:
 
-1. **Prevalencia da seguranca diagnostica:** o ganho de 4.39 pontos percentuais na Sensibilidade Clinica comprova que o modelo enxuto detecta pacientes doentes com maior eficacia do que a versao original de 40 atributos, reduzindo Falsos Negativos graves.
-2. **Estabilidade de custos laboratoriais:** ao concentrar o diagnostico em 10 biomarcadores consolidados, o servico de saude economiza insumos e padroniza processos de triagem sem incorrer em riscos regulatorios.
-3. **Escalabilidade em ambientes embarcados:** a latencia reduzida para 12 microssegundos viabiliza a integracao do modelo em equipamentos medicos portateis com capacidade limitada de processamento local.
+1. **Desempenho:** o F1 caiu 0,0461, dentro por pouco da margem definida para H1 nesta particao.
+2. **Custo medido:** o treino foi mais rapido, mas a selecao foi mais lenta que RFE e a predicao do lote aumentou ligeiramente.
+3. **Limites:** nao foram medidos custos de exames, uso clinico, escalabilidade ou desempenho em dados externos.
 
 ---
 
@@ -369,23 +345,15 @@ A analise integrada dos KPIs fundamenta a viabilidade pratica da pesquisa:
 
 Explique sem consultar o texto e depois confira sua resposta:
 
-1. **Como se explica tecnicamente o fato de um modelo com 10 variaveis atingir $F_1$-score superior ao modelo com 40 variaveis?**
+1. **Como comparar a queda de F1 observada com o limite predefinido de H1?**
 2. **Qual e a resposta metodologica para questionamentos sobre o custo computacional consumido nas fases de explicabilidade e busca bayesiana?**
-3. **Por que a reducao do gap de generalizacao de 12.2% para 6.1% e considerada uma vitoria cientifica relevante?**
-4. **Qual e o impacto clinico de observar que a sensibilidade (recall) aumentou de 78.1% para 82.5% apos a reducao de atributos?**
-5. **Em termos de infraestrutura de computacao, qual e o beneficio de reduzir a latencia media de inferencia de 30 para 12 microssegundos?**
-6. **Como os quatro quadrantes do dashboard executivo resumem o trade-off entre custo computacional, dimensionalidade e qualidade diagnostica?**
+3. **O que permite concluir a rejeicao de ruido sintetico neste benchmark?**
+4. **Como interpretar o tempo de predicao medido para o lote de teste?**
+5. **Quais afirmacoes exigiriam repeticoes, dados externos ou avaliacao humana?**
+6. **Como os quatro quadrantes do dashboard resumem os resultados sem sugerir uso clinico?**
 
 ### Mini-desafio pratico
 
-Construa uma projecao de impacto orcamentario em diferentes escalas de atendimento hospitalar e complete a tabela comparativa:
+Use o CSV atualizado para comparar o tempo de selecao da proposta com RFE e discuta o que essa medicao permite concluir sobre H2.
 
-| Volume Anual de Pacientes | Custo Baseline (40 Exames) | Custo Proposto (10 Exames) | Economia Financeira Liquida |
-| :--- | :--- | :--- | :--- |
-| 10.000 pacientes | | | |
-| 50.000 pacientes | | | |
-| 200.000 pacientes | | | |
-
-*Premissa de calculo:* custo medio estimado de R$ 30,00 por exame individual.
-
-**Pergunta reflexiva:** o ganho financeiro obtido e acompanhado de reducao ou de elevacao do risco diagnostico de negligencia medica?
+**Pergunta reflexiva:** que evidencias adicionais seriam necessarias para extrapolar estes resultados para dados reais?

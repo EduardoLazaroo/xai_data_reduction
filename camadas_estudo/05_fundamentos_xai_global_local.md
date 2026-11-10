@@ -233,7 +233,7 @@ plt.tight_layout(); plt.show()
 print(importancias.round(4))
 ```
 
-> **O que voce deve notar no grafico gerado:** os dois biomarcadores reais acumulam a maior parte do peso relativo, enquanto os ruidos ficam no rodapé. Essa confissao do modelo fundamenta a poda de atributos.
+> **O que voce deve notar no grafico gerado:** compare as variaveis informativas sinteticas com as colunas redundantes e de ruido. O ranking descreve este modelo e split; nao revela biomarcadores reais nem fundamenta uma afirmacao causal.
 
 **Mini-experimento:** inverta a regra do alvo para depender apenas de `r1`. Veja como as barras se invertem imediatamente.
 

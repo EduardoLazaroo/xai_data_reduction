@@ -152,7 +152,9 @@ max_depth                        max_depth                        max_depth
   (Testa cegamente todos os nós)   (Espalha pontos sem direcao)     (Concentra tentativas no maximo)
 ```
 
-Para garantir que a pontuacao de cada configuracao avaliada pelo Optuna seja estatisticamente confiavel e imune a variacoes pontuais de divisao, emprega-se a validacao cruzada estratificada em 3 dobras:
+Para comparar configuracoes no exemplo didatico, emprega-se validacao cruzada estratificada em 3 dobras. A CV reduz dependencia de uma unica particao de treino, mas nao torna a pontuacao imune a variacoes nem substitui a avaliacao final no holdout.
+
+> **Nota:** os valores de F1 abaixo ilustram uma execucao do conjunto toy de 500 observacoes e 6 atributos; nao sao resultados do benchmark oficial.
 
 ```text
 [ DADOS DE TREINAMENTO (X_train, y_train) ]

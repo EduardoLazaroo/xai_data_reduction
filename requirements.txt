@@ -8,3 +8,7 @@ lime
 optuna
 statsmodels
 python-docx
+docx2pdf
+pypdf
+pywin32
+pymupdf

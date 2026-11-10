@@ -4,11 +4,13 @@
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** Os dados sao sinteticos e os exemplos medicos sao ilustrativos; os resultados nao sao recomendacoes clinicas.
+
 ---
 
 > [!NOTE]
-> 🔙 **De onde viemos:** Na Aula 02, aprendemos a calcular a importância média populacional de cada variável através do SHAP. Essa perspectiva macroscópica nos garantiu que os biomarcadores governam o modelo. No entanto, na prática médica real, médicos não tratam "a média estatística da população" — eles atendem indivíduos únicos, especialmente pacientes que estão no **fio da navalha da fronteira de decisão** (com probabilidade diagnóstica ao redor de 50%).
-> 🎯 **Objetivo Principal da Aula:** Dominar os fundamentos do **LIME (Local Interpretable Model-agnostic Explanations)**, instanciar o explicador tabular, localizar algoritmicamente o paciente de teste com maior incerteza preditiva ($P \approx 0.50$), desconstruir sua predição através de amostragem de vizinhança e visualizar regras locais. O LIME será tratado como instrumento de auditoria local, não como ranking global de seleção.
+> 🔙 **De onde viemos:** Na Aula 02, calculamos a importancia media das variaveis sinteticas pelo SHAP. O ranking descreve o modelo e o split, sem identificar biomarcadores reais. O LIME complementa essa analise com uma aproximacao local.
+> 🎯 **Objetivo Principal da Aula:** Dominar os fundamentos do **LIME (Local Interpretable Model-agnostic Explanations)**, localizar uma observacao sintetica de teste com probabilidade proxima de $0.50$, auditar localmente sua predicao e visualizar regras aproximadas. O LIME nao e ranking global nem seletor de atributos.
 > 🚀 **Para onde vamos:** Na Aula 04, o estudo de ablação comparará SHAP com três famílias de baseline: filter (mutual information), wrapper (RFE) e embedded (regressão logística L1).
 
 ---
@@ -211,13 +213,13 @@ print("=" * 65)
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **Por que limitamos a explicação a `num_features=10`?**  
-> Por uma razão de cognição humana e usabilidade médica: apresentar 40 variáveis para um médico em um plantão corrido causa paralisia de decisão. Apresentar os 10 fatores preponderantes permite ação clínica imediata.
+> Como exercício de comunicação, limite a quantidade de atributos exibidos. Este experimento não mede cognição humana nem demonstra que uma explicação permita ação clínica.
 
 ```python
 # 1. Definimos a funcao que extrai a explicacao local e organiza os pesos em tabela
 def explicar_instancia_lime(explainer, modelo, X_test, index_instancia=0, num_features=10):
     """
-    Gera a explicação local LIME para um paciente específico do teste.
+    Gera a explicacao local LIME para uma observacao sintetica do teste.
     """
     # 2. Selecionamos a linha especifica de dados do paciente no DataFrame de teste
     instancia = X_test.iloc[index_instancia]

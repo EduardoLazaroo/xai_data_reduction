@@ -11,15 +11,17 @@
 > 🎯 **Objetivo Principal do Curso / Notebook:** Percorrer uma jornada científica completa em 6 etapas: estabelecer um classificador de referência (**Baseline**) sobre 40 variáveis; auditar a tomada de decisão com **SHAP** (global) e **LIME** (local); executar ablação comparando SHAP com métodos **filter, wrapper e embedded**; implementar **Pré-Filtro Híbrido** e **shap-select**; e consolidar um pipeline com Optuna e dashboard. O LIME não seleciona atributos: ele audita decisões individuais.
 > 🚀 **Para onde vamos:** Ao concluir este caderno, você saberá comparar redução dimensional, desempenho, custo e proxies de interpretabilidade. Os resultados são evidências do dataset sintético e do split executado, não validação clínica externa.
 
+> **Questão de pesquisa:** Em um benchmark sintético controlado, como a seleção informada por TreeSHAP e shap-select se compara a métodos filter, wrapper e embedded em desempenho, rejeição de ruído e custo de seleção, e o que uma auditoria LIME de uma observação permite concluir sobre fidelidade local?
+
 ---
 
 ## 🗺️ Organização Tática da Jornada Didática
 
 | Etapa | Módulo Prático | Foco Teórico & Prático |
 | :---: | :--- | :--- |
-| **01** | **O Baseline e o Mal da Dimensionalidade** | Simulação de 2.000 pacientes com 40 atributos (10 biomarcadores reais, 10 redundantes, 20 ruídos puros); treino do Random Forest; medição de latências; Matriz de Confusão e Curva ROC. |
+| **01** | **O Baseline e o Mal da Dimensionalidade** | Simulação de 2.000 observações sintéticas com 40 atributos (10 informativos sintéticos, 10 redundantes, 20 de ruído); treino do Random Forest; medição de latências; Matriz de Confusão e Curva ROC. |
 | **02** | **Explicabilidade Global via SHAP** | Fundamentos da Teoria dos Jogos Cooperativos de Lloyd Shapley (Nobel 2012); algoritmo TreeSHAP; cálculo do ranking de importância média $\|SHAP\|$; Bar Plot e Beeswarm Plot. |
-| **03** | **Explicabilidade Local via LIME** | Amostragem por perturbação local de vizinhança; identificação algorítmica de paciente no limiar crítico ($P \approx 50\%$); modelo linear substituto (*surrogate*) e gráfico bicolor de regras locais. |
+| **03** | **Explicabilidade Local via LIME** | Amostragem por perturbação local de vizinhança; identificação algorítmica de uma observação no limiar ($P \approx 50\%$); modelo linear substituto (*surrogate*) e gráfico bicolor de regras locais. |
 | **04** | **Ablação entre Famílias de Seleção** | Experimento de 40 a 2 atributos comparando SHAP, filter (mutual information), wrapper (RFE) e embedded (logística L1); curvas de F1 e tempo. |
 | **05** | **Engenharia Avançada: Pré-Filtro & shap-select** | Fase 1 (Pré-Filtro Híbrido: Variância e Pearson $> 0.90$ estilo BOLIMES); Fase 2 (`shap-select`: Regressão Logística de $y \sim \Phi$, admitindo apenas coeficientes $\beta > 0$ e $p\text{-valor} < 0.05$). |
 | **06** | **Pipeline Industrial, Optuna & Dashboard** | Integração do fluxo completo; Otimização Bayesiana via TPE com Optuna (CV em 3 dobras); treino do modelo campeão; Dashboard Executivo de 4 Painéis e Sanity Check Final. |
@@ -80,29 +82,30 @@ from sklearn.metrics import (
 # 3. Configuramos a estetica visual dos graficos
 sns.set_theme(style="whitegrid", palette="deep")
 
-# 4. Definimos a funcao que sintetiza nossa coorte clinica de saude
+# 4. Definimos a funcao que sintetiza o benchmark didatico
 def gerar_dataset_sintetico_saude(n_samples=2000, n_features=40, n_informative=10, n_redundant=10, random_state=42):
     """
-    Gera um dataset sintético simulando 2.000 pacientes com 40 atributos clínicos.
+    Gera dados sinteticos didaticos; nao representa pacientes nem atributos clinicos reais.
     """
     # 5. Geramos as matrizes numericas brutas
     X_raw, y = make_classification(
-        n_samples=n_samples,         # 2.000 pacientes
-        n_features=n_features,       # 40 variaveis totais coletadas
-        n_informative=n_informative, # 10 biomarcadores vitais causadores da patologia
-        n_redundant=n_redundant,     # 10 exames repetidos/colineares
+        n_samples=n_samples,         # 2.000 observacoes sinteticas
+        n_features=n_features,       # 40 atributos sinteticos
+        n_informative=n_informative, # Atributos informativos para a classe sintetica
+        shuffle=False, # Preserva a ordem informativos/redundantes/ruido dos atributos
+        n_redundant=n_redundant,     # 10 atributos redundantes/colineares
         n_repeated=0,                # Sem colunas identicas
-        n_classes=2,                 # Binario: 0 (Saudavel) vs 1 (Patologia)
-        weights=[0.6, 0.4],          # 60% saudaveis e 40% com patologia
-        flip_y=0.03,                 # 3% de erro de rotulacao simulando falha humana de laudo
+        n_classes=2,                 # Classes sinteticas 0 e 1
+        weights=[0.6, 0.4], # proporcoes ilustrativas das classes sinteticas 0 e 1
+        flip_y=0.03,                 # 3% de ruido artificial nos rotulos
         random_state=random_state    # Semente pseudoaleatoria para reprodutibilidade
     )
     
     # 6. Criamos nomes claros e semanticos para cada uma das 40 colunas
     feature_names = (
-        [f"biomarcador_{i+1}" for i in range(n_informative)] +
-        [f"exame_redundante_{i+1}" for i in range(n_redundant)] +
-        [f"ruido_metabolico_{i+1}" for i in range(n_features - n_informative - n_redundant)]
+        [f"informativo_{i+1}" for i in range(n_informative)] +
+        [f"redundante_{i+1}" for i in range(n_redundant)] +
+        [f"ruido_{i+1}" for i in range(n_features - n_informative - n_redundant)]
     )
     
     # 7. Convertemos em DataFrame do Pandas
@@ -202,7 +205,7 @@ print(f"📊 F1-Score Baseline: {metricas_base['f1_score']:.4f} | Tempo Treino: 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **O que o Beeswarm Plot mostra que o Bar Plot não mostra?**  
-> O Bar Plot mostra apenas o tamanho médio do impacto ($|\text{SHAP}|$). O Beeswarm mostra a **direção**: pontos vermelhos (valor alto do exame) à direita indicam que ter o biomarcador alto *aumenta* o risco de patologia!
+> O Bar Plot mostra o tamanho médio do impacto ($|\text{SHAP}|$). O Beeswarm mostra a **direção** da contribuicao do valor da variavel para a previsao de classe do modelo; isso nao representa risco clinico.
 
 ```python
 # 1. Importamos a biblioteca SHAP
@@ -231,7 +234,7 @@ fig, axes = plt.subplots(1, 2, figsize=(18, 7))
 # 7. Bar Plot Semantico nos 15 maiores atributos
 top15 = df_importancia_shap.head(15)
 colors = [
-    '#1f77b4' if 'biomarcador' in name else ('#ff7f0e' if 'redundante' in name else '#d62728')
+    '#1f77b4' if 'informativo' in name else ('#ff7f0e' if 'redundante' in name else '#d62728')
     for name in top15['atributo']
 ]
 axes[0].barh(top15['atributo'][::-1], top15['importancia_shap'][::-1], color=colors[::-1])
@@ -241,9 +244,9 @@ axes[0].grid(True, alpha=0.3)
 
 from matplotlib.patches import Patch
 legend_elements = [
-    Patch(facecolor='#1f77b4', label='Biomarcadores (Informativos)'),
-    Patch(facecolor='#ff7f0e', label='Exames Redundantes (Colineares)'),
-    Patch(facecolor='#d62728', label='Ruído Metabólico (Sem Efeito)')
+    Patch(facecolor='#1f77b4', label='Atributos informativos sinteticos'),
+    Patch(facecolor='#ff7f0e', label='Atributos redundantes sinteticos'),
+    Patch(facecolor='#d62728', label='Atributos de ruido sinteticos')
 ]
 axes[0].legend(handles=legend_elements, loc="lower right")
 
@@ -256,7 +259,7 @@ axes[1].set_title("SHAP Beeswarm Plot (Dispersão Local de Impacto)", fontsize=1
 plt.tight_layout()
 plt.show()
 
-print("[OK] SHAP computado com sucesso! Os biomarcadores vitais dominam as primeiras posições do ranking.")
+print("[OK] SHAP computado. Compare o ranking dos atributos sinteticos com os grupos definidos na geracao.")
 ```
 
 ---
@@ -265,14 +268,14 @@ print("[OK] SHAP computado com sucesso! Os biomarcadores vitais dominam as prime
 
 > [!TIP]
 > ⚔️ **Analogia Geek — O Horizonte Plano e a Terra Redonda:**
-> A Terra é curva e complexa no globo todo, mas quando você pisa no seu quintal, o chão se comporta como um **plano perfeitamente reto**. O **LIME** faz isso: em vez de tentar explicar a floresta inteira de uma vez, ele dá um zoom num único paciente e ajusta uma reta simples para aquele caso específico!
+> A Terra é curva e complexa no globo todo, mas quando você pisa no seu quintal, o chão se comporta como um **plano perfeitamente reto**. O **LIME** faz isso: em vez de tentar explicar a floresta inteira, ele ajusta uma aproximação local para uma observacao sintetica!
 
-### Bloco 3.1 — Identificando o Paciente no Limiar ($P \approx 50\%$) e Extraindo Pesos LIME
+### Bloco 3.1 — Identificando uma Observacao no Limiar ($P \approx 50\%$) e Extraindo Pesos LIME
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
-> **Por que explicar o paciente com $P \approx 50\%$ é muito mais informativo que um com $99\%$?**  
-> Porque em 99%, o diagnóstico é óbvio. No limiar de 50%, o paciente está "em cima do muro": qualquer pequena variação em um exame define se ele será internado ou receberá alta!
+> **Por que explicar uma observacao com $P \approx 50\%$?**
+> Ela esta proxima da fronteira de decisao do classificador. Isso e um exemplo de auditoria local do modelo, nao uma decisao clinica.
 
 ```python
 # 1. Importamos o explicador tabular do LIME
@@ -282,17 +285,17 @@ from lime import lime_tabular
 explainer_lime = lime_tabular.LimeTabularExplainer(
     training_data=np.array(X_train),
     feature_names=X_train.columns.tolist(),
-    class_names=["Saudável (0)", "Patologia (1)"],
+    class_names=["Classe 0", "Classe 1"],
     mode="classification",
     random_state=42
 )
 
-# 3. Localizamos o paciente de teste cuja probabilidade esteve mais proxima de 50%
+# 3. Localizamos a observacao de teste cuja probabilidade esteve mais proxima de 50%
 distancias_50 = np.abs(y_proba_base - 0.50)
 idx_limiar = int(np.argmin(distancias_50))
 proba_limiar = y_proba_base[idx_limiar]
 
-# 4. Extraímos a explicacao LIME para esse paciente critico
+# 4. Extraimos a explicacao LIME para essa observacao sintetica
 exp_paciente = explainer_lime.explain_instance(
     data_row=np.array(X_test.iloc[idx_limiar]),
     predict_fn=modelo_baseline.predict_proba,
@@ -435,8 +438,8 @@ print(f"🎉 Comprovado: com apenas 10 atributos (75% de redução), o F1-Score 
 
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
-> **Por que eliminamos variáveis com coeficiente negativo na matriz SHAP?**  
-> Porque se um atributo tem coeficiente $\beta \le 0$ na regressão $y \sim \Phi$, significa que quanto maior o impacto dele na árvore, *menor* é a probabilidade do caso ser a patologia verdadeira. É uma variável de confusão causal!
+> **Por que o seletor considera o sinal do coeficiente na regressão sobre SHAP?**
+> O sinal descreve a associação entre a contribuição SHAP e o rótulo sintético neste ajuste. Ele não identifica confundimento nem causalidade, e p-valores não transformam essa associação em efeito causal.
 
 ```python
 # 1. Importamos o seletor de variancia e a biblioteca de inferencia econometrica
@@ -453,11 +456,6 @@ def pré_filtro_hibrido(X_tr, threshold_var=0.01, threshold_corr=0.90):
     upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
     to_drop = [c for c in upper.columns if (upper[c].dropna() > threshold_corr).any()]
     cols_finais = [c for c in cols_var if c not in to_drop]
-
-    if len(cols_finais) == X_tr.shape[1]:
-        corr_m = X_var.corr().abs().mean(axis=0)
-        to_rem = corr_m.sort_values(ascending=False).index[: max(1, X_tr.shape[1] // 10)]
-        cols_finais = [c for c in X_var.columns if c not in to_rem]
 
     return X_tr[cols_finais], cols_finais
 
@@ -649,18 +647,18 @@ print("=" * 75)
 
 # 7. Sanity Check Final Automatizado
 tx_red = (1 - m_reduzido["num_atributos"] / metricas_base["num_atributos"]) * 100
-assert tx_red >= 40.0, "Erro: Redução insuficiente"
+assert tx_red >= 50.0, "Erro: Redução abaixo do criterio predefinido de 50%"
 assert m_reduzido["f1_score"] >= (metricas_base["f1_score"] - 0.05), "Erro: Queda inaceitável de F1"
-print(f"\n🎉 SUCESSO TOTAL: {tx_red:.1f}% dos atributos eliminados preservando a precisão clínica do diagnóstico!")
+print(f"\nCriterio de reducao atendido: {tx_red:.1f}% dos atributos removidos no benchmark sintetico.")
 ```
 
 ---
 
 ## 🏆 Checklist de Autonomia Master do Aluno
 
-- [ ] Sei formular e demonstrar o Mal da Dimensionalidade em problemas clínicos.
+- [ ] Sei formular e demonstrar o Mal da Dimensionalidade em um benchmark sintético.
 - [ ] Compreendi a Teoria dos Jogos de Lloyd Shapley e sei computar e interpretar o TreeSHAP.
-- [ ] Dominei o uso do LIME para auditar e defender decisões em pacientes no limiar crítico ($P \approx 0.50$).
+- [ ] Dominei o uso do LIME para auditar uma observação no limiar crítico ($P \approx 0.50$).
 - [ ] Sei planejar e interpretar curvas de ablação de atributos, localizando o Ponto de Inflexão.
 - [ ] Sei implementar Pré-Filtros Híbridos e a seleção com rigor estatístico `shap-select` ($\beta > 0$ e $p < 0.05$).
 - [ ] Dominei a sintonia fina com Optuna via TPE e sei construir um Dashboard Executivo de 4 Painéis.

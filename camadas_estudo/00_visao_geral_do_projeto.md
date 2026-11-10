@@ -48,7 +48,7 @@ No entanto, no mundo real da computação e da medicina, dados não vêm de gra�
 ```mermaid
 graph TD
     A["🏥 Cenário Clínico Inicial<br/>40 Exames Coletados por Paciente"] --> B["🤖 Treino de Modelo Caixa-Preta<br/>(Random Forest Baseline)"]
-    B --> C["🔍 Auditoria com XAI (SHAP & LIME)<br/>'Quais variáveis realmente causam o diagnóstico?'"]
+    B --> C["🔍 Auditoria com XAI (SHAP & LIME)<br/>'Quais variáveis influenciam a previsão do modelo?'"]
     C --> D["✂️ Engenharia de Redução Ativa<br/>(Pré-Filtro Híbrido + shap-select)"]
     D --> E["⚡ Re-otimização Bayesiana (Optuna)<br/>Modelo compacto com 8 a 10 atributos de elite"]
     E --> F["🏆 Resultado Final:<br/>75% menos dados coletados<br/>Treinamento muito mais veloz<br/>Mesmo F1-Score do modelo pesado!"]
@@ -59,7 +59,7 @@ graph TD
 ## 2. Por que isso Importa para o Projeto? (O Porquê e a Necessidade)
 
 ### 2.1 Por que a Abordagem Tradicional de Seleção é Insuficiente?
-As técnicas tradicionais de seleção de atributos (como testes estatísticos univariados ou eliminação recursiva RFE) são heurísticas cegas: elas tentam adivinhar quais variáveis servem sem nos dar uma justificativa causal humana sobre a decisão.
+As técnicas tradicionais de seleção de atributos (como testes estatísticos univariados ou eliminação recursiva RFE) ordenam variáveis segundo critérios preditivos ou de desempenho; nenhuma dessas técnicas, incluindo SHAP, estabelece causalidade.
 
 ### 2.2 A Necessidade da Explicabilidade Ativa
 Aqui reside a grande inovação do seu projeto: **XAI não é usada apenas para "olhar" ou auditar o modelo no final** (como se fosse um laudo decorativo). Nós transformamos a explicabilidade em uma **ferramenta ativa de engenharia de dados**:
@@ -83,4 +83,4 @@ Antes de avançar para a Camada 01, responda mentalmente ou em suas anotações:
 > [!IMPORTANT]
 > 🧠 **Pergunta do Checkpoint:**  
 > **Você consegue explicar o objetivo central deste projeto em duas frases simples para uma pessoa totalmente leiga em tecnologia?**  
-> *(Dica: Pense na analogia de um médico experiente que descobre que de 40 exames que o hospital pede, apenas 10 são os que realmente salvam vidas, e passa a pedir só os 10 para atender os pacientes na metade do tempo).*
+> *(Dica: Pense em uma analogia didática: entre 40 atributos simulados, alguns carregam sinal preditivo e outros são redundantes ou ruído. O experimento mede desempenho em dados sintéticos; não demonstra economia de exames, benefício clínico ou vidas salvas.)*

@@ -4,6 +4,8 @@
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** Os experimentos desta aula usam dados sinteticos; exemplos de saude sao ilustrativos e nao demonstram efeito clinico.
+
 ---
 
 > [!NOTE]
@@ -50,10 +52,10 @@ graph TD
 
 > [!NOTE]
 > 💡 **Curiosidade Histórica — A Origem do RFE (Guyon et al., 2002):**
-> O algoritmo RFE (*Recursive Feature Elimination*) foi proposto no início dos anos 2000 por **Isabelle Guyon** (uma das maiores cientistas da computação pioneiras de Machine Learning) para selecionar genes causadores de câncer de cólon em matrizes de DNA de altíssima dimensão. Até hoje, é uma das técnicas mais respeitadas da literatura tradicional.
+> O algoritmo RFE (*Recursive Feature Elimination*) foi apresentado por **Isabelle Guyon** e colaboradores para selecionar genes associados a classificacao de cancer de colon em dados de expressao genica. A tarefa de classificacao nao identifica causas biologicas.
 
 > [!IMPORTANT]
-> 💡 **Em 1 Frase:** O estudo de ablação nos dá a prova científica empírica de até onde é possível enxugar a base de dados sem prejudicar a vida dos pacientes.
+> 💡 **Em 1 Frase:** O estudo de ablação descreve como as métricas do modelo variam ao remover atributos neste benchmark; não demonstra efeito em pacientes nem segurança clínica.
 
 ---
 

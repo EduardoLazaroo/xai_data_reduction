@@ -4,12 +4,14 @@
 **Professor:** Eduardo Lázaro Roesler de Oliveira  
 **Instituição:** UNIVEM — Centro Universitário de Marília  
 
+> **Escopo:** Todos os dados sao sinteticos. Os nomes de saude usados em alguns exemplos sao ilustrativos e nao representam pacientes ou biomarcadores reais.
+
 ---
 
 > [!NOTE]
-> 🔙 **De onde viemos:** Na Aula 01, construímos nosso classificador Baseline com Random Forest sobre 40 variáveis clínicas. Embora o modelo tenha atingido um bom $F_1$-score (~85%), ele ainda opera como uma **caixa-preta hermética**: olhando apenas para a matriz de confusão, não sabemos se ele tomou decisões baseando-se nos 10 biomarcadores reais ou se foi enganado pelos 20 ruídos metabólicos.
+> 🔙 **De onde viemos:** Na Aula 01, construímos um classificador Baseline com Random Forest sobre 40 atributos sintéticos. A análise SHAP permite examinar como o modelo usa essas variáveis, sem identificar biomarcadores reais ou relações causais.
 > 🎯 **Objetivo Principal da Aula:** Dominar os fundamentos da Teoria dos Jogos Cooperativos de Lloyd Shapley aplicados à Inteligência Artificial (**SHAP — SHapley Additive exPlanations**), implementar o algoritmo otimizado **TreeSHAP** (`shap.TreeExplainer`), computar o ranking de importância média global ($|\text{SHAP}|$) e interpretar gráficos de impacto direcional (**Beeswarm Plot**).
-> 🚀 **Para onde vamos:** Na Aula 03, daremos um zoom microscópico: sairemos da visão global da população e usaremos o **LIME** para dissecar a decisão médica individual de um único paciente limítrofe cuja probabilidade diagnóstica ficou em exatos 50% ("em cima do muro").
+> 🚀 **Para onde vamos:** Na Aula 03, usaremos o **LIME** para auditar localmente uma observação sintética cuja probabilidade predita esteja próxima de 50%; isso não constitui uma decisão médica.
 
 ---
 
@@ -212,7 +214,7 @@ print("=" * 65)
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **Como interpretar os pontos vermelhos e azuis no Beeswarm Plot?**  
-> Cada ponto representa um paciente real. A cor indica o valor original do exame do paciente (Vermelho = valor alto; Azul = valor baixo). O eixo horizontal mostra o impacto no diagnóstico (Direita = empurra para Patologia; Esquerda = empurra para Saudável). Se pontos vermelhos acumulam-se à direita, significa que *quanto mais alto o biomarcador, maior o risco de doença*!
+> Cada ponto representa uma observacao sintetica. A cor indica o valor da variavel (vermelho = alto; azul = baixo); o eixo horizontal mostra a contribuicao SHAP para a classe positiva ou negativa do modelo. Isso descreve o modelo neste benchmark, nao risco de doenca.
 
 ```python
 # 1. Definimos a funcao de geracao dos paineis graficos de explicabilidade global
@@ -281,7 +283,7 @@ gerar_graficos_shap(shap_values, X_train, df_importancia)
 > [!IMPORTANT]
 > 🤔 **Dúvidas Comuns de Iniciantes:**  
 > **O que este teste de sanidade comprova cientificamente?**  
-> Ele comprova que o algoritmo SHAP foi capaz de identificar que os atributos informativos (biomarcadores e redundantes) são os que verdadeiramente governam as decisões da floresta, empurrando as 20 variáveis de ruído aleatório para o fundo do ranking!
+> Neste split sintetico, o ranking SHAP pode ser comparado aos grupos informativo, redundante e ruidoso conhecidos pela construcao dos dados. Isso nao comprova identificacao de biomarcadores reais ou causalidade.
 
 ```python
 # 1. Definimos a funcao de teste de integridade da explicabilidade
@@ -297,7 +299,7 @@ def teste_de_sanidade_shap(df_importancia, shap_vals_class1, X_train):
     # 3. Extraímos os 5 principais atributos ranqueados pelo SHAP
     top5_atributos = df_importancia.head(5)["atributo"].tolist()
     
-    # 4. Contabilizamos quantos atributos do Top 5 sao biomarcadores genuinos ou exames redundantes
+    # 4. Contabilizamos quantos atributos do Top 5 pertencem aos grupos informativo ou redundante simulados
     informativos_no_top5 = sum(1 for feat in top5_atributos if "biomarcador" in feat or "redundante" in feat)
     
     # 5. Asseguramos que pelo menos 3 dos 5 maiores atributos sejam genuinamente uteis
@@ -352,7 +354,7 @@ plt.show()
 > [!TIP]
 > 🧠 **Conceito-Semente — O Diagnóstico Individual no Limiar do Risco**  
 > O SHAP nos deu uma visão macroscópica de toda a população. Mas e quando um médico atende o **Sr. Carlos (Paciente #42)**, e o modelo diz que ele tem **50.2% de probabilidade de patologia**? O médico precisa saber os motivos cirúrgicos daquele paciente específico!  
-> Na **Aula 03**, estudaremos o **LIME (Local Interpretable Model-agnostic Explanations)**: aprenderemos a criar uma perturbação matemática ao redor desse paciente limítrofe para extrair regras locais do tipo: *"Se Glicemia > 130 E Colesterol < 200, a probabilidade sobe 12%"*!
+> Na **Aula 03**, estudaremos o **LIME (Local Interpretable Model-agnostic Explanations)**: criaremos perturbacoes matematicas ao redor de uma observacao sintetica proxima da fronteira de decisao para extrair uma aproximacao local do modelo. Os valores do exemplo nao sao exames ou recomendacoes medicas.
 > 
 > 🚀 **Desafio Proativo de Autoestudo (Opcional):**  
 > Dê uma olhada no artigo clássico do LIME: *"Why Should I Trust You? Explaining the Predictions of Any Classifier"* (Ribeiro et al., 2016). Veja como eles usam um modelo simples para explicar um modelo de rede neural complexa!
